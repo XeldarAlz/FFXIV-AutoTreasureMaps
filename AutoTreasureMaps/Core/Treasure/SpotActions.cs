@@ -3,6 +3,7 @@ using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Core.Travel;
 using ECommons.DalamudServices;
+using System.Numerics;
 
 namespace AutoTreasureMaps.Core.Treasure;
 
@@ -20,6 +21,7 @@ internal static class SpotActions
         var x = MapCoordinates.Format(spot.MapCoordinates.X);
         var y = MapCoordinates.Format(spot.MapCoordinates.Y);
         RunLog.Info($"Spot: {tier.Name} (rank {held.Rank}, spot {held.SpotIndex}, read through {held.Source}) in {spot.ZoneName} (territory {spot.TerritoryId}, map {spot.MapId}), Level {spot.LevelId} at {spot.Position}, map X {x} Y {y}, flying {(spot.FlyingUnlocked ? "unlocked" : "locked")}.");
+        LogStandingOffset(spot);
         Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Spot.ChatHeld, tier.Name, spot.ZoneName, x, y)}");
     }
 
@@ -86,6 +88,18 @@ internal static class SpotActions
         var native = Describe(HeldMapReader.ReadNative());
         var fallback = Describe(HeldMapReader.ReadKeyItemSlot(catalog));
         RunLog.Info($"Spot: getters {(HeldMapReader.NativeAvailable ? "resolved" : "unresolved")}, getter read {native}, slot 123 holds item {HeldMapReader.KeyItemInSlot()}, fallback read {fallback}.");
+    }
+
+    // Standing on a spawned coffer and asking again measures how far the coffer lies from the Level point.
+    private static void LogStandingOffset(in DigSpot spot)
+    {
+        if (Svc.ClientState.TerritoryType != spot.TerritoryId || Svc.Objects.LocalPlayer is not { } player)
+        {
+            return;
+        }
+
+        var position = player.Position;
+        RunLog.Info($"Spot: standing at {position}, {Vector3.Distance(position, spot.Position):F1}m from the Level point ({GroundDistance.Between(position, spot.Position):F1}m across, {position.Y - spot.Position.Y:F1}m above it).");
     }
 
     private static string Describe(HeldMap? held) => held is { } map ? $"rank {map.Rank} spot {map.SpotIndex}" : "none";
