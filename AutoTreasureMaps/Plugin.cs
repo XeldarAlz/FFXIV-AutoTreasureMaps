@@ -4,6 +4,7 @@ using AutoTreasureMaps.Core.Game.Watchers;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Stats;
 using AutoTreasureMaps.Core.Tasks;
+using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows;
 using AutoTreasureMaps.Windows.Shell;
 using clib;
@@ -37,6 +38,7 @@ public sealed class Plugin : IDalamudPlugin
     internal WindowSystem WindowSystem { get; } = new("AutoTreasureMaps");
     internal RunHistory History { get; }
     internal TreasureController Controller { get; }
+    internal TreasureCatalog Catalog { get; }
 
     private readonly DutyWatcher dutyWatcher;
     private readonly GmAlertWatcher gmAlertWatcher;
@@ -60,6 +62,7 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         History = new RunHistory();
+        Catalog = TreasureCatalog.Build();
         Controller = new TreasureController();
         dutyWatcher = new DutyWatcher();
         gmAlertWatcher = new GmAlertWatcher();

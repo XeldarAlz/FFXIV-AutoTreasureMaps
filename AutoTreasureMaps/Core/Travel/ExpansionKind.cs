@@ -1,6 +1,6 @@
 namespace AutoTreasureMaps.Core.Travel;
 
-public enum ExpansionKind
+public enum ExpansionKind : byte
 {
     ARR = 0,
     HW  = 1,
