@@ -90,6 +90,19 @@ internal sealed class TreasureCatalog
     public bool TryGetByTimewornItem(uint itemId, out TreasureTier tier)
         => TryGetAt(indexByTimewornItem.TryGetValue(itemId, out var index) ? index : NoTier, out tier);
 
+    // The tier's position in Tiers, for callers that keep one value per tier in a parallel array.
+    public bool TryGetTimewornIndex(uint itemId, out int index)
+    {
+        if (indexByTimewornItem.TryGetValue(itemId, out var slot))
+        {
+            index = slot;
+            return true;
+        }
+
+        index = -1;
+        return false;
+    }
+
     // Matches the deciphered map and the thief's map a portal leaves behind, the same columns the client searches.
     public bool TryGetByKeyItem(uint itemId, out TreasureTier tier)
         => TryGetAt(indexByKeyItem.TryGetValue(itemId, out var index) ? index : NoTier, out tier);
