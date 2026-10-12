@@ -34,7 +34,7 @@ internal static class MapBagCard
         var configuration = plugin.Configuration;
         var owned = MapBag.Read(catalog);
         var pickIssue = DecipherReadiness.PickNext(catalog, configuration, out var next);
-        var blocker = DecipherReadiness.Blocker(catalog, plugin.Controller.Running);
+        var blocker = DecipherReadiness.Blocker(plugin);
         var issue = blocker != DecipherIssue.None ? blocker : pickIssue;
 
         var scale = ImGuiHelpers.GlobalScale;

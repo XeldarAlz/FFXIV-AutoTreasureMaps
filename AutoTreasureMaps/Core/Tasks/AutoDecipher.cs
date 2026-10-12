@@ -27,7 +27,7 @@ internal sealed class AutoDecipher(TreasureTier tier, DecipherRoute route) : Aut
             return;
         }
 
-        if (Refused(DecipherReadiness.Blocker(plugin.Catalog, plugin.Controller.Running)))
+        if (Refused(DecipherReadiness.Blocker(plugin)))
         {
             return;
         }
@@ -48,7 +48,7 @@ internal sealed class AutoDecipher(TreasureTier tier, DecipherRoute route) : Aut
 
     public static void StartNext(Plugin plugin, DecipherRoute route = DecipherRoute.Menu)
     {
-        if (Refused(DecipherReadiness.Blocker(plugin.Catalog, plugin.Controller.Running)))
+        if (Refused(DecipherReadiness.Blocker(plugin)))
         {
             return;
         }

@@ -22,7 +22,11 @@ internal static class DecipherReadiness
     private const int ExactNameScore = 2;
     private const int EnabledScore = 1;
 
-    public static DecipherIssue Blocker(TreasureCatalog catalog, bool runRunning)
+    // A run is active from Start until it is cleared, paused or not; the controller's Running would also count a goto.
+    public static DecipherIssue Blocker(Plugin plugin)
+        => Blocker(plugin.Catalog, plugin.Controller.SessionSnapshot is not null);
+
+    public static DecipherIssue Blocker(TreasureCatalog catalog, bool runActive)
     {
         if (!Svc.ClientState.IsLoggedIn || Svc.Objects.LocalPlayer is null)
         {
@@ -35,14 +39,14 @@ internal static class DecipherReadiness
             return DecipherIssue.Deciphering;
         }
 
+        if (runActive)
+        {
+            return DecipherIssue.RunActive;
+        }
+
         if (currentTask is not null)
         {
             return DecipherIssue.TaskRunning;
-        }
-
-        if (runRunning)
-        {
-            return DecipherIssue.RunActive;
         }
 
         if (HeldMapReader.TryRead(catalog, out _))
