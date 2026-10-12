@@ -25,6 +25,7 @@ public sealed class Plugin : IDalamudPlugin
 {
     private const string GotoSubcommand = "goto";
     private const string SpotSubcommand = "spot";
+    private const string DecipherSubcommand = "decipher";
     private const string NavmeshIpcProviderMarker = "Navmesh.IPCProvider";
 
     [PluginService]
@@ -189,6 +190,10 @@ public sealed class Plugin : IDalamudPlugin
         else if (trimmed.Equals("tiers", StringComparison.OrdinalIgnoreCase))
         {
             SpotActions.ListTiers(Catalog);
+        }
+        else if (CommandWords.StartsWith(trimmed, DecipherSubcommand))
+        {
+            AutoDecipher.HandleCommand(CommandWords.After(trimmed, DecipherSubcommand), this);
         }
         else if (IsGotoCommand(trimmed))
         {
