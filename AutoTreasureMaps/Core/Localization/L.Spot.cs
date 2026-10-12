@@ -14,7 +14,7 @@ internal static partial class L
         public static readonly LocString PortalAvailable = new("spot.portalAvailable", "Can open a portal");
         public static readonly LocString Flying = new("spot.flying", "Flying");
         public static readonly LocString FlyingUnlocked = new("spot.flyingUnlocked", "Unlocked in this zone");
-        public static readonly LocString FlyingLocked = new("spot.flyingLocked", "Locked until all aether currents here are attuned");
+        public static readonly LocString FlyingLocked = new("spot.flyingLocked", "Not unlocked in this zone yet");
         public static readonly LocString Flag = new("spot.flag", "Flag on map");
         public static readonly LocString FlagHint = new("spot.flagHint", "Place the map flag on the dig spot and open the map.");
         public static readonly LocString GoTo = new("spot.goto", "Go to spot");

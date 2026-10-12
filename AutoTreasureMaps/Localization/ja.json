@@ -376,7 +376,7 @@
   "spot.portalAvailable": "転送魔紋が出現することがあります",
   "spot.flying": "飛行",
   "spot.flyingUnlocked": "このエリアで解放済み",
-  "spot.flyingLocked": "このエリアの風脈をすべて交感するまで未解放",
+  "spot.flyingLocked": "このエリアでは未解放",
   "spot.flag": "マップにフラグ",
   "spot.flagHint": "発掘地点にマップのフラグを立てて、マップを開きます。",
   "spot.goto": "地点へ移動",
