@@ -5,9 +5,8 @@ using System.Numerics;
 
 namespace AutoTreasureMaps.Core.Treasure;
 
-// The chain the client itself walks to show a map: the rank's TreasureSpot subrow, its Level row, and that Level's
-// territory and map. The sheet part is kept for the last spot asked about; flight access is read fresh on every call,
-// since unlocking the zone's aether currents changes it.
+// The sheet part is kept for the last spot asked about, but flight access is read on every call: attuning the zone's
+// aether currents changes it while the spot stays the same.
 internal static class DigSpotResolver
 {
     private static bool cacheFilled;

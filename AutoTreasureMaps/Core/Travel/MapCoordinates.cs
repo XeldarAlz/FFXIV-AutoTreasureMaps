@@ -5,7 +5,6 @@ using System.Numerics;
 
 namespace AutoTreasureMaps.Core.Travel;
 
-// The game's world to map projection, the one its map window and map links show.
 internal static class MapCoordinates
 {
     private const float MapTiles = 41f;

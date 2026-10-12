@@ -6,5 +6,4 @@ internal enum HeldMapSource : byte
     KeyItemSlot,
 }
 
-// SpotIndex is the subrow of the tier's TreasureSpot row the deciphered map points at.
 internal readonly record struct HeldMap(byte Rank, ushort SpotIndex, HeldMapSource Source);
