@@ -7,3 +7,9 @@ public enum AfterRunAction
     ReturnToInn,
     CloseGame,
 }
+
+public enum MapOrder
+{
+    HighestFirst,
+    LowestFirst,
+}

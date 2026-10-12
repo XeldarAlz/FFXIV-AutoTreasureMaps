@@ -11,7 +11,7 @@ namespace AutoTreasureMaps.Windows.Pages;
 
 internal sealed class SettingsPage
 {
-    private enum Tab { General, Repair, Consumables, Humanizer, PartyInvites, GmAlert }
+    private enum Tab { General, Maps, Repair, Consumables, Humanizer, PartyInvites, GmAlert }
 
     private readonly record struct Entry(Tab Tab, LocString Label, FontAwesomeIcon Icon, LocString Subtitle);
 
@@ -19,6 +19,7 @@ internal sealed class SettingsPage
     private static readonly Entry[] entries =
     [
         new(Tab.General, L.Settings.CatGeneral, FontAwesomeIcon.Cog, L.Settings.CatGeneralSub),
+        new(Tab.Maps, L.Maps.Cat, FontAwesomeIcon.Map, L.Maps.CatSub),
         new(Tab.Repair, L.Safety.CatRepair, FontAwesomeIcon.Wrench, L.Safety.CatRepairSub),
         new(Tab.Consumables, L.Safety.CatConsumables, FontAwesomeIcon.Utensils, L.Safety.CatConsumablesSub),
         new(Tab.Humanizer, L.Safety.CatHumanizer, FontAwesomeIcon.Walking, L.Safety.CatHumanizerSub),
@@ -31,7 +32,6 @@ internal sealed class SettingsPage
 
     public void Draw(Plugin plugin)
     {
-        var configuration = plugin.Configuration;
         var scale = ImGuiHelpers.GlobalScale;
         var navWidth = Layout.SettingsNavWidth * scale;
 
@@ -51,7 +51,7 @@ internal sealed class SettingsPage
             {
                 if (content)
                 {
-                    DrawContent(configuration);
+                    DrawContent(plugin);
                 }
             }
         }
@@ -89,8 +89,9 @@ internal sealed class SettingsPage
         resetScroll = true;
     }
 
-    private void DrawContent(Configuration configuration)
+    private void DrawContent(Plugin plugin)
     {
+        var configuration = plugin.Configuration;
         if (resetScroll)
         {
             ImGui.SetScrollY(0f);
@@ -109,6 +110,9 @@ internal sealed class SettingsPage
         {
             case Tab.General:
                 GeneralSettings.Draw(configuration);
+                break;
+            case Tab.Maps:
+                MapSettings.Draw(configuration, plugin.Catalog);
                 break;
             case Tab.Repair:
                 RepairSettings.Draw(configuration);
