@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows.Components;
 using AutoTreasureMaps.Windows.Sections;
 using AutoTreasureMaps.Windows.Shell;
@@ -39,8 +40,28 @@ internal sealed class TreasurePage
 
         Styling.VSpace(20f);
         SectionTitle(Loc.T(L.Treasure.CurrentMap));
-        EmptyCard(FontAwesomeIcon.Map, Loc.T(L.Treasure.CurrentMapEmpty));
+        DrawCurrentMap(plugin);
         Styling.VSpace(12f);
+    }
+
+    private static void DrawCurrentMap(Plugin plugin)
+    {
+        var state = HeldSpot.Read(plugin.Catalog, out _, out var tier, out var spot);
+        using var reveal = Motion.PushSwitch("##atm_current_map", (int)state, SwitchRevealMs);
+        if (state == HeldSpotState.Resolved)
+        {
+            var setupNeeded = ReadyState.Resolve(plugin.Controller).Kind == ReadyState.Kind.SetupNeeded;
+            CurrentMapCard.Draw(tier, spot, setupNeeded, plugin.Controller.Running);
+            return;
+        }
+
+        if (state == HeldSpotState.Unresolved)
+        {
+            EmptyCard(FontAwesomeIcon.QuestionCircle, Loc.T(L.Spot.Unresolved));
+            return;
+        }
+
+        EmptyCard(FontAwesomeIcon.Map, Loc.T(L.Treasure.CurrentMapEmpty));
     }
 
     private static void SectionTitle(string text)
