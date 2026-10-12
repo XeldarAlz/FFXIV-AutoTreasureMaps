@@ -1,8 +1,0 @@
-namespace AutoTreasureMaps.Core.Achievements;
-
-public enum AchievementStatus : byte
-{
-    Unknown,
-    Incomplete,
-    Complete,
-}

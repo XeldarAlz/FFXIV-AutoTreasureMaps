@@ -45,7 +45,7 @@ public abstract partial class AutoCommon
     // From the air, the movement library's dismount descends straight down from wherever the flight ended; over a tent,
     // a canopy or a cliff face that hovers for good or drops the character through the world. So the landing is aimed
     // at a landable floor point first, and a descent that stops moving is cut short and tried from the next spot. With
-    // a stand-off the spots ring the place at that distance, nearest the character first, so a flight toward a mark
+    // a stand-off the spots ring the place at that distance, nearest the character first, so a flight toward a target
     // touches down short of it and not on top of it.
     protected async Task<bool> LandAndDismount(Vector3 around, float standOffMeters, string scope)
     {

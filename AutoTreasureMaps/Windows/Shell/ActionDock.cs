@@ -1,4 +1,3 @@
-using AutoTreasureMaps.Core.External;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Windows.Components;
 using Dalamud.Bindings.ImGui;
@@ -31,7 +30,7 @@ internal static class ActionDock
         }
         else
         {
-            DrawStart(plugin, innerWidth);
+            DrawStart(innerWidth);
         }
 
         ImGui.SetCursorScreenPos(origin);
@@ -52,26 +51,21 @@ internal static class ActionDock
         ImGui.SameLine(0f, gap);
 
         var session = controller.SessionSnapshot;
-        var state = controller.Paused ? Loc.T(L.Hunt.StatePaused) : Loc.T(L.Hunt.StateRunning);
-        var stopSub = session is null ? state : Loc.T(L.Hunt.StopSub, state, Formatting.Elapsed(session.Elapsed));
+        var state = controller.Paused ? Loc.T(L.Treasure.StatePaused) : Loc.T(L.Treasure.StateRunning);
+        var stopSub = session is null ? state : Loc.T(L.Treasure.StopSub, state, Formatting.Elapsed(session.Elapsed));
         if (StopButton.Draw(stopSub, half))
         {
             controller.Stop();
         }
     }
 
-    private static void DrawStart(Plugin plugin, float innerWidth)
+    private static void DrawStart(float innerWidth)
     {
-        var configuration = plugin.Configuration;
-        var mode = configuration.Mode;
-        var plan = HuntLauncher.Assess(configuration, mode);
-        var dependenciesReady = ExternalPlugins.AllRequiredInstalled();
-        var canStart = plan.Readiness == HuntLauncher.Readiness.Ready && dependenciesReady;
-        var reason = !dependenciesReady ? Loc.T(L.Hunt.ReasonInstall) : HuntLauncher.Reason(plan);
-
-        if (StartButton.Draw(HuntLauncher.Sublabel(configuration, plan), canStart, reason, innerWidth))
+        var readiness = TreasureLauncher.Assess();
+        var canStart = readiness == TreasureLauncher.Readiness.NotBuilt;
+        if (StartButton.Draw(TreasureLauncher.Sublabel(), canStart, TreasureLauncher.Reason(), innerWidth))
         {
-            HuntLauncher.Start(mode);
+            TreasureLauncher.Start();
         }
     }
 }

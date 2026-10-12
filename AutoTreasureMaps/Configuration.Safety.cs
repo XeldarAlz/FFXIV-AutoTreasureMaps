@@ -17,7 +17,7 @@ public sealed partial class Configuration
     public List<ConsumableEntry> AutoConsumeItems { get; set; } = [];
 
     public bool HumanizerEnabled { get; set; } = false;
-    public int HumanizerMarksBeforeBreak { get; set; } = 30;
+    public int HumanizerMapsBeforeBreak { get; set; } = 10;
     public int HumanizerBreakMinMinutes { get; set; } = 5;
     public int HumanizerBreakMaxMinutes { get; set; } = 10;
     public int HumanizerPauseMinSeconds { get; set; } = 3;

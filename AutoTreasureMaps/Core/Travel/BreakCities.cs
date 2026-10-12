@@ -1,4 +1,3 @@
-using AutoTreasureMaps.Core.Hunts;
 
 namespace AutoTreasureMaps.Core.Travel;
 

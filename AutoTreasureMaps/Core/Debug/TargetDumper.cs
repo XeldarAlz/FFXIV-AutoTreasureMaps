@@ -19,7 +19,7 @@ internal static unsafe class TargetDumper
         var target = TargetSystem.Instance()->Target;
         if (target == null)
         {
-            Svc.Chat.Print($"{AtmConstants.LogPrefix} No target. Click an NPC or a hunt mark first, then re-run /atm target.");
+            Svc.Chat.Print($"{AtmConstants.LogPrefix} No target. Click an NPC or an object first, then re-run /atm target.");
             return;
         }
 

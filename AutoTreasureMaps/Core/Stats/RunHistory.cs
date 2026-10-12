@@ -71,10 +71,7 @@ internal sealed class RunHistory
         for (var index = 0; index < Records.Count; index++)
         {
             var record = Records[index];
-            totals.Bills += record.BillsCompleted;
-            totals.Marks += record.MarksKilled;
-            totals.Seals += record.Seals;
-            totals.Nuts += record.Nuts;
+            totals.Maps += record.MapsCompleted;
             totals.Seconds += record.DurationSeconds;
         }
 
@@ -102,13 +99,10 @@ internal sealed class RunHistory
     public struct LifetimeTotals
     {
         public int Runs;
-        public int Bills;
-        public int Marks;
-        public int Seals;
-        public int Nuts;
+        public int Maps;
         public double Seconds;
 
-        public readonly double MarksPerHour => Seconds > 0 ? Marks / (Seconds / 3600.0) : 0;
+        public readonly double MapsPerHour => Seconds > 0 ? Maps / (Seconds / 3600.0) : 0;
         public readonly TimeSpan Duration => TimeSpan.FromSeconds(Seconds);
     }
 }

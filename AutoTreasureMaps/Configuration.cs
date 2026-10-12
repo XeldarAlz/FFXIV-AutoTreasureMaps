@@ -8,6 +8,9 @@ namespace AutoTreasureMaps;
 [Serializable]
 public sealed partial class Configuration : IPluginConfiguration
 {
+    // Bumped with a step in Migrate whenever a saved setting changes meaning.
+    public const int CurrentVersion = 1;
+
     [JsonIgnore]
     private bool savePending;
 
@@ -17,8 +20,8 @@ public sealed partial class Configuration : IPluginConfiguration
 
     public string Language { get; set; } = "";
 
-    // MobHuntOrderType row ids, which double as the MobHunt mark indices.
-    public HashSet<byte> SelectedBills { get; set; } = [];
+    // The bundled combat preset is rewritten in the combat plugin only while this trails its revision, so edits to it survive otherwise.
+    public int BundledCombatPresetRevision { get; set; }
 
     // Never fires on a manual Stop or a fault.
     public AfterRunAction AfterRun { get; set; } = AfterRunAction.StayLoggedIn;
@@ -29,6 +32,20 @@ public sealed partial class Configuration : IPluginConfiguration
 
     [JsonIgnore]
     public bool HasUnseenChangelog => !string.Equals(LastSeenChangelogVersion, ChangelogData.LatestVersion, StringComparison.Ordinal);
+
+    public static Configuration CreateFresh() => new() { Version = CurrentVersion };
+
+    // True when the loaded config was older and changed, so the caller saves it once.
+    public bool Migrate()
+    {
+        if (Version >= CurrentVersion)
+        {
+            return false;
+        }
+
+        Version = CurrentVersion;
+        return true;
+    }
 
     public void MarkChangelogSeen()
     {

@@ -1,4 +1,3 @@
-using AutoTreasureMaps.Core.Hunts;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Stats;
 using AutoTreasureMaps.Core.Tasks;
@@ -17,10 +16,10 @@ internal static class Headline
     private const float RightGap = 18f;
     private const float PluginsButtonHeight = 30f;
 
-    public static bool Draw(Configuration configuration, AutoHuntController controller, RunHistory history)
+    public static bool Draw(TreasureController controller, RunHistory history)
     {
         var scale = ImGuiHelpers.GlobalScale;
-        var info = ReadyState.Resolve(configuration, controller);
+        var info = ReadyState.Resolve(controller);
         var origin = ImGui.GetCursorScreenPos();
         var width = ImGui.GetContentRegionAvail().X;
         var y = origin.Y;
@@ -50,7 +49,7 @@ internal static class Headline
 
         using (Fonts.PushTitle())
         {
-            TextDraw.At(TextDraw.Truncate(info.Title + Loc.T(L.Hunt.SentenceEnd), maxTextWidth), new Vector2(origin.X, y), Styling.TextStrong);
+            TextDraw.At(TextDraw.Truncate(info.Title + Loc.T(L.Treasure.SentenceEnd), maxTextWidth), new Vector2(origin.X, y), Styling.TextStrong);
         }
 
         y += titleHeight + DetailGap * scale;
@@ -77,7 +76,7 @@ internal static class Headline
 
         if (info.Kind == ReadyState.Kind.SetupNeeded)
         {
-            var label = Loc.T(L.Hunt.OpenPlugins);
+            var label = Loc.T(L.Treasure.OpenPlugins);
             var buttonWidth = PillButton.Width(label, FontAwesomeIcon.Plug);
             ImGui.SetCursorScreenPos(new Vector2(rightX - buttonWidth, midY - PluginsButtonHeight * scale * 0.5f));
             openPlugins = PillButton.Draw("##atm_open_plugins", label, Styling.AccentRose, PillButton.Emphasis.Tinted, FontAwesomeIcon.Plug, height: PluginsButtonHeight);
@@ -97,19 +96,15 @@ internal static class Headline
         }
     }
 
-    // Only a bill run completes bills; the other modes count kills.
     private static (string Title, string Detail) LastRun(RunHistory history)
     {
         var records = history.Records;
         if (records.Count == 0)
         {
-            return (Loc.T(L.Hunt.NoRunsYet), Loc.T(L.Hunt.StatsAppearHere));
+            return (Loc.T(L.Treasure.NoRunsYet), Loc.T(L.Treasure.StatsAppearHere));
         }
 
         var record = records[0];
-        var elapsed = Formatting.Elapsed(record.Duration);
-        return record.Mode == HuntMode.MarkBills
-            ? (Loc.T(L.Hunt.LastRun, record.MarksKilled), Loc.T(L.Hunt.LastRunDetail, elapsed, record.BillsCompleted))
-            : (Loc.T(L.Hunt.LastRunKills, record.MarksKilled), elapsed);
+        return (Loc.T(L.Treasure.LastRun, record.MapsCompleted), Formatting.Elapsed(record.Duration));
     }
 }

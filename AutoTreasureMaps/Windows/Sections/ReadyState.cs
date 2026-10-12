@@ -1,5 +1,4 @@
 using AutoTreasureMaps.Core.External;
-using AutoTreasureMaps.Core.Hunts;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Tasks;
 using Dalamud.Bindings.ImGui;
@@ -10,14 +9,14 @@ namespace AutoTreasureMaps.Windows.Sections;
 
 internal static class ReadyState
 {
-    public enum Kind { SetupNeeded, PickBills, PickLogs, PickMobs, NothingToHunt, AllDone, Ready, Running, Paused, PickRanks }
+    public enum Kind { SetupNeeded, NotBuilt, Running, Paused }
 
     public readonly record struct Info(Kind Kind, Vector4 Accent, Vector4 AccentSoft, FontAwesomeIcon Icon, string Title, string Detail);
 
     private static int cachedFrame = -1;
     private static Info cached;
 
-    public static Info Resolve(Configuration configuration, AutoHuntController controller)
+    public static Info Resolve(TreasureController controller)
     {
         var frame = ImGui.GetFrameCount();
         if (frame == cachedFrame)
@@ -25,122 +24,51 @@ internal static class ReadyState
             return cached;
         }
 
-        cached = Compute(configuration, controller);
+        cached = Compute(controller);
         cachedFrame = frame;
         return cached;
     }
 
-    private static Info Compute(Configuration configuration, AutoHuntController controller)
+    private static Info Compute(TreasureController controller)
     {
         if (controller.Running)
         {
             if (controller.Paused)
             {
                 var detail = controller.PauseReason == PauseReason.InContent
-                    ? Loc.T(L.Hunt.DetailPausedInContent)
-                    : Loc.T(L.Hunt.DetailPausedManual);
-                return new Info(Kind.Paused, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Pause, Loc.T(L.Hunt.TitlePaused), detail);
+                    ? Loc.T(L.Treasure.DetailPausedInContent)
+                    : Loc.T(L.Treasure.DetailPausedManual);
+                return new Info(Kind.Paused, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Pause, Loc.T(L.Treasure.TitlePaused), detail);
             }
 
-            return new Info(Kind.Running, Styling.AccentBlue, Styling.AccentBlueSoft, FontAwesomeIcon.Crosshairs, Loc.T(L.Hunt.TitleRunning),
-                PhaseLabel(controller.Phase, controller.Mode));
+            return new Info(Kind.Running, Styling.AccentBlue, Styling.AccentBlueSoft, FontAwesomeIcon.Map, Loc.T(L.Treasure.TitleRunning), PhaseLabel(controller.Phase));
         }
 
         if (!ExternalPlugins.AllRequiredInstalled())
         {
             return new Info(Kind.SetupNeeded, Styling.AccentRose, Styling.AccentRoseSoft, FontAwesomeIcon.ExclamationTriangle,
-                Loc.T(L.Hunt.TitleSetupNeeded), Loc.T(L.Hunt.DetailSetupNeeded));
+                Loc.T(L.Treasure.TitleSetupNeeded), Loc.T(L.Treasure.DetailSetupNeeded));
         }
 
-        var mode = configuration.Mode;
-        return HuntLauncher.Assess(configuration, mode).Readiness switch
-        {
-            HuntLauncher.Readiness.NothingPicked => Pick(mode),
-            HuntLauncher.Readiness.Blocked => new Info(Kind.NothingToHunt, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Ban,
-                Loc.T(mode == HuntMode.RankFarm ? L.RankFarm.Mode : mode == HuntMode.CustomList ? L.CustomList.TitleBlocked : L.HuntingLog.TitleBlocked),
-                Loc.T(mode == HuntMode.RankFarm ? L.RankFarm.Blocked : mode == HuntMode.CustomList ? L.CustomList.DetailBlocked : L.HuntingLog.DetailBlocked)),
-            HuntLauncher.Readiness.AllDone => new Info(Kind.AllDone, Styling.AccentMint, Styling.AccentMintSoft, FontAwesomeIcon.CheckDouble,
-                Loc.T(DoneTitle(mode)), Loc.T(DoneDetail(mode))),
-            _ => new Info(Kind.Ready, Styling.AccentMint, Styling.AccentMintSoft, FontAwesomeIcon.CheckCircle,
-                Loc.T(L.Hunt.TitleReady), Loc.T(ReadyDetail(mode))),
-        };
+        return new Info(Kind.NotBuilt, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Hammer,
+            Loc.T(L.Treasure.TitleNotBuilt), Loc.T(L.Treasure.DetailNotBuilt));
     }
-
-    private static Info Pick(HuntMode mode) => mode switch
-    {
-        HuntMode.RankFarm => new Info(Kind.PickRanks, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Crosshairs,
-            Loc.T(L.RankFarm.Pick), Loc.T(L.RankFarm.Hint)),
-        HuntMode.HuntingLog => new Info(Kind.PickLogs, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.BookOpen,
-            Loc.T(L.HuntingLog.TitlePick), Loc.T(L.HuntingLog.DetailPick)),
-        HuntMode.CustomList => new Info(Kind.PickMobs, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Crosshairs,
-            Loc.T(L.CustomList.TitlePick), Loc.T(L.CustomList.DetailPick)),
-        _ => new Info(Kind.PickBills, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.ClipboardList,
-            Loc.T(L.Hunt.TitlePickBills), Loc.T(L.Hunt.DetailPickBills)),
-    };
-
-    private static LocString DoneTitle(HuntMode mode) => mode switch
-    {
-        HuntMode.HuntingLog => L.HuntingLog.TitleAllDone,
-        HuntMode.CustomList => L.CustomList.TitleAllDone,
-        _ => L.Hunt.TitleAllDone,
-    };
-
-    private static LocString DoneDetail(HuntMode mode) => mode switch
-    {
-        HuntMode.HuntingLog => L.HuntingLog.DetailAllDone,
-        HuntMode.CustomList => L.CustomList.DetailAllDone,
-        _ => L.Hunt.DetailAllDone,
-    };
-
-    private static LocString ReadyDetail(HuntMode mode) => mode switch
-    {
-        HuntMode.RankFarm => L.RankFarm.Ready,
-        HuntMode.HuntingLog => L.HuntingLog.DetailReady,
-        HuntMode.CustomList => L.CustomList.DetailReady,
-        _ => L.Hunt.DetailReady,
-    };
 
     public static string ShortLabel(Kind kind) => kind switch
     {
-        Kind.Running       => Loc.T(L.Shell.StatusRunning),
-        Kind.Paused        => Loc.T(L.Shell.StatusPaused),
-        Kind.Ready         => Loc.T(L.Shell.StatusReady),
-        Kind.PickBills     => Loc.T(L.Shell.StatusPickBills),
-        Kind.PickLogs      => Loc.T(L.HuntingLog.StatusPickLogs),
-        Kind.PickMobs      => Loc.T(L.CustomList.StatusAddMobs),
-        Kind.PickRanks     => Loc.T(L.RankFarm.Pick),
-        Kind.NothingToHunt => Loc.T(L.HuntingLog.StatusNothingToHunt),
-        Kind.AllDone       => Loc.T(L.Shell.StatusAllDone),
-        Kind.SetupNeeded   => Loc.T(L.Shell.StatusSetupNeeded),
-        _                  => Loc.T(L.Shell.StatusIdle),
+        Kind.Running     => Loc.T(L.Shell.StatusRunning),
+        Kind.Paused      => Loc.T(L.Shell.StatusPaused),
+        Kind.SetupNeeded => Loc.T(L.Shell.StatusSetupNeeded),
+        _                => Loc.T(L.Shell.StatusIdle),
     };
 
-    public static string PhaseLabel(HuntPhase phase, HuntMode mode) => phase switch
+    public static string PhaseLabel(TreasurePhase phase) => phase switch
     {
-        HuntPhase.Reading    => Loc.T(ReadingLabel(mode)),
-        HuntPhase.PickingUp  => Loc.T(L.Run.PhasePickingUp),
-        HuntPhase.Travelling => Loc.T(L.Run.PhaseTravelling),
-        HuntPhase.Searching  => Loc.T(L.Run.PhaseSearching),
-        HuntPhase.Fighting   => Loc.T(L.Run.PhaseFighting),
-        HuntPhase.Upkeep     => Loc.T(L.Progress.PhaseUpkeep),
-        HuntPhase.Finishing  => Loc.T(L.Run.PhaseFinishing),
-        _                    => Loc.T(L.Run.PhaseStandingBy),
-    };
-
-    public static string PlanSummary(IReadOnlyList<HuntBill> bills)
-    {
-        var workload = BillSelection.Measure(bills);
-        var detail = workload.PickUps > 0
-            ? Loc.Plural(L.Hunt.ToPickUp, workload.PickUps)
-            : Loc.Plural(L.Hunt.KillsLeft, workload.KillsLeft);
-        return Loc.T(L.Hunt.StartSub, Loc.Plural(L.Hunt.BillsCount, bills.Count), detail);
-    }
-
-    private static LocString ReadingLabel(HuntMode mode) => mode switch
-    {
-        HuntMode.RankFarm => L.RankFarm.Reading,
-        HuntMode.HuntingLog => L.Run.PhaseReadingLogs,
-        HuntMode.CustomList => L.Run.PhaseReadingList,
-        _                   => L.Run.PhaseReading,
+        TreasurePhase.Preparing  => Loc.T(L.Run.PhasePreparing),
+        TreasurePhase.Travelling => Loc.T(L.Run.PhaseTravelling),
+        TreasurePhase.Fighting   => Loc.T(L.Run.PhaseFighting),
+        TreasurePhase.Upkeep     => Loc.T(L.Progress.PhaseUpkeep),
+        TreasurePhase.Finishing  => Loc.T(L.Run.PhaseFinishing),
+        _                        => Loc.T(L.Run.PhaseStandingBy),
     };
 }

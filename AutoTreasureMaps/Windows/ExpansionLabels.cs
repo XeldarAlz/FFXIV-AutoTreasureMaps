@@ -1,5 +1,5 @@
 using AutoTreasureMaps.Core.Localization;
-using AutoTreasureMaps.Core.Hunts;
+using AutoTreasureMaps.Core.Travel;
 
 namespace AutoTreasureMaps.Windows;
 
@@ -7,11 +7,11 @@ internal static class ExpansionLabels
 {
     public static string Name(ExpansionKind kind) => kind switch
     {
-        ExpansionKind.ARR => Loc.T(L.Hunt.ExpansionArr),
-        ExpansionKind.HW  => Loc.T(L.Hunt.ExpansionHw),
-        ExpansionKind.SB  => Loc.T(L.Hunt.ExpansionSb),
-        ExpansionKind.ShB => Loc.T(L.Hunt.ExpansionShb),
-        ExpansionKind.EW  => Loc.T(L.Hunt.ExpansionEw),
-        _                 => Loc.T(L.Hunt.ExpansionDt),
+        ExpansionKind.ARR => Loc.T(L.Treasure.ExpansionArr),
+        ExpansionKind.HW  => Loc.T(L.Treasure.ExpansionHw),
+        ExpansionKind.SB  => Loc.T(L.Treasure.ExpansionSb),
+        ExpansionKind.ShB => Loc.T(L.Treasure.ExpansionShb),
+        ExpansionKind.EW  => Loc.T(L.Treasure.ExpansionEw),
+        _                 => Loc.T(L.Treasure.ExpansionDt),
     };
 }

@@ -1,8 +1,6 @@
 using AutoTreasureMaps.Core;
 using AutoTreasureMaps.Core.Debug;
 using AutoTreasureMaps.Core.Game.Watchers;
-using AutoTreasureMaps.Core.HuntingLog;
-using AutoTreasureMaps.Core.Kills;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Stats;
 using AutoTreasureMaps.Core.Tasks;
@@ -35,12 +33,10 @@ public sealed class Plugin : IDalamudPlugin
 
     internal static Plugin Instance { get; private set; } = null!;
 
-    internal static KillLedger Kills { get; private set; } = null!;
-
     internal Configuration Configuration { get; }
     internal WindowSystem WindowSystem { get; } = new("AutoTreasureMaps");
     internal RunHistory History { get; }
-    internal AutoHuntController Controller { get; }
+    internal TreasureController Controller { get; }
 
     private readonly DutyWatcher dutyWatcher;
     private readonly GmAlertWatcher gmAlertWatcher;
@@ -57,14 +53,17 @@ public sealed class Plugin : IDalamudPlugin
         CLibMain.Init(PluginInterface, this, CLibModule.Automation);
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? Configuration.CreateFresh();
+        if (Configuration.Migrate())
+        {
+            Configuration.Save();
+        }
+
         History = new RunHistory();
-        Controller = new AutoHuntController();
+        Controller = new TreasureController();
         dutyWatcher = new DutyWatcher();
         gmAlertWatcher = new GmAlertWatcher();
         partyInviteWatcher = new PartyInviteWatcher();
-        Kills = new KillLedger();
-        Kills.HuntingLogChanged += OnHuntingLogChanged;
 
         InitializeLocalization();
         Fonts.Initialize(PluginInterface.UiBuilder, PluginDirectory);
@@ -112,8 +111,6 @@ public sealed class Plugin : IDalamudPlugin
         dutyWatcher.Dispose();
         gmAlertWatcher.Dispose();
         partyInviteWatcher.Dispose();
-        Kills.HuntingLogChanged -= OnHuntingLogChanged;
-        Kills.Dispose();
 
         CLibMain.Dispose();
         ECommonsMain.Dispose();
@@ -173,15 +170,6 @@ public sealed class Plugin : IDalamudPlugin
         else if (trimmed.Equals("target", StringComparison.OrdinalIgnoreCase))
         {
             TargetDumper.Dump();
-            SpawnDumper.DumpTarget();
-        }
-        else if (trimmed.Equals("logdump", StringComparison.OrdinalIgnoreCase))
-        {
-            HuntingLogDumper.Dump();
-        }
-        else if (trimmed.Equals("marks", StringComparison.OrdinalIgnoreCase))
-        {
-            HuntMarkDumper.Dump();
         }
         else if (IsGotoCommand(trimmed))
         {
@@ -200,10 +188,6 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void OnFrameworkUpdate(IFramework framework) => Controller.Tick();
-
-    // The game prints a Hunting Log line as it writes new counts, so the library and a run read them at once instead of
-    // on the reader's next throttled refresh.
-    private static void OnHuntingLogChanged() => HuntingLogReader.Refresh(force: true);
 
     private static bool IsGotoCommand(string arguments)
         => arguments.StartsWith(GotoSubcommand, StringComparison.OrdinalIgnoreCase)
@@ -265,6 +249,6 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
-        appWindow.Show(AppWindow.Page.Hunt);
+        appWindow.Show(AppWindow.Page.Treasure);
     }
 }

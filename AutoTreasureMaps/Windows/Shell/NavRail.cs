@@ -18,7 +18,7 @@ internal static class NavRail
 
     private static readonly Entry[] entries =
     [
-        new(AppWindow.Page.Hunt,     FontAwesomeIcon.Crosshairs, "##atm_nav_hunt",     L.Shell.NavHunt),
+        new(AppWindow.Page.Treasure, FontAwesomeIcon.Map,        "##atm_nav_treasure", L.Shell.NavTreasure),
         new(AppWindow.Page.Settings, FontAwesomeIcon.SlidersH,   "##atm_nav_settings", L.Shell.NavSettings),
         new(AppWindow.Page.History,  FontAwesomeIcon.ChartLine,  "##atm_nav_history",  L.Shell.NavHistory),
         new(AppWindow.Page.Plugins,  FontAwesomeIcon.Plug,       "##atm_nav_plugins",  L.Shell.NavPlugins),
@@ -97,7 +97,7 @@ internal static class NavRail
             dl.AddCircleFilled(badgeCenter, radius + 1.5f * scale, Paint.Col(Styling.WindowBg));
             dl.AddCircleFilled(badgeCenter, radius, Paint.Col(Styling.AccentRose));
         }
-        else if (page == AppWindow.Page.Hunt && running)
+        else if (page == AppWindow.Page.Treasure && running)
         {
             dl.AddCircleFilled(badgeCenter, radius + 1.5f * scale, Paint.Col(Styling.WindowBg));
             dl.AddCircleFilled(badgeCenter, radius, Paint.Col(Styling.PulseColor(Styling.AccentBlue, Styling.AccentBlueSoft, Styling.PulseMedium)));

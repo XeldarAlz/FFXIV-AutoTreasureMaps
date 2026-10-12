@@ -6,7 +6,6 @@ public enum ExternalPlugin
 {
     Vnavmesh,
     BossMod,
-    Lifestream,
 }
 
 public sealed record ExternalPluginInfo(
@@ -20,28 +19,22 @@ public sealed record ExternalPluginInfo(
 
 public static class ExternalPlugins
 {
-    private static readonly ExternalPlugin[] all = [ExternalPlugin.Vnavmesh, ExternalPlugin.BossMod, ExternalPlugin.Lifestream];
+    private static readonly ExternalPlugin[] all = [ExternalPlugin.Vnavmesh, ExternalPlugin.BossMod];
 
     public static readonly IReadOnlyDictionary<ExternalPlugin, ExternalPluginInfo> Catalog
         = new Dictionary<ExternalPlugin, ExternalPluginInfo>
     {
-        [ExternalPlugin.Lifestream] = new(
-            InternalName: "Lifestream",
-            DisplayName: "Lifestream",
-            RepoUrl: "https://github.com/NightmareXIV/MyDalamudPlugins/raw/main/pluginmaster.json",
-            Purpose: "Optional world travel between rank farming sweeps.",
-            Required: false),
         [ExternalPlugin.Vnavmesh] = new(
             InternalName: "vnavmesh",
             DisplayName: "vnavmesh",
             RepoUrl: "https://puni.sh/api/repository/veyn",
-            Purpose: "Pathfinding, flying, and movement to hunt marks.",
+            Purpose: "Pathfinding, flying, and movement to each dig spot.",
             Required: true),
         [ExternalPlugin.BossMod] = new(
             InternalName: "BossMod",
             DisplayName: "BossMod",
             RepoUrl: "https://puni.sh/api/repository/veyn",
-            Purpose: "Auto-rotation, targeting, and dodging while fighting marks.",
+            Purpose: "Auto-rotation, targeting, and dodging while fighting coffer guards.",
             Required: true,
             Aliases: ["BossModReborn"]),
     };

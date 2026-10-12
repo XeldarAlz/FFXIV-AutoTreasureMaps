@@ -13,9 +13,31 @@ public abstract partial class AutoCommon : TaskBase
     private const int WaitPollFrames = 30;
     private const int NavmeshPollFrames = 120;
 
+    private TreasurePhase currentPhase = TreasurePhase.Idle;
+
+    internal TreasurePhase CurrentPhase
+    {
+        get => currentPhase;
+        private set
+        {
+            if (currentPhase == value)
+            {
+                return;
+            }
+
+            currentPhase = value;
+            OnPhaseChanged(value);
+        }
+    }
+
     protected void Diag(string message, [CallerFilePath] string callerFile = "") => RunLog.Info(message, callerFile);
 
     protected void Warn(string message, [CallerFilePath] string callerFile = "") => RunLog.Warning(message, callerFile);
+
+    // Lets a run loop surface the run's phase the moment it changes instead of polling for it.
+    private protected virtual void OnPhaseChanged(TreasurePhase phase)
+    {
+    }
 
     protected new async Task DelayMs(int milliseconds)
     {

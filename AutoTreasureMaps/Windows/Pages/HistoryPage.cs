@@ -1,4 +1,3 @@
-using AutoTreasureMaps.Core.Hunts;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Stats;
 using AutoTreasureMaps.Windows.Components;
@@ -12,10 +11,10 @@ namespace AutoTreasureMaps.Windows.Pages;
 internal sealed class HistoryPage
 {
     private const int ChartRuns = 24;
-    private const int TileCount = 5;
+    private const int TileCount = 2;
     private const float PadX = 14f;
     private const float MetricWidth = 64f;
-    private const float ModeIconColumn = 18f;
+    private const float IconColumn = 18f;
     private const float ConfirmSlide = 12f;
     private const string NoValue = "-";
 
@@ -27,7 +26,7 @@ internal sealed class HistoryPage
         var totals = history.Lifetime;
         var subtitle = history.Records.Count == 0
             ? Loc.T(L.History.Empty)
-            : Loc.Plural(L.History.Summary, history.Records.Count, Formatting.Elapsed(totals.Duration), totals.MarksPerHour.ToString("F1", Loc.Culture));
+            : Loc.Plural(L.History.Summary, history.Records.Count, Formatting.Elapsed(totals.Duration), totals.MapsPerHour.ToString("F1", Loc.Culture));
         PageHeader.Draw(Loc.T(L.History.Title), subtitle);
 
         DrawLifetime(totals);
@@ -39,7 +38,7 @@ internal sealed class HistoryPage
             return;
         }
 
-        Label(Loc.T(L.History.MarksPerRun));
+        Label(Loc.T(L.History.MapsPerRun));
         DrawChart(history);
         Styling.VSpace(12f);
 
@@ -72,13 +71,7 @@ internal sealed class HistoryPage
 
         StatTile.Draw(Loc.T(L.History.TileRuns), totals.Runs.ToString("N0", Loc.Culture), null, Styling.AccentGlow, tileWidth);
         ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileBills), totals.Bills.ToString("N0", Loc.Culture), null, Styling.AccentMint, tileWidth);
-        ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileMarks), totals.Marks.ToString("N0", Loc.Culture), null, Styling.AccentBlue, tileWidth);
-        ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileSeals), totals.Seals.ToString("N0", Loc.Culture), null, Styling.AccentAmber, tileWidth);
-        ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileNuts), totals.Nuts.ToString("N0", Loc.Culture), null, Styling.AccentNebula, tileWidth);
+        StatTile.Draw(Loc.T(L.History.TileMaps), totals.Maps.ToString("N0", Loc.Culture), null, Styling.AccentBlue, tileWidth);
     }
 
     private static void DrawEmptyState()
@@ -117,7 +110,7 @@ internal sealed class HistoryPage
         var peak = 1;
         for (var index = 0; index < count; index++)
         {
-            peak = Math.Max(peak, records[index].MarksKilled);
+            peak = Math.Max(peak, records[index].MapsCompleted);
         }
 
         using (Fonts.PushCaption())
@@ -145,7 +138,7 @@ internal sealed class HistoryPage
         for (var index = 0; index < count; index++)
         {
             var record = records[count - 1 - index];
-            var height = MathF.Max(2f * scale, plotHeight * record.MarksKilled / peak);
+            var height = MathF.Max(2f * scale, plotHeight * record.MapsCompleted / peak);
             var barMin = new Vector2(plotMin.X + stride * index, plotMax.Y - height);
             var barMax = new Vector2(barMin.X + barWidth, plotMax.Y);
             var color = index == hovered ? Styling.AccentGlowSoft : Styling.AccentGlow;
@@ -161,13 +154,7 @@ internal sealed class HistoryPage
     }
 
     private static string ChartTooltip(RunRecord record)
-    {
-        var when = RelativeTime(record.EndedAtUtc);
-        var elapsed = Formatting.Elapsed(record.Duration);
-        return record.Mode == HuntMode.MarkBills
-            ? Loc.T(L.History.ChartTooltip, when, record.MarksKilled, record.BillsCompleted, elapsed)
-            : Loc.T(L.History.ChartTooltipKills, when, record.MarksKilled, elapsed);
-    }
+        => Loc.T(L.History.ChartTooltip, RelativeTime(record.EndedAtUtc), record.MapsCompleted, Formatting.Elapsed(record.Duration));
 
     private static void DrawRow(RunRecord record, int index)
     {
@@ -192,10 +179,10 @@ internal sealed class HistoryPage
 
         var padX = PadX * scale;
         var midY = origin.Y + size.Y * 0.5f;
-        var textX = DrawModeIcon(record.Mode, origin.X + padX, midY);
+        var textX = DrawRunIcon(origin.X + padX, midY);
         var when = RelativeTime(record.EndedAtUtc);
         var job = string.IsNullOrEmpty(record.JobAbbreviation) ? NoValue : record.JobAbbreviation;
-        var detail = Loc.T(L.History.RowDetail, HuntModeLabels.Label(record.Mode), job, Formatting.Elapsed(record.Duration));
+        var detail = Loc.T(L.History.RowDetail, job, Formatting.Elapsed(record.Duration));
 
         var whenSize = TextDraw.Measure(when);
         Vector2 detailSize;
@@ -211,20 +198,8 @@ internal sealed class HistoryPage
             TextDraw.At(detail, new Vector2(textX, top + whenSize.Y + 3f * scale), Styling.TextDim);
         }
 
-        var billRun = record.Mode == HuntMode.MarkBills;
         var metricWidth = MetricWidth * scale;
-        var x = end.X - padX - metricWidth;
-        DrawMetric(x, midY, metricWidth, Metric(record.Nuts), Loc.T(L.History.TileNuts), record.Nuts > 0 ? Styling.AccentNebula : Styling.TextMuted);
-        x -= metricWidth;
-        DrawMetric(x, midY, metricWidth, Metric(record.Seals), Loc.T(L.History.TileSeals), record.Seals > 0 ? Styling.AccentAmber : Styling.TextMuted);
-        x -= metricWidth;
-        if (billRun)
-        {
-            DrawMetric(x, midY, metricWidth, Metric(record.BillsCompleted), Loc.T(L.History.TileBills), record.BillsCompleted > 0 ? Styling.AccentMint : Styling.TextMuted);
-        }
-
-        x -= metricWidth;
-        DrawMetric(x, midY, metricWidth, record.MarksKilled.ToString(Loc.Culture), Loc.T(billRun ? L.History.TileMarks : L.History.TileKills), Styling.AccentBlue);
+        DrawMetric(end.X - padX - metricWidth, midY, metricWidth, record.MapsCompleted.ToString(Loc.Culture), Loc.T(L.History.TileMaps), Styling.AccentBlue);
 
         if (hit.Hovered)
         {
@@ -233,17 +208,14 @@ internal sealed class HistoryPage
     }
 
     // Returns where the row's text starts; the icon is centred in a fixed column so every row's text lines up.
-    private static float DrawModeIcon(HuntMode mode, float x, float midY)
+    private static float DrawRunIcon(float x, float midY)
     {
         var scale = ImGuiHelpers.GlobalScale;
-        var column = ModeIconColumn * scale;
-        var icon = HuntModeLabels.Icon(mode);
-        var iconSize = TextDraw.IconSize(icon);
-        TextDraw.Icon(icon, new Vector2(x + (column - iconSize.X) * 0.5f, midY - iconSize.Y * 0.5f), Styling.TextDim);
+        var column = IconColumn * scale;
+        var iconSize = TextDraw.IconSize(FontAwesomeIcon.Map);
+        TextDraw.Icon(FontAwesomeIcon.Map, new Vector2(x + (column - iconSize.X) * 0.5f, midY - iconSize.Y * 0.5f), Styling.TextDim);
         return x + column + 10f * scale;
     }
-
-    private static string Metric(int value) => value > 0 ? value.ToString("N0", Loc.Culture) : NoValue;
 
     private static void DrawMetric(float x, float midY, float width, string value, string label, Vector4 color)
     {
@@ -259,26 +231,13 @@ internal sealed class HistoryPage
     private static string RunTooltip(RunRecord record)
     {
         var lines = record.EndedAtUtc.ToLocalTime().ToString("g", Loc.Culture);
-        if (record.MarksPerHour > 0)
+        if (record.MapsPerHour > 0)
         {
-            var rate = record.MarksPerHour.ToString("F1", Loc.Culture);
-            lines += "\n" + Loc.T(record.Mode == HuntMode.MarkBills ? L.History.TooltipRate : L.History.TooltipRateKills, rate);
-        }
-
-        if (record.BillNames.Count > 0)
-        {
-            lines += "\n" + Loc.T(NamesHeading(record.Mode), string.Join(", ", record.BillNames));
+            lines += "\n" + Loc.T(L.History.TooltipRate, record.MapsPerHour.ToString("F1", Loc.Culture));
         }
 
         return lines;
     }
-
-    private static LocString NamesHeading(HuntMode mode) => mode switch
-    {
-        HuntMode.HuntingLog => L.History.TooltipLogs,
-        HuntMode.CustomList or HuntMode.RankFarm => L.History.TooltipMobs,
-        _ => L.History.TooltipBills,
-    };
 
     private static string RelativeTime(DateTime utc)
     {

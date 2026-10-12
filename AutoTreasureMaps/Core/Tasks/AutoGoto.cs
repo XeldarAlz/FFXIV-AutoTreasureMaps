@@ -15,7 +15,7 @@ internal sealed class AutoGoto(uint territoryId, Vector3 destination) : AutoComm
 
     private static readonly char[] ArgumentSeparators = [' ', ','];
 
-    public static void HandleCommand(string arguments, bool huntRunning)
+    public static void HandleCommand(string arguments, bool runRunning)
     {
         var automation = clib.Services.Svc.Automation;
         if (arguments.Equals(StopArgument, StringComparison.OrdinalIgnoreCase))
@@ -43,9 +43,9 @@ internal sealed class AutoGoto(uint territoryId, Vector3 destination) : AutoComm
             return;
         }
 
-        if (huntRunning)
+        if (runRunning)
         {
-            Svc.Chat.PrintError($"{AtmConstants.LogPrefix} Stop the hunt before using goto.");
+            Svc.Chat.PrintError($"{AtmConstants.LogPrefix} Stop the run before using goto.");
             return;
         }
 

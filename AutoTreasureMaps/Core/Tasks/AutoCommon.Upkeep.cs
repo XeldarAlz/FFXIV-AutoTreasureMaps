@@ -14,13 +14,13 @@ public abstract partial class AutoCommon
     private const int UpkeepRepairRetryMs = 600_000;
     private const int UpkeepBreakRetryMs = 300_000;
 
-    private int marksSinceBreak;
+    private int mapsSinceBreak;
     private long repairRetryAtMs;
     private long breakRetryAtMs;
 
-    // One call per mark kill; the humanizer counts these toward its next city break. The count lives on this task, so it
-    // starts over whenever a run starts or resumes.
-    protected void NoteMarkKilled() => marksSinceBreak++;
+    // One call per finished map; the humanizer counts these toward its next city break. The count lives on this task, so
+    // it starts over whenever a run starts or resumes.
+    protected void NoteMapFinished() => mapsSinceBreak++;
 
     // True when any step ran, which can leave the character dismounted or in another zone, so the caller should travel
     // to its next spot afresh.
@@ -65,7 +65,7 @@ public abstract partial class AutoCommon
     private bool UpkeepBreakDue(Configuration configuration)
         => configuration.HumanizerEnabled
         && Environment.TickCount64 >= breakRetryAtMs
-        && marksSinceBreak >= Math.Max(1, configuration.HumanizerMarksBeforeBreak);
+        && mapsSinceBreak >= Math.Max(1, configuration.HumanizerMapsBeforeBreak);
 
     private static bool UpkeepConsumablesDue(Configuration configuration)
         => configuration.AutoConsume
@@ -96,7 +96,7 @@ public abstract partial class AutoCommon
             return true;
         }
 
-        Diag($"Upkeep: something is due but the character is busy ({ConditionTag()}); trying again after the next mark");
+        Diag($"Upkeep: something is due but the character is busy ({ConditionTag()}); trying again after the next map");
         return false;
     }
 
@@ -117,15 +117,15 @@ public abstract partial class AutoCommon
         if (cityTerritoryId == 0)
         {
             Diag("Upkeep: a city break is due but no listed city is ticked; skipping it");
-            marksSinceBreak = 0;
+            mapsSinceBreak = 0;
             return;
         }
 
         var minutes = RollBreakMinutes(configuration);
-        Diag($"Upkeep: {marksSinceBreak} marks since the last break (every {configuration.HumanizerMarksBeforeBreak}); taking a {minutes}m break");
+        Diag($"Upkeep: {mapsSinceBreak} maps since the last break (every {configuration.HumanizerMapsBeforeBreak}); taking a {minutes}m break");
         if (await TakeCityBreak(cityTerritoryId, minutes * TimeUnits.MillisecondsPerMinute))
         {
-            marksSinceBreak = 0;
+            mapsSinceBreak = 0;
             return;
         }
 
@@ -148,7 +148,7 @@ public abstract partial class AutoCommon
 
         if (Svc.Condition[ConditionFlag.Mounted] || Svc.Condition[ConditionFlag.InCombat])
         {
-            Diag($"Upkeep: cannot eat right now ({ConditionTag()}); trying again after the next mark");
+            Diag($"Upkeep: cannot eat right now ({ConditionTag()}); trying again after the next map");
             return;
         }
 

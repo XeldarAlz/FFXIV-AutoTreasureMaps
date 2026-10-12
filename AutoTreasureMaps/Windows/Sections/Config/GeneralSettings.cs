@@ -1,17 +1,28 @@
 using AutoTreasureMaps.Core.Localization;
-using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Windows.Components;
 
 namespace AutoTreasureMaps.Windows.Sections.Config;
 
 internal static class GeneralSettings
 {
+    private static readonly AfterRunAction[] afterRunOrder =
+        [AfterRunAction.StayLoggedIn, AfterRunAction.ReturnToInn, AfterRunAction.Logout, AfterRunAction.CloseGame];
+
+    // Ordered like afterRunOrder, because the picked index reads both.
+    private static readonly SettingsControls.Choices.Choice[] afterRunChoices =
+    [
+        new(L.Treasure.AfterStayName, L.Treasure.AfterStayDetail),
+        new(L.Treasure.AfterInnName, L.Treasure.AfterInnDetail),
+        new(L.Treasure.AfterLogoutName, L.Treasure.AfterLogoutDetail),
+        new(L.Treasure.AfterCloseName, L.Treasure.AfterCloseDetail),
+    ];
+
     public static void Draw(Configuration configuration)
     {
         DrawLanguageGroup(configuration);
         DrawWindowGroup(configuration);
         DrawBehaviorGroup(configuration);
-        DrawFateGroup(configuration);
+        DrawAfterRunGroup(configuration);
     }
 
     private static void DrawLanguageGroup(Configuration configuration)
@@ -52,41 +63,19 @@ internal static class GeneralSettings
             SettingsRow.ToggleHeight);
     }
 
-    private static void DrawFateGroup(Configuration configuration)
+    private static void DrawAfterRunGroup(Configuration configuration)
     {
-        using var group = SettingsGroup.Begin(Loc.T(L.Settings.FateGroup));
+        using var group = SettingsGroup.Begin(Loc.T(L.Treasure.WhenDone));
 
-        SettingsRow.Draw(Loc.T(L.Settings.FateHuntOthers),
-            Loc.T(L.Settings.FateHuntOthersHelp),
-            SettingsControls.ToggleWidth,
-            () => SettingsControls.DrawToggle(configuration, () => configuration.FateHuntOthersWhileWaiting, value => configuration.FateHuntOthersWhileWaiting = value, "##atm_fate_others"),
-            SettingsRow.ToggleHeight);
-
-        SettingsRow.Draw(Loc.T(L.Settings.FateBudget),
-            Loc.T(L.Settings.FateBudgetHelp),
-            SettingsControls.RowSliderWidth,
-            () => SettingsControls.DrawIntSlider(configuration, "##atm_fate_budget",
-                () => configuration.FateWaitBudgetMinutes, value => configuration.FateWaitBudgetMinutes = value,
-                FateWaitSettings.MinBudgetMinutes, FateWaitSettings.MaxBudgetMinutes, Loc.T(L.Safety.MinutesFormat)));
-
-        using var rotation = Motion.PushSection("##atm_fate_rotation", configuration.FateHuntOthersWhileWaiting);
-        if (rotation is null)
-        {
-            return;
-        }
-
-        SettingsRow.Draw(Loc.T(L.Settings.FateRecheck),
-            Loc.T(L.Settings.FateRecheckHelp),
-            SettingsControls.RowSliderWidth,
-            () => SettingsControls.DrawIntSlider(configuration, "##atm_fate_recheck",
-                () => configuration.FateRecheckMinutes, value => configuration.FateRecheckMinutes = value,
-                FateWaitSettings.MinRecheckMinutes, FateWaitSettings.MaxRecheckMinutes, Loc.T(L.Safety.MinutesFormat)));
-
-        SettingsRow.Draw(Loc.T(L.Settings.FateVisit),
-            Loc.T(L.Settings.FateVisitHelp),
-            SettingsControls.RowSliderWidth,
-            () => SettingsControls.DrawIntSlider(configuration, "##atm_fate_visit",
-                () => configuration.FateVisitMinutes, value => configuration.FateVisitMinutes = value,
-                FateWaitSettings.MinVisitMinutes, FateWaitSettings.MaxVisitMinutes, Loc.T(L.Safety.MinutesFormat)));
+        var selected = Math.Max(0, Array.IndexOf(afterRunOrder, configuration.AfterRun));
+        SettingsRow.Draw(Loc.T(L.Treasure.WhenDone),
+            Loc.T(L.Treasure.WhenDoneHelp),
+            SettingsControls.RowComboWidth,
+            () => SettingsControls.Choices.DrawCombo("##atm_general_afterrun", afterRunChoices, selected, choice =>
+            {
+                configuration.AfterRun = afterRunOrder[choice];
+                configuration.SaveDebounced();
+            }));
+        SettingsRow.Caption(Loc.T(afterRunChoices[selected].Detail));
     }
 }

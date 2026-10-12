@@ -8,8 +8,8 @@ namespace AutoTreasureMaps.Windows.Sections.Config;
 
 internal static class HumanizerSettings
 {
-    private const int MarksMin = 1;
-    private const int MarksMax = 200;
+    private const int MapsMin = 1;
+    private const int MapsMax = 200;
     private const int BreakMinutesMin = 1;
     private const int BreakMinutesMax = 60;
     private const int PauseSecondsMax = 60;
@@ -47,12 +47,12 @@ internal static class HumanizerSettings
             return;
         }
 
-        SettingsRow.Draw(Loc.T(L.Safety.MarksBetween),
-            Loc.T(L.Safety.MarksBetweenHelp),
+        SettingsRow.Draw(Loc.T(L.Safety.MapsBetween),
+            Loc.T(L.Safety.MapsBetweenHelp),
             SettingsControls.RowSliderWidth,
-            () => SettingsControls.DrawIntSlider(configuration, "##atm_humanizer_marks",
-                () => configuration.HumanizerMarksBeforeBreak, value => configuration.HumanizerMarksBeforeBreak = value,
-                MarksMin, MarksMax, Loc.T(L.Safety.MarksFormat)));
+            () => SettingsControls.DrawIntSlider(configuration, "##atm_humanizer_maps",
+                () => configuration.HumanizerMapsBeforeBreak, value => configuration.HumanizerMapsBeforeBreak = value,
+                MapsMin, MapsMax, Loc.T(L.Safety.MapsFormat)));
 
         SettingsRow.Draw(Loc.T(L.Safety.BreakLength),
             Loc.T(L.Safety.BreakLengthHelp),
