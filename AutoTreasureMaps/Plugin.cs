@@ -24,6 +24,7 @@ namespace AutoTreasureMaps;
 public sealed class Plugin : IDalamudPlugin
 {
     private const string GotoSubcommand = "goto";
+    private const string SpotSubcommand = "spot";
     private const string NavmeshIpcProviderMarker = "Navmesh.IPCProvider";
 
     [PluginService]
@@ -174,9 +175,21 @@ public sealed class Plugin : IDalamudPlugin
         {
             TargetDumper.Dump();
         }
+        else if (trimmed.Equals(SpotSubcommand, StringComparison.OrdinalIgnoreCase))
+        {
+            SpotActions.PrintHeld(Catalog);
+        }
+        else if (trimmed.Equals("flag", StringComparison.OrdinalIgnoreCase))
+        {
+            SpotActions.Flag(Catalog);
+        }
+        else if (trimmed.Equals("tiers", StringComparison.OrdinalIgnoreCase))
+        {
+            SpotActions.ListTiers(Catalog);
+        }
         else if (IsGotoCommand(trimmed))
         {
-            AutoGoto.HandleCommand(trimmed[GotoSubcommand.Length..].Trim(), Controller.Running);
+            HandleGoto(trimmed[GotoSubcommand.Length..].Trim());
         }
         else
         {
@@ -191,6 +204,17 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void OnFrameworkUpdate(IFramework framework) => Controller.Tick();
+
+    private void HandleGoto(string arguments)
+    {
+        if (arguments.Equals(SpotSubcommand, StringComparison.OrdinalIgnoreCase))
+        {
+            SpotActions.GoTo(Catalog, Controller.Running);
+            return;
+        }
+
+        AutoGoto.HandleCommand(arguments, Controller.Running);
+    }
 
     private static bool IsGotoCommand(string arguments)
         => arguments.StartsWith(GotoSubcommand, StringComparison.OrdinalIgnoreCase)

@@ -54,7 +54,7 @@ internal static partial class L
         public static readonly LocString SentenceEnd = new("treasure.sentence.end", ".");
 
         public static readonly LocString CurrentMap = new("treasure.currentMap", "Current map");
-        public static readonly LocString CurrentMapEmpty = new("treasure.currentMapEmpty", "The treasure run is not built yet. The map being worked, its zone and the next step will show here.");
+        public static readonly LocString CurrentMapEmpty = new("treasure.currentMapEmpty", "No deciphered map yet. Decipher a timeworn map from your inventory and its dig spot shows up here.");
 
         public static readonly LocString WhenDone = new("treasure.whenDone", "When the run ends");
         public static readonly LocString WhenDoneHelp = new("treasure.whenDoneHelp", "What to do once a run ends on its own. A manual Stop or a fault never triggers it.");
@@ -299,7 +299,7 @@ internal static partial class L
 
     internal static class Plugin
     {
-        public static readonly LocString CommandHelp = new("plugin.commandHelp", "Toggle the Auto Treasure Maps window. /atm config | stats | deps | log | changelog | about | pause (pause or resume the run) | target (dump the current target's BaseId).");
+        public static readonly LocString CommandHelp = new("plugin.commandHelp", "Toggle the Auto Treasure Maps window. /atm config | stats | deps | log | changelog | about | pause (pause or resume the run) | spot (show the held map's dig spot) | flag (flag the dig spot on the map) | goto spot (travel to the dig spot) | tiers (list every map tier in the console) | target (dump the current target's BaseId).");
         public static readonly LocString CommandHelpAlias = new("plugin.commandHelpAlias", "Alias for /atm.");
     }
 }

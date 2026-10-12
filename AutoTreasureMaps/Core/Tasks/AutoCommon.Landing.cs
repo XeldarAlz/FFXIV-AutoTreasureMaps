@@ -22,7 +22,7 @@ public abstract partial class AutoCommon
     private const int GroundDismountWatchdogMs = 8_000;
     private const float LandingBackOffMeters = 8f;
     private const int LandingBackOffMs = 1_500;
-    private const float LandsOnTheSpot = 0f;
+    private protected const float LandsOnTheSpot = 0f;
 
     private readonly Vector3[] landingSpots = new Vector3[LandingCandidateCount];
 
