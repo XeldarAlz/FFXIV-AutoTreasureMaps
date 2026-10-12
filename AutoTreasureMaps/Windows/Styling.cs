@@ -7,10 +7,10 @@ namespace AutoTreasureMaps.Windows;
 
 internal static class Styling
 {
-    public static readonly Vector4 AccentGlow       = new(0.929f, 0.843f, 0.643f, 1.00f);
-    public static readonly Vector4 AccentGlowSoft   = new(0.984f, 0.937f, 0.820f, 1.00f);
-    public static readonly Vector4 AccentNebula     = new(0.800f, 0.333f, 0.220f, 1.00f);
-    public static readonly Vector4 InkOnGlow        = new(0.067f, 0.082f, 0.133f, 1.00f);
+    public static readonly Vector4 AccentGlow       = new(0.980f, 0.955f, 0.935f, 1.00f);
+    public static readonly Vector4 AccentGlowSoft   = new(1.000f, 0.978f, 0.965f, 1.00f);
+    public static readonly Vector4 AccentNebula     = new(0.906f, 0.282f, 0.447f, 1.00f);
+    public static readonly Vector4 InkOnGlow        = new(0.090f, 0.063f, 0.125f, 1.00f);
     public static readonly Vector4 AccentMint       = new(0.46f, 0.86f, 0.66f, 1.00f);
     public static readonly Vector4 AccentMintSoft   = new(0.66f, 0.96f, 0.80f, 1.00f);
     public static readonly Vector4 AccentAmber      = new(0.92f, 0.74f, 0.34f, 1.00f);
@@ -26,22 +26,22 @@ internal static class Styling
     public static readonly Vector4 AccentCoffeeDeep = new(1.000f, 0.690f, 0.130f, 1.00f);
     public static readonly Vector4 InkOnCoffee      = new(0.130f, 0.090f, 0.040f, 1.00f);
 
-    public static readonly Vector4 WindowBg = new(0.035f, 0.047f, 0.078f, 0.985f);
-    public static readonly Vector4 Surface0 = new(0.055f, 0.071f, 0.114f, 1.00f);
-    public static readonly Vector4 Surface1 = new(0.075f, 0.094f, 0.149f, 1.00f);
-    public static readonly Vector4 Surface2 = new(0.102f, 0.125f, 0.192f, 1.00f);
-    public static readonly Vector4 Surface3 = new(0.137f, 0.165f, 0.247f, 1.00f);
+    public static readonly Vector4 WindowBg = new(0.035f, 0.035f, 0.075f, 0.985f);
+    public static readonly Vector4 Surface0 = new(0.059f, 0.055f, 0.110f, 1.00f);
+    public static readonly Vector4 Surface1 = new(0.082f, 0.078f, 0.145f, 1.00f);
+    public static readonly Vector4 Surface2 = new(0.110f, 0.106f, 0.188f, 1.00f);
+    public static readonly Vector4 Surface3 = new(0.145f, 0.137f, 0.239f, 1.00f);
 
-    public static readonly Vector4 CardBg      = new(0.055f, 0.071f, 0.114f, 0.90f);
-    public static readonly Vector4 CardBgSoft  = new(0.075f, 0.094f, 0.149f, 0.62f);
-    public static readonly Vector4 CardBgHover = new(0.102f, 0.125f, 0.192f, 0.95f);
-    public static readonly Vector4 SliderBg    = new(0.118f, 0.141f, 0.216f, 1.00f);
-    public static readonly Vector4 BorderDim   = new(0.200f, 0.235f, 0.333f, 1.00f);
+    public static readonly Vector4 CardBg      = new(0.059f, 0.055f, 0.110f, 0.90f);
+    public static readonly Vector4 CardBgSoft  = new(0.082f, 0.078f, 0.145f, 0.62f);
+    public static readonly Vector4 CardBgHover = new(0.110f, 0.106f, 0.188f, 0.95f);
+    public static readonly Vector4 SliderBg    = new(0.129f, 0.122f, 0.212f, 1.00f);
+    public static readonly Vector4 BorderDim   = new(0.220f, 0.200f, 0.330f, 1.00f);
 
-    public static readonly Vector4 TextStrong    = new(0.969f, 0.953f, 0.918f, 1.00f);
-    public static readonly Vector4 TextSecondary = new(0.800f, 0.800f, 0.827f, 1.00f);
-    public static readonly Vector4 TextDim       = new(0.588f, 0.604f, 0.659f, 1.00f);
-    public static readonly Vector4 TextMuted     = new(0.416f, 0.435f, 0.498f, 1.00f);
+    public static readonly Vector4 TextStrong    = new(0.960f, 0.955f, 0.975f, 1.00f);
+    public static readonly Vector4 TextSecondary = new(0.800f, 0.792f, 0.843f, 1.00f);
+    public static readonly Vector4 TextDim       = new(0.596f, 0.584f, 0.667f, 1.00f);
+    public static readonly Vector4 TextMuted     = new(0.420f, 0.408f, 0.502f, 1.00f);
 
     public static readonly Vector4 Hairline  = new(1f, 1f, 1f, 0.055f);
     public static readonly Vector4 Highlight = new(1f, 1f, 1f, 0.075f);
@@ -78,7 +78,7 @@ internal static class Styling
     public static Vector4 Tint(Vector4 baseColor, Vector4 accent, float amount)
         => Vector4.Lerp(baseColor, accent, amount) with { W = baseColor.W };
 
-    // Only the pale parchment brand crosses 0.65; amber, mint and rose keep white text like the sibling plugins.
+    // Only the pale pearl brand crosses 0.65; amber, mint and rose keep white text like the sibling plugins.
     public static Vector4 ForegroundOn(Vector4 fill) => Luminance(fill) > 0.65f ? InkOnGlow : TextStrong;
 
     // WCAG relative luminance of an sRGB color.
