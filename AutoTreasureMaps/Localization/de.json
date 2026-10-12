@@ -435,5 +435,12 @@
   "decipher.chat.failed": "{0} ließ sich nicht entziffern. {1}",
   "decipher.chat.refused": "Entziffern geht gerade nicht. {0}",
   "decipher.chat.unknownTier": "Keine Kartenstufe passt zu „{0}“.",
-  "decipher.chat.notInBags": "Keine {0} in deinem Inventar."
+  "decipher.chat.notInBags": "Keine {0} in deinem Inventar.",
+  "maps.bagTitle": "Karten in deinem Inventar",
+  "maps.state.enabled": "Aktiv",
+  "maps.state.disabled": "Inaktiv",
+  "maps.state.locked": "Gesperrt",
+  "maps.next": "Als Nächstes",
+  "maps.decipherNext": "Nächste entziffern",
+  "maps.decipherNextHint": "{0} jetzt entziffern."
 }

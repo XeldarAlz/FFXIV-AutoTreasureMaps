@@ -435,5 +435,12 @@
   "decipher.chat.failed": "{0}を解読できませんでした。{1}",
   "decipher.chat.refused": "現在は解読できません。{0}",
   "decipher.chat.unknownTier": "「{0}」に一致する地図の種類はありません。",
-  "decipher.chat.notInBags": "所持品に{0}がありません。"
+  "decipher.chat.notInBags": "所持品に{0}がありません。",
+  "maps.bagTitle": "所持品の地図",
+  "maps.state.enabled": "有効",
+  "maps.state.disabled": "無効",
+  "maps.state.locked": "ロック中",
+  "maps.next": "次",
+  "maps.decipherNext": "次を解読",
+  "maps.decipherNextHint": "{0}を今すぐ解読します。"
 }

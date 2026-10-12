@@ -435,5 +435,12 @@
   "decipher.chat.failed": "Could not decipher {0}. {1}",
   "decipher.chat.refused": "Cannot decipher right now. {0}",
   "decipher.chat.unknownTier": "No map tier matches “{0}”.",
-  "decipher.chat.notInBags": "There is no {0} in your bags."
+  "decipher.chat.notInBags": "There is no {0} in your bags.",
+  "maps.bagTitle": "Maps in your bags",
+  "maps.state.enabled": "Enabled",
+  "maps.state.disabled": "Disabled",
+  "maps.state.locked": "Locked",
+  "maps.next": "Next",
+  "maps.decipherNext": "Decipher next",
+  "maps.decipherNextHint": "Decipher {0} now."
 }

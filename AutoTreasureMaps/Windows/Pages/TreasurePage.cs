@@ -41,6 +41,9 @@ internal sealed class TreasurePage
         Styling.VSpace(20f);
         SectionTitle(Loc.T(L.Treasure.CurrentMap));
         DrawCurrentMap(plugin);
+        Styling.VSpace(20f);
+        SectionTitle(Loc.T(L.Maps.BagTitle));
+        MapBagCard.Draw(plugin);
         Styling.VSpace(12f);
     }
 

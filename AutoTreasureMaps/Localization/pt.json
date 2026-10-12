@@ -435,5 +435,12 @@
   "decipher.chat.failed": "Não foi possível decifrar {0}. {1}",
   "decipher.chat.refused": "Não é possível decifrar agora. {0}",
   "decipher.chat.unknownTier": "Nenhum nível de mapa corresponde a “{0}”.",
-  "decipher.chat.notInBags": "Não há {0} no seu inventário."
+  "decipher.chat.notInBags": "Não há {0} no seu inventário.",
+  "maps.bagTitle": "Mapas no seu inventário",
+  "maps.state.enabled": "Ativado",
+  "maps.state.disabled": "Desativado",
+  "maps.state.locked": "Bloqueado",
+  "maps.next": "Próximo",
+  "maps.decipherNext": "Decifrar o próximo",
+  "maps.decipherNextHint": "Decifrar {0} agora."
 }

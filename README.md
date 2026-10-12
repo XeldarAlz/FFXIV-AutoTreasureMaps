@@ -18,7 +18,7 @@
 
 ---
 
-> **In development.** Auto Treasure Maps is not released yet. The window, the travel engine and the safety features are in place, but the treasure run itself is still being built, so pressing **Start** does nothing yet. The Treasure page already shows the deciphered map you hold and can flag or travel to its dig spot. Follow the repository or the Discord to hear when the first build is out.
+> **In development.** Auto Treasure Maps is not released yet. The window, the travel engine and the safety features are in place, but the treasure run itself is still being built, so pressing **Start** does nothing yet. The Treasure page already shows the deciphered map you hold and can flag or travel to its dig spot, and it can decipher the next map in your bags. Follow the repository or the Discord to hear when the first build is out.
 
 ## What it does
 
@@ -70,6 +70,7 @@ The plugin needs a few helpers for movement and combat to be installed and loade
 | `/atm spot` | Print the deciphered map you hold and its dig spot |
 | `/atm flag` | Flag that dig spot on the map |
 | `/atm goto spot` | Travel to that dig spot and land on it |
+| `/atm decipher [map]` | Decipher the next timeworn map in your bags by the order in Settings, or the one named (a piece of its name or its item id) |
 | `/atm tiers` | List every map tier in the Console (debug helper) |
 | `/atm goto <territory> <x> <y> <z>` | Travel to a point, `/atm goto stop` cancels (debug helper) |
 

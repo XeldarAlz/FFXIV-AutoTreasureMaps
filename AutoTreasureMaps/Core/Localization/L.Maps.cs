@@ -22,5 +22,13 @@ internal static partial class L
         public static readonly LocString SoloHelp = new("maps.soloHelp", "A solo map: its guards are tuned for one player.");
         public static readonly LocString FullPartyHelp = new("maps.fullPartyHelp", "Tuned for a full party of eight. Alone, the guards may be too much for your job and gear.");
         public static readonly LocString UnderseaHelp = new("maps.underseaHelp", "Every dig spot of this map lies under water, so it stays off until the plugin can dive.");
+
+        public static readonly LocString BagTitle = new("maps.bagTitle", "Maps in your bags");
+        public static readonly LocString StateEnabled = new("maps.state.enabled", "Enabled");
+        public static readonly LocString StateDisabled = new("maps.state.disabled", "Disabled");
+        public static readonly LocString StateLocked = new("maps.state.locked", "Locked");
+        public static readonly LocString Next = new("maps.next", "Next");
+        public static readonly LocString DecipherNext = new("maps.decipherNext", "Decipher next");
+        public static readonly LocString DecipherNextHint = new("maps.decipherNextHint", "Decipher {0} now.");
     }
 }

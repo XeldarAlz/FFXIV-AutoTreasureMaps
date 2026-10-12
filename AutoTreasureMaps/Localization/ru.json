@@ -435,5 +435,12 @@
   "decipher.chat.failed": "Не удалось расшифровать: {0}. {1}",
   "decipher.chat.refused": "Сейчас расшифровать нельзя. {0}",
   "decipher.chat.unknownTier": "Ни один уровень карт не подходит под «{0}».",
-  "decipher.chat.notInBags": "В инвентаре нет: {0}."
+  "decipher.chat.notInBags": "В инвентаре нет: {0}.",
+  "maps.bagTitle": "Карты в инвентаре",
+  "maps.state.enabled": "Включена",
+  "maps.state.disabled": "Выключена",
+  "maps.state.locked": "Заблокирована",
+  "maps.next": "Следующая",
+  "maps.decipherNext": "Расшифровать следующую",
+  "maps.decipherNextHint": "Расшифровать сейчас: {0}."
 }

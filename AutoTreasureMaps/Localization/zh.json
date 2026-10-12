@@ -435,5 +435,12 @@
   "decipher.chat.failed": "无法解读{0}。{1}",
   "decipher.chat.refused": "现在无法解读。{0}",
   "decipher.chat.unknownTier": "没有与“{0}”匹配的藏宝图种类。",
-  "decipher.chat.notInBags": "背包里没有{0}。"
+  "decipher.chat.notInBags": "背包里没有{0}。",
+  "maps.bagTitle": "背包里的藏宝图",
+  "maps.state.enabled": "已启用",
+  "maps.state.disabled": "已停用",
+  "maps.state.locked": "已锁定",
+  "maps.next": "下一张",
+  "maps.decipherNext": "解读下一张",
+  "maps.decipherNextHint": "立即解读{0}。"
 }

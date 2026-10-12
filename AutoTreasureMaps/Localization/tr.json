@@ -435,5 +435,12 @@
   "decipher.chat.failed": "{0} deşifre edilemedi. {1}",
   "decipher.chat.refused": "Şu anda deşifre edilemiyor. {0}",
   "decipher.chat.unknownTier": "“{0}” ile eşleşen bir harita kademesi yok.",
-  "decipher.chat.notInBags": "Envanterinizde {0} yok."
+  "decipher.chat.notInBags": "Envanterinizde {0} yok.",
+  "maps.bagTitle": "Envanterinizdeki haritalar",
+  "maps.state.enabled": "Etkin",
+  "maps.state.disabled": "Kapalı",
+  "maps.state.locked": "Kilitli",
+  "maps.next": "Sıradaki",
+  "maps.decipherNext": "Sıradakini deşifre et",
+  "maps.decipherNextHint": "Şimdi deşifre et: {0}."
 }
