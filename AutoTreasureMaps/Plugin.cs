@@ -40,6 +40,7 @@ public sealed class Plugin : IDalamudPlugin
     internal RunHistory History { get; }
     internal TreasureController Controller { get; }
     internal TreasureCatalog Catalog { get; }
+    internal TreasureMessageWatcher Messages { get; }
 
     private readonly DutyWatcher dutyWatcher;
     private readonly GmAlertWatcher gmAlertWatcher;
@@ -64,6 +65,7 @@ public sealed class Plugin : IDalamudPlugin
 
         History = new RunHistory();
         Catalog = TreasureCatalog.Build();
+        Messages = new TreasureMessageWatcher(Catalog);
         Controller = new TreasureController();
         dutyWatcher = new DutyWatcher();
         gmAlertWatcher = new GmAlertWatcher();
@@ -115,6 +117,7 @@ public sealed class Plugin : IDalamudPlugin
         dutyWatcher.Dispose();
         gmAlertWatcher.Dispose();
         partyInviteWatcher.Dispose();
+        Messages.Dispose();
 
         CLibMain.Dispose();
         ECommonsMain.Dispose();
