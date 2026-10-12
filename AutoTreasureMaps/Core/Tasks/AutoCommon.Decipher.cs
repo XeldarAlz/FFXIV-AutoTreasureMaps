@@ -21,6 +21,8 @@ public abstract partial class AutoCommon
     private protected async Task<DecipherIssue> DecipherMap(TreasureTier tier, DecipherRoute route)
     {
         var catalog = Plugin.Instance.Catalog;
+        // A stop throws out of the frame waits below, so the window it interrupts is answered or closed from the cancel.
+        using var stopRegistration = CancelToken.Register(() => CloseDecipherWindowOnStop(catalog, tier));
         var issue = DecipherIssue.None;
         for (var attempt = 1; attempt <= DecipherAttempts; attempt++)
         {
@@ -168,13 +170,30 @@ public abstract partial class AutoCommon
         }
 
         Diag("Decipher: closing the decipher windows left open.");
-        if (await WaitUntilTimed(() => !CloseNextDecipherWindow(catalog, tier), DecipherCloseTimeoutMs, "decipher windows closed", DecipherPollFrames))
+        if (await WaitUntilTimed(() => !CloseNextDecipherWindow(catalog, tier), DecipherCloseTimeoutMs, "decipher windows closed", DecipherPollFrames)
+            || CancelToken.IsCancellationRequested)
         {
             return;
         }
 
         NpcInteraction.Close(DecipherOps.MenuAddon);
         Warn("Decipher: a decipher window stayed open after its own close; closed the list directly.");
+    }
+
+    // Runs inside the stop's Cancel, where a throw would cut the stop short.
+    private void CloseDecipherWindowOnStop(TreasureCatalog catalog, TreasureTier tier)
+    {
+        try
+        {
+            if (CloseNextDecipherWindow(catalog, tier))
+            {
+                Diag("Decipher: stopped with a decipher window open; answered or closed it.");
+            }
+        }
+        catch (Exception exception)
+        {
+            Warn($"Decipher: closing the decipher window on stop threw: {exception.Message}");
+        }
     }
 
     // True while a decipher window is still open. Each call answers or closes one, and the click helpers throttle the
