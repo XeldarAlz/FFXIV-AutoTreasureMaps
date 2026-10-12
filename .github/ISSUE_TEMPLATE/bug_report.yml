@@ -1,0 +1,115 @@
+name: Bug report
+description: Something's broken or behaving unexpectedly.
+title: "[Bug] "
+labels: ["bug"]
+assignees: ["XeldarAlz"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill out as much as you can; it makes a huge difference.
+
+        If you're not sure whether it's a bug or expected behavior, prefer the [Q&A discussions](https://github.com/XeldarAlz/FFXIV-AutoTreasureMaps/discussions/new?category=q-a); triage is faster there.
+
+        For security issues, please use [private vulnerability reporting](https://github.com/XeldarAlz/FFXIV-AutoTreasureMaps/security/advisories/new) instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see? What did you expect to see instead?
+      placeholder: "The plugin deciphered the map but never flew to the dig spot..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to trigger the bug. If it's intermittent, say so.
+      placeholder: |
+        1. Open `/atm`
+        2. Carry a Timeworn Gazelleskin Map
+        3. Press Start
+        4. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Shown in `/xlplugins` next to "Auto Treasure Maps".
+      options:
+        - 0.1.0.0
+        - Older / not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: expansion
+    attributes:
+      label: Expansion of the affected map(s)
+      description: Dig spots, coffer guards, and flight rules differ per expansion, so expansion is a frequent root cause.
+      options:
+        - ARR (A Realm Reborn)
+        - HW (Heavensward)
+        - StB (Stormblood)
+        - ShB (Shadowbringers)
+        - EW (Endwalker)
+        - DT (Dawntrail)
+        - Multiple expansions
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: maps-affected
+    attributes:
+      label: Specific map(s) affected
+      description: Which timeworn map was involved? List one or more.
+      placeholder: "Timeworn Gazelleskin Map, Timeworn Br'aaxskin Map, ..."
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where in the run did it fail?
+      description: The plugin's flow runs decipher a map -> teleport -> fly to the dig spot -> dig -> fight the guards -> open the coffer -> next map.
+      options:
+        - Decipher (didn't decipher a map / picked the wrong one)
+        - Teleport (didn't move / wrong destination)
+        - Movement (stuck, can't reach the dig spot)
+        - Digging (dug in the wrong place / the coffer never appeared)
+        - Combat (didn't start fighting, the fight never ended, player died)
+        - Coffer (didn't open the coffer once the guards were down)
+        - Next map (didn't move on to the next map)
+        - Selection / UI (issue before pressing Start)
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Attachments
+      description: |
+        **If you can provide any of these, it turns guesswork into a fix.**
+
+        - **Plugin console**: open `/atm log`, press *Copy log* and paste the result into the console field below. It already includes the plugin version, Dalamud version and zone.
+        - **Dalamud log**: open `/xllog`, click the *Open log folder* button at the bottom-right, attach `dalamud.log`. Filter by `[AutoTreasureMaps]` if you want to trim it down.
+        - **Screenshots / short clip** if the issue is visual (selection state, wrong tooltip, frozen card, etc.)
+        - **Other plugins active** that touch combat, movement, teleport, or input, which helps rule out conflicts.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output (optional)
+      description: |
+        Paste what *Copy log* on the plugin's Console page (`/atm log`) put on your clipboard. Short snippets (chat-log tail, Dalamud error text) also belong here; attach full `dalamud.log` files under **Attachments** above.
+      render: text
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Character class/job, hunches, anything that helps the bug land.

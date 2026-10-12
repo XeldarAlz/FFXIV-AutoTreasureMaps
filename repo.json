@@ -1,0 +1,32 @@
+[
+  {
+    "Author": "XeldarAlz",
+    "Name": "Auto Treasure Maps",
+    "InternalName": "AutoTreasureMaps",
+    "AssemblyVersion": "0.1.0.0",
+    "TestingAssemblyVersion": "0.1.0.0",
+    "Description": "Works through your timeworn maps for you: deciphers each map in your bags, travels to the dig spot, digs up the coffer, fights off its guards and opens it, then moves on to the next map.",
+    "Punchline": "Treasure maps, dug up for you.",
+    "RepoUrl": "https://github.com/XeldarAlz/FFXIV-AutoTreasureMaps",
+    "ApplicableVersion": "any",
+    "Tags": [
+      "Treasure Hunt",
+      "Timeworn Maps",
+      "Treasure Coffer",
+      "Gil",
+      "Automation"
+    ],
+    "CategoryTags": [
+      "utility"
+    ],
+    "DalamudApiLevel": 15,
+    "IconUrl": "https://raw.githubusercontent.com/XeldarAlz/FFXIV-AutoTreasureMaps/master/AutoTreasureMaps/Images/Icon.png",
+    "DownloadLinkInstall": "https://github.com/XeldarAlz/FFXIV-AutoTreasureMaps/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/XeldarAlz/FFXIV-AutoTreasureMaps/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/XeldarAlz/FFXIV-AutoTreasureMaps/releases/latest/download/latest.zip",
+    "IsTestingExclusive": false,
+    "AcceptsFeedback": true,
+    "DownloadCount": 0,
+    "LastUpdate": "0"
+  }
+]
