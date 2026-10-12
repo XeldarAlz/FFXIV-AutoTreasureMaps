@@ -85,11 +85,14 @@ internal static class DecipherReadiness
 
     // A query names a timeworn item id or a piece of a tier name in the client's language. It is the player's own
     // choice, so a switched-off tier still matches; among several matches an exact name wins, then an enabled tier,
-    // then the order setting.
+    // then the order setting. A query that is one tier's whole name means only that tier, even when a longer name
+    // contains it (in Japanese grade 1 sits inside grade 10).
     public static MapQueryResult Find(TreasureCatalog catalog, Configuration configuration, string query, out OwnedMap pick, out TreasureTier named)
     {
         var fragment = GameText.Fold(query);
         var isItemId = uint.TryParse(fragment, NumberStyles.None, CultureInfo.InvariantCulture, out var itemId);
+        var tiers = catalog.Tiers;
+        var exactOnly = NamesTierExactly(tiers, isItemId, itemId, fragment);
         var owned = MapBag.Read(catalog);
         var highestFirst = configuration.MapOrder == MapOrder.HighestFirst;
         var bestScore = -1;
@@ -97,7 +100,7 @@ internal static class DecipherReadiness
         for (var step = 0; step < owned.Length; step++)
         {
             var candidate = owned[highestFirst ? owned.Length - 1 - step : step];
-            var score = Score(candidate.Tier, configuration, isItemId, itemId, fragment);
+            var score = Score(candidate.Tier, configuration, isItemId, itemId, fragment, exactOnly);
             if (score > bestScore)
             {
                 bestScore = score;
@@ -111,10 +114,9 @@ internal static class DecipherReadiness
             return MapQueryResult.Found;
         }
 
-        var tiers = catalog.Tiers;
         for (var index = 0; index < tiers.Length; index++)
         {
-            if (Score(tiers[index], configuration, isItemId, itemId, fragment) >= 0)
+            if (Score(tiers[index], configuration, isItemId, itemId, fragment, exactOnly) >= 0)
             {
                 named = tiers[index];
                 return MapQueryResult.NotInBags;
@@ -125,15 +127,30 @@ internal static class DecipherReadiness
         return MapQueryResult.Unknown;
     }
 
-    private static int Score(in TreasureTier tier, Configuration configuration, bool isItemId, uint itemId, string fragment)
+    private static int Score(in TreasureTier tier, Configuration configuration, bool isItemId, uint itemId, string fragment, bool exactOnly)
     {
-        var name = GameText.Fold(tier.Name);
-        var exact = isItemId ? tier.TimewornItemId == itemId : string.Equals(name, fragment, StringComparison.OrdinalIgnoreCase);
-        if (!exact && (isItemId || !GameText.Contains(name, fragment)))
+        var exact = IsExact(tier, isItemId, itemId, fragment);
+        if (!exact && (exactOnly || isItemId || !GameText.Contains(GameText.Fold(tier.Name), fragment)))
         {
             return -1;
         }
 
         return (exact ? ExactNameScore : 0) + (MapTierRules.IsEnabled(configuration, tier) ? EnabledScore : 0);
     }
+
+    private static bool NamesTierExactly(ReadOnlySpan<TreasureTier> tiers, bool isItemId, uint itemId, string fragment)
+    {
+        for (var index = 0; index < tiers.Length; index++)
+        {
+            if (IsExact(tiers[index], isItemId, itemId, fragment))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsExact(in TreasureTier tier, bool isItemId, uint itemId, string fragment)
+        => isItemId ? tier.TimewornItemId == itemId : string.Equals(GameText.Fold(tier.Name), fragment, StringComparison.OrdinalIgnoreCase);
 }
