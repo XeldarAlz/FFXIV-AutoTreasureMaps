@@ -376,7 +376,7 @@
   "spot.portalAvailable": "Kann ein Portal öffnen",
   "spot.flying": "Fliegen",
   "spot.flyingUnlocked": "In diesem Gebiet freigeschaltet",
-  "spot.flyingLocked": "Gesperrt, bis alle Ätherströmungen hier eingestimmt sind",
+  "spot.flyingLocked": "In diesem Gebiet noch nicht freigeschaltet",
   "spot.flag": "Auf der Karte markieren",
   "spot.flagHint": "Setzt die Kartenmarkierung auf die Grabungsstelle und öffnet die Karte.",
   "spot.goto": "Zur Stelle reisen",

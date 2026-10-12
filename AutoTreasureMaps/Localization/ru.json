@@ -376,7 +376,7 @@
   "spot.portalAvailable": "Может открыть портал",
   "spot.flying": "Полёт",
   "spot.flyingUnlocked": "Открыт в этой зоне",
-  "spot.flyingLocked": "Закрыт, пока не настроены все эфирные потоки здесь",
+  "spot.flyingLocked": "В этой зоне ещё не открыт",
   "spot.flag": "Отметить на карте",
   "spot.flagHint": "Ставит флажок на место раскопок и открывает карту.",
   "spot.goto": "К месту",

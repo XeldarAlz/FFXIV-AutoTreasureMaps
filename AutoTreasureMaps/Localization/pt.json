@@ -376,7 +376,7 @@
   "spot.portalAvailable": "Pode abrir um portal",
   "spot.flying": "Voo",
   "spot.flyingUnlocked": "Liberado nesta zona",
-  "spot.flyingLocked": "Bloqueado até sintonizar todas as correntes etéreas daqui",
+  "spot.flyingLocked": "Ainda não liberado nesta zona",
   "spot.flag": "Marcar no mapa",
   "spot.flagHint": "Coloca a bandeira do mapa no ponto de escavação e abre o mapa.",
   "spot.goto": "Ir ao ponto",

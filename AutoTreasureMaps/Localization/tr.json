@@ -376,7 +376,7 @@
   "spot.portalAvailable": "Portal açabilir",
   "spot.flying": "Uçuş",
   "spot.flyingUnlocked": "Bu bölgede açık",
-  "spot.flyingLocked": "Buradaki tüm eter akıntıları bulunana kadar kapalı",
+  "spot.flyingLocked": "Bu bölgede henüz açık değil",
   "spot.flag": "Haritada işaretle",
   "spot.flagHint": "Harita bayrağını kazı noktasına koyar ve haritayı açar.",
   "spot.goto": "Noktaya git",

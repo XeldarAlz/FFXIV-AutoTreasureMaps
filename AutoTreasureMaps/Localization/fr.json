@@ -376,7 +376,7 @@
   "spot.portalAvailable": "Peut ouvrir un portail",
   "spot.flying": "Vol",
   "spot.flyingUnlocked": "Débloqué dans cette zone",
-  "spot.flyingLocked": "Bloqué tant que tous les vents éthérés d'ici ne sont pas harmonisés",
+  "spot.flyingLocked": "Pas encore débloqué dans cette zone",
   "spot.flag": "Marquer sur la carte",
   "spot.flagHint": "Place le drapeau de la carte sur le lieu de fouille et ouvre la carte.",
   "spot.goto": "Aller au lieu",

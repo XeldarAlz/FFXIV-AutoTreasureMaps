@@ -376,7 +376,7 @@
   "spot.portalAvailable": "Can open a portal",
   "spot.flying": "Flying",
   "spot.flyingUnlocked": "Unlocked in this zone",
-  "spot.flyingLocked": "Locked until all aether currents here are attuned",
+  "spot.flyingLocked": "Not unlocked in this zone yet",
   "spot.flag": "Flag on map",
   "spot.flagHint": "Place the map flag on the dig spot and open the map.",
   "spot.goto": "Go to spot",

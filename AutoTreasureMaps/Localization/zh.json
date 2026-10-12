@@ -376,7 +376,7 @@
   "spot.portalAvailable": "可能出现传送魔纹",
   "spot.flying": "飞行",
   "spot.flyingUnlocked": "本区域已解锁",
-  "spot.flyingLocked": "需交感本区域全部风脉后解锁",
+  "spot.flyingLocked": "本区域尚未解锁",
   "spot.flag": "在地图上标记",
   "spot.flagHint": "在挖掘地点放置地图旗标并打开地图。",
   "spot.goto": "前往地点",
