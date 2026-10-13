@@ -41,8 +41,8 @@ internal static partial class L
     {
         public static readonly LocString TitleSetupNeeded = new("treasure.title.setupNeeded", "Setup needed");
         public static readonly LocString DetailSetupNeeded = new("treasure.detail.setupNeeded", "Install the required plugins before your first run.");
-        public static readonly LocString TitleNotBuilt = new("treasure.title.notBuilt", "In development");
-        public static readonly LocString DetailNotBuilt = new("treasure.detail.notBuilt", "The treasure run is still being built, so Start has nothing to run yet.");
+        public static readonly LocString TitleBlocked = new("treasure.title.blocked", "Not ready");
+        public static readonly LocPlural DetailReady = new("treasure.detail.ready", "{0} map ready to run", "{0} maps ready to run");
         public static readonly LocString TitleRunning = new("treasure.title.running", "Hunting treasure");
         public static readonly LocString TitlePaused = new("treasure.title.paused", "Paused");
         public static readonly LocString DetailPausedInContent = new("treasure.detail.pausedInContent", "Resumes once you leave the duty");
@@ -80,7 +80,10 @@ internal static partial class L
         public static readonly LocString ResumeCaps = new("treasure.resume", "RESUME");
         public static readonly LocString InContent = new("treasure.inContent", "in content");
         public static readonly LocString ReasonInstall = new("treasure.reason.install", "install the required plugins");
-        public static readonly LocString StartSub = new("treasure.startSub", "nothing to run yet");
+        public static readonly LocString ReasonNoMaps = new("treasure.reason.noMaps", "no maps to run");
+        public static readonly LocString ReasonHeldMap = new("treasure.reason.heldMap", "the held map cannot be run");
+        public static readonly LocString ReasonNotReady = new("treasure.reason.notReady", "not ready yet");
+        public static readonly LocPlural StartMaps = new("treasure.startMaps", "{0} map to run", "{0} maps to run");
         public static readonly LocString StateRunning = new("treasure.state.running", "running");
         public static readonly LocString StatePaused = new("treasure.state.paused", "paused");
         public static readonly LocString StopSub = new("treasure.stopSub", "{0} · {1}");
@@ -99,8 +102,17 @@ internal static partial class L
         public static readonly LocString PhasePausedInContent = new("run.phase.pausedInContent", "Paused (in content)");
         public static readonly LocString SomewhereElse = new("run.somewhereElse", "Somewhere else");
         public static readonly LocPlural MapsDone = new("run.mapsDone", "{0} map done", "{0} maps done");
-        public static readonly LocString TileMaps = new("run.tile.maps", "Maps");
+        public static readonly LocString MapsOfLimit = new("run.mapsOfLimit", "{0} of {1} maps done");
         public static readonly LocString TileElapsed = new("run.tile.elapsed", "Elapsed");
+        public static readonly LocString TileLooted = new("run.tile.looted", "Looted");
+        public static readonly LocString TileGil = new("run.tile.gil", "Gil");
+        public static readonly LocString TilePortals = new("run.tile.portals", "Portals");
+        public static readonly LocPlural Failed = new("run.failed", "{0} failed", "{0} failed");
+        public static readonly LocString MinutesLeft = new("run.minutesLeft", "{0} min left");
+        public static readonly LocString TooltipMapsRun = new("run.tooltip.mapsRun", "Maps run: {0}");
+        public static readonly LocString TooltipCount = new("run.tooltip.count", "{0}: {1}");
+        public static readonly LocString TooltipNotable = new("run.tooltip.notable", "Notable items:");
+        public static readonly LocString TooltipItem = new("run.tooltip.item", "{0} ×{1}");
 
         public static readonly LocString SettingsGroup = new("run.settings.group", "Run");
         public static readonly LocString MapLimit = new("run.settings.mapLimit", "Stop after maps");

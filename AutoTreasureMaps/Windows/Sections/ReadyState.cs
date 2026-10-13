@@ -1,6 +1,6 @@
-using AutoTreasureMaps.Core.External;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Tasks;
+using AutoTreasureMaps.Core.Treasure;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using System.Numerics;
@@ -9,12 +9,14 @@ namespace AutoTreasureMaps.Windows.Sections;
 
 internal static class ReadyState
 {
-    public enum Kind { SetupNeeded, NotBuilt, Running, Paused }
+    public enum Kind { SetupNeeded, NoMaps, Blocked, Ready, Running, Paused }
 
-    public readonly record struct Info(Kind Kind, Vector4 Accent, Vector4 AccentSoft, FontAwesomeIcon Icon, string Title, string Detail);
+    // Check is what the readiness check found while no run goes, and default while one does.
+    public readonly record struct Info(Kind Kind, Vector4 Accent, Vector4 AccentSoft, FontAwesomeIcon Icon, string Title, string Detail, RunCheck Check);
 
     private static int cachedFrame = -1;
     private static Info cached;
+    private static CachedText readyDetail;
 
     public static Info Resolve(TreasureController controller)
     {
@@ -38,28 +40,33 @@ internal static class ReadyState
                 var detail = controller.PauseReason == PauseReason.InContent
                     ? Loc.T(L.Treasure.DetailPausedInContent)
                     : Loc.T(L.Treasure.DetailPausedManual);
-                return new Info(Kind.Paused, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Pause, Loc.T(L.Treasure.TitlePaused), detail);
+                return new Info(Kind.Paused, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Pause, Loc.T(L.Treasure.TitlePaused), detail, default);
             }
 
-            return new Info(Kind.Running, Styling.AccentBlue, Styling.AccentBlueSoft, FontAwesomeIcon.Map, Loc.T(L.Treasure.TitleRunning), PhaseLabel(controller.Phase));
+            return new Info(Kind.Running, Styling.AccentBlue, Styling.AccentBlueSoft, FontAwesomeIcon.Map, Loc.T(L.Treasure.TitleRunning), PhaseLabel(controller.Phase), default);
         }
 
-        if (!ExternalPlugins.AllRequiredInstalled())
+        var check = RunReadiness.Check(Plugin.Instance);
+        return check.Blocker switch
         {
-            return new Info(Kind.SetupNeeded, Styling.AccentRose, Styling.AccentRoseSoft, FontAwesomeIcon.ExclamationTriangle,
-                Loc.T(L.Treasure.TitleSetupNeeded), Loc.T(L.Treasure.DetailSetupNeeded));
-        }
-
-        return new Info(Kind.NotBuilt, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Hammer,
-            Loc.T(L.Treasure.TitleNotBuilt), Loc.T(L.Treasure.DetailNotBuilt));
+            RunBlocker.None => new Info(Kind.Ready, Styling.AccentMint, Styling.AccentMintSoft, FontAwesomeIcon.Play,
+                Loc.T(L.Run.PhaseReady), readyDetail.Get(check.Available, static key => Loc.Plural(L.Treasure.DetailReady, (int)key)), check),
+            RunBlocker.NeedsPlugins => new Info(Kind.SetupNeeded, Styling.AccentRose, Styling.AccentRoseSoft, FontAwesomeIcon.ExclamationTriangle,
+                Loc.T(L.Treasure.TitleSetupNeeded), Loc.T(L.Treasure.DetailSetupNeeded), check),
+            RunBlocker.NoMaps => new Info(Kind.NoMaps, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Map,
+                Loc.T(L.Treasure.TitleSetupNeeded), Loc.T(check.Reason), check),
+            _ => new Info(Kind.Blocked, Styling.AccentAmber, Styling.AccentAmberSoft, FontAwesomeIcon.Ban,
+                Loc.T(L.Treasure.TitleBlocked), Loc.T(check.Reason), check),
+        };
     }
 
     public static string ShortLabel(Kind kind) => kind switch
     {
-        Kind.Running     => Loc.T(L.Shell.StatusRunning),
-        Kind.Paused      => Loc.T(L.Shell.StatusPaused),
-        Kind.SetupNeeded => Loc.T(L.Shell.StatusSetupNeeded),
-        _                => Loc.T(L.Shell.StatusIdle),
+        Kind.Running                    => Loc.T(L.Shell.StatusRunning),
+        Kind.Paused                     => Loc.T(L.Shell.StatusPaused),
+        Kind.SetupNeeded or Kind.NoMaps => Loc.T(L.Shell.StatusSetupNeeded),
+        Kind.Ready                      => Loc.T(L.Run.PhaseReady),
+        _                               => Loc.T(L.Shell.StatusIdle),
     };
 
     public static string PhaseLabel(TreasurePhase phase) => phase switch

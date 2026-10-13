@@ -8,17 +8,23 @@ using Dalamud.Interface.Utility;
 using ECommons.DalamudServices;
 using Lumina.Excel.Sheets;
 using System.Numerics;
+using System.Text;
 
 namespace AutoTreasureMaps.Windows.Sections;
 
 internal static class RunningPanel
 {
     private const float PadX = 18f;
-    private const int TileCount = 3;
+    private const int TileCount = 4;
 
     private static uint cachedTerritoryId = uint.MaxValue;
     private static string cachedZoneName = string.Empty;
     private static CachedText mapsDoneText;
+    private static CachedText mapsOfLimitText;
+    private static CachedText failedText;
+    private static CachedText gilText;
+    private static CachedText itemsText;
+    private static CachedText timeLeftText;
 
     public static void Draw(TreasureController controller)
     {
@@ -151,10 +157,17 @@ internal static class RunningPanel
         }
     }
 
+    // Against the map limit when one is set.
     private static string MapsDone(TreasureController controller)
     {
-        var maps = controller.SessionSnapshot?.MapsCompleted ?? 0;
-        return mapsDoneText.Get(maps, static key => Loc.Plural(L.Run.MapsDone, (int)key));
+        var maps = controller.SessionSnapshot?.MapsRun ?? 0;
+        var limit = Plugin.Instance.Configuration.RunMapLimit;
+        if (limit <= 0)
+        {
+            return mapsDoneText.Get(maps, static key => Loc.Plural(L.Run.MapsDone, (int)key));
+        }
+
+        return mapsOfLimitText.Get(((long)limit << 32) | (uint)maps, static key => Loc.T(L.Run.MapsOfLimit, (int)(key & uint.MaxValue), (int)(key >> 32)));
     }
 
     private static float DrawPhaseChip(float x, float y, string text, Vector4 accent, Vector4 accentSoft)
@@ -206,13 +219,72 @@ internal static class RunningPanel
         var gap = 8f * scale;
         var tileWidth = (ImGui.GetContentRegionAvail().X - gap * (TileCount - 1)) / TileCount;
 
-        StatTile.Draw(Loc.T(L.Run.TileMaps), (session?.MapsCompleted ?? 0).ToString(Loc.Culture), null, Styling.AccentGlow, tileWidth);
+        var failed = session?.MapsFailed ?? 0;
+        var failedSub = failed > 0 ? failedText.Get(failed, static key => Loc.Plural(L.Run.Failed, (int)key)) : null;
+        StatTile.Draw(Loc.T(L.Run.TileLooted), NumberText.Of(session?.MapsCompleted ?? 0), failedSub, Styling.AccentGlow, tileWidth);
+        if (session is not null && ImGui.IsItemHovered())
+        {
+            Tooltip.Show(MapsTooltip(session));
+        }
+
         ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.Run.TileElapsed), Formatting.Elapsed(session?.Elapsed ?? TimeSpan.Zero), null, Styling.AccentBlue, tileWidth);
+        var items = session?.ItemsGained ?? 0;
+        var itemsSub = items > 0 ? itemsText.Get(items, static key => Loc.Plural(L.MapRun.Items, (int)key)) : null;
+        var gil = gilText.Get(session?.Gil ?? 0, static key => key.ToString("N0", Loc.Culture));
+        StatTile.Draw(Loc.T(L.Run.TileGil), gil, itemsSub, Styling.AccentAmber, tileWidth);
+        if (session is { NotableItems.Count: > 0 } && ImGui.IsItemHovered())
+        {
+            Tooltip.Show(NotableTooltip(session));
+        }
+
         ImGui.SameLine(0, gap);
-        var lastMap = controller.Progress.LastMap;
-        var lastAccent = lastMap is { Outcome: MapOutcome.Looted } ? Styling.AccentMint : Styling.AccentAmber;
-        StatTile.Draw(Loc.T(L.MapRun.LastMap), MapRunText.Outcome(lastMap), null, lastMap is null ? Styling.TextDim : lastAccent, tileWidth);
+        StatTile.Draw(Loc.T(L.Run.TilePortals), NumberText.Of(session?.PortalsSeen ?? 0), null, Styling.AccentNebula, tileWidth);
+        ImGui.SameLine(0, gap);
+        var elapsed = session?.Elapsed ?? TimeSpan.Zero;
+        StatTile.Draw(Loc.T(L.Run.TileElapsed), Formatting.Elapsed(elapsed), TimeLeft(elapsed), Styling.AccentBlue, tileWidth);
+    }
+
+    private static string? TimeLeft(TimeSpan elapsed)
+    {
+        var limitMinutes = Plugin.Instance.Configuration.RunMinuteLimit;
+        if (limitMinutes <= 0)
+        {
+            return null;
+        }
+
+        var minutesLeft = Math.Max(0, (int)Math.Ceiling(limitMinutes - elapsed.TotalMinutes));
+        return timeLeftText.Get(minutesLeft, static key => Loc.T(L.Run.MinutesLeft, (int)key));
+    }
+
+    // Built only while hovered, so the counts are not composed every frame.
+    private static string MapsTooltip(TreasureSession session)
+    {
+        var lines = new StringBuilder(Loc.T(L.Run.TooltipMapsRun, session.MapsRun));
+        AppendCount(lines, MapOutcome.TimedOut, session.MapsTimedOut);
+        AppendCount(lines, MapOutcome.Died, session.MapsKnockedOut);
+        AppendCount(lines, MapOutcome.DigFailed, session.MapsDigFailed);
+        AppendCount(lines, MapOutcome.Unreachable, session.MapsUnreachable);
+        AppendCount(lines, MapOutcome.Faulted, session.MapsFaulted);
+        return lines.ToString();
+    }
+
+    private static void AppendCount(StringBuilder lines, MapOutcome outcome, int count)
+    {
+        if (count > 0)
+        {
+            lines.Append('\n').Append(Loc.T(L.Run.TooltipCount, Loc.T(MapOutcomes.Label(outcome)), count));
+        }
+    }
+
+    private static string NotableTooltip(TreasureSession session)
+    {
+        var lines = new StringBuilder(Loc.T(L.Run.TooltipNotable));
+        foreach (var (itemId, quantity) in session.NotableItems)
+        {
+            lines.Append('\n').Append(Loc.T(L.Run.TooltipItem, NotableLoot.Name(itemId), quantity));
+        }
+
+        return lines.ToString();
     }
 
     private static string CurrentZoneName()

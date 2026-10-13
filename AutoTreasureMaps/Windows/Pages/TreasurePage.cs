@@ -30,6 +30,7 @@ internal sealed class TreasurePage
         {
             RunningPanel.Draw(controller);
             DrawLiveMap(controller.Progress);
+            DrawLastMap(controller.Progress);
             return;
         }
 

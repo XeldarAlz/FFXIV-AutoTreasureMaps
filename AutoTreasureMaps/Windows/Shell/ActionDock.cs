@@ -1,5 +1,6 @@
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Windows.Components;
+using AutoTreasureMaps.Windows.Sections;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using System.Numerics;
@@ -30,7 +31,7 @@ internal static class ActionDock
         }
         else
         {
-            DrawStart(innerWidth);
+            DrawStart(plugin, innerWidth);
         }
 
         ImGui.SetCursorScreenPos(origin);
@@ -59,11 +60,10 @@ internal static class ActionDock
         }
     }
 
-    private static void DrawStart(float innerWidth)
+    private static void DrawStart(Plugin plugin, float innerWidth)
     {
-        var readiness = TreasureLauncher.Assess();
-        var canStart = readiness == TreasureLauncher.Readiness.NotBuilt;
-        if (StartButton.Draw(TreasureLauncher.Sublabel(), canStart, TreasureLauncher.Reason(), innerWidth))
+        var check = ReadyState.Resolve(plugin.Controller).Check;
+        if (StartButton.Draw(TreasureLauncher.Sublabel(check), check.CanStart, TreasureLauncher.Reason(check), innerWidth))
         {
             TreasureLauncher.Start();
         }
