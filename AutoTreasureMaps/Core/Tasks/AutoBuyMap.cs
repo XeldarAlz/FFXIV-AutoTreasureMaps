@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Game.Ops;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Market;
 using AutoTreasureMaps.Core.Supply;
@@ -76,6 +77,12 @@ internal sealed class AutoBuyMap(byte rank) : AutoCommon
         if (clib.Services.Svc.Automation.CurrentTask is not null)
         {
             return L.Decipher.TaskRunning;
+        }
+
+        // A map bought without Decipher unlocked could never be run.
+        if (!DecipherOps.Unlocked())
+        {
+            return L.Decipher.NotUnlocked;
         }
 
         var check = MarketRules.Check(plugin, null, rank);
