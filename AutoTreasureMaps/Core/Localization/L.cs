@@ -167,7 +167,7 @@ internal static partial class L
         public static readonly LocString NoRuns = new("history.noRuns", "No runs recorded yet. Finish (or stop) a run and it'll show up here.");
         public static readonly LocString MapsPerRun = new("history.mapsPerRun", "Maps per run");
         public static readonly LocString RecentRuns = new("history.recentRuns", "Recent runs");
-        public static readonly LocPlural ChartRange = new("history.chartRange", "last {0} run  ·  oldest to newest", "last {0} runs  ·  oldest to newest");
+        public static readonly LocPlural ChartRange = new("history.chartRange", "last run  ·  oldest to newest", "last {0} runs  ·  oldest to newest");
         public static readonly LocString ChartPeak = new("history.chartPeak", "peak {0}");
         public static readonly LocString ChartTooltip = new("history.chartTooltip", "{0}  ·  {1} maps  ·  {2}");
         public static readonly LocString RowDetail = new("history.rowDetail", "{0}  ·  {1}");

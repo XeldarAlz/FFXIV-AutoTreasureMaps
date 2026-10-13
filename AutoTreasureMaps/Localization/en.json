@@ -149,7 +149,7 @@
   "history.noRuns": "No runs recorded yet. Finish (or stop) a run and it'll show up here.",
   "history.mapsPerRun": "Maps per run",
   "history.recentRuns": "Recent runs",
-  "history.chartRange.one": "last {0} run  ·  oldest to newest",
+  "history.chartRange.one": "last run  ·  oldest to newest",
   "history.chartRange.other": "last {0} runs  ·  oldest to newest",
   "history.chartPeak": "peak {0}",
   "history.chartTooltip": "{0}  ·  {1} maps  ·  {2}",

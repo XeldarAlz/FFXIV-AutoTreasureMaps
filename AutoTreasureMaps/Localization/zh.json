@@ -149,7 +149,7 @@
   "history.noRuns": "还没有记录。完成（或停止）一次运行后会显示在这里。",
   "history.mapsPerRun": "每次运行的藏宝图数",
   "history.recentRuns": "最近运行",
-  "history.chartRange.one": "最近 {0} 次  ·  从旧到新",
+  "history.chartRange.one": "最近一次  ·  从旧到新",
   "history.chartRange.other": "最近 {0} 次  ·  从旧到新",
   "history.chartPeak": "峰值 {0}",
   "history.chartTooltip": "{0}  ·  {1} 张藏宝图  ·  {2}",
