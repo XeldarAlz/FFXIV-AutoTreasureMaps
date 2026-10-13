@@ -35,11 +35,12 @@ Planned for the first release:
 - **After-run action**: stay logged in, return to the inn, log out, or close the game once the last map is done.
 - **Auto-repair**: Dark Matter first, Grand Company mender as fallback.
 - **Auto-consume**: keeps food and medicine buffs up between maps, HQ first.
-- **Humanizer**: takes random city breaks between maps so long sessions look less mechanical.
+- **Humanizer**: waits a random moment before each teleport, dig, coffer and fight, and takes city breaks between maps, so long sessions look less mechanical.
 - **Pause & resume**: park a run without losing your place, and auto-pause while you're in a duty.
 - **Party invites**: auto-declines incoming invites during a run after a random delay, with an optional reply message.
 - **GM alert**: stops the bot when a GM is near, with optional toast, beeps, or custom commands.
-- **History**: every run recorded with the maps it finished.
+- **Stop conditions**: a run ends when no enabled map is left, after a set number of maps or minutes, after failed maps in a row, or after a second knockout.
+- **History**: every run recorded with its maps, gil, portals seen and how it ended.
 
 ## Install
 
@@ -65,6 +66,8 @@ The plugin needs a few helpers for movement and combat to be installed and loade
 | `/atm log` | Open the Console page |
 | `/atm changelog` | Open the Changelog page |
 | `/atm about` | Open the About page |
+| `/atm start` | Start a run: decipher and run your maps until a stop condition |
+| `/atm stop` | Stop the current run |
 | `/atm pause` | Pause or resume the current run |
 | `/atm target` | Log targeted object's BaseId (debug helper) |
 | `/atm spot` | Print the deciphered map you hold and its dig spot |
