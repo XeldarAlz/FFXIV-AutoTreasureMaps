@@ -59,11 +59,14 @@ internal sealed class DutyWatcher : IDisposable
     }
 
     // The game may count a dug-up coffer's hunt as a duty. That is the run's own work, not content to wait out, so the
-    // pause is skipped while the map run is at the coffer or the hunt's director runs. Which of the two held it is
-    // logged once per stretch, so a test run shows whether the flag is set at all.
+    // pause is skipped while the map run is at the coffer in the map's zone or the hunt's director runs; a duty that
+    // takes the character to another zone still pauses. Which of the two held it is logged once per stretch, so a test
+    // run shows whether the flag is set at all.
     private bool HuntHoldsTheDuty(TreasureController controller)
     {
-        var reason = controller.Phase is TreasurePhase.Digging or TreasurePhase.Opening or TreasurePhase.Fighting or TreasurePhase.Looting
+        var progress = controller.Progress;
+        var inMapZone = progress.HasMap && Svc.ClientState.TerritoryType == progress.Spot.TerritoryId;
+        var reason = inMapZone && controller.Phase is TreasurePhase.Digging or TreasurePhase.Opening or TreasurePhase.Fighting or TreasurePhase.Looting
             ? HuntDuty.MapStep
             : TreasureHuntDirector.IsActive() ? HuntDuty.Director : HuntDuty.None;
         if (reason != HuntDuty.None && reason != loggedHuntDuty)
