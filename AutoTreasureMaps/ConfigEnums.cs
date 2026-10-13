@@ -21,3 +21,10 @@ public enum LootRoll
     Pass,
     Manual,
 }
+
+public enum DailyMapGatherer
+{
+    Automatic,
+    Miner,
+    Botanist,
+}
