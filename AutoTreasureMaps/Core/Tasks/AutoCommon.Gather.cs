@@ -53,6 +53,8 @@ public abstract partial class AutoCommon
     private const int GatherCloseWaitMs = 3_000;
     // Room for every gather a node's integrity allows, with its bonuses.
     private const int MaxNodeGathers = 12;
+    // A filler that needs a bag slot may not take the last one, which the map needs.
+    private const uint MapBagSlots = 1;
     private const int GatherSettleMs = 300;
     private const int GatherPollFrames = 3;
     private const int LeaveAttackersMs = 60_000;
@@ -326,7 +328,7 @@ public abstract partial class AutoCommon
                 Diag($"{scope}: the node shows map {mapItemId}, which is switched off or already in the bags; gathering the node out instead");
             }
 
-            var slot = GatherOps.PickFillerSlot(mapItemIds, refusedSlots);
+            var slot = GatherOps.PickFillerSlot(mapItemIds, refusedSlots, GatherOps.FreeBagSlots() > MapBagSlots);
             if (slot == GatherOps.NoSlot)
             {
                 break;

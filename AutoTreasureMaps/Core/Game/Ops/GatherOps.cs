@@ -26,11 +26,14 @@ internal static unsafe class GatherOps
     // Item ids 2 to 19 are the shards, crystals and clusters, which go to the crystal pouch and need no bag slot.
     private const uint FirstCrystalItemId = 2;
     private const uint LastCrystalItemId = 19;
-    // The window's values: slot n starts at 5 + 11n, and bit 0 of its flags at +5 marks an item that needs more Perception.
+    // The window's values: slot n starts at 5 + 11n, bit 0 of its flags at +5 marks an item that needs more Perception,
+    // and 2 at +10 marks a collectable, which opens the collectable window instead of gathering.
     private const int FirstSlotValue = 5;
     private const int ValuesPerSlot = 11;
     private const int SlotFlagsOffset = 5;
     private const uint NeedsPerceptionFlag = 1;
+    private const int CollectableOffset = 10;
+    private const uint CollectableValue = 2;
 
     public static IGameObject? FindLiveNode(in MapGatherArea area, List<GatherNodeKey> standing)
     {
@@ -132,9 +135,10 @@ internal static unsafe class GatherOps
         return NoSlot;
     }
 
-    // An item to spend the node on: a crystal first, since it needs no bag slot, then any other item that is neither a
-    // map nor one the gatherer's Perception locks out. refusedSlots holds a bit for each slot that would not gather.
-    public static int PickFillerSlot(ImmutableArray<uint> mapItemIds, int refusedSlots)
+    // An item to spend the node on: a crystal first, since it needs no bag slot, then, when bagItemsAllowed, any other
+    // item that is not a map, a collectable or one the gatherer's Perception locks out. refusedSlots holds a bit for
+    // each slot that would not gather.
+    public static int PickFillerSlot(ImmutableArray<uint> mapItemIds, int refusedSlots, bool bagItemsAllowed)
     {
         if (!TryGetWindow(out var addon))
         {
@@ -146,7 +150,7 @@ internal static unsafe class GatherOps
         for (var slot = 0; slot < SlotCount; slot++)
         {
             var itemId = itemIds[slot];
-            if (itemId == 0 || (refusedSlots & (1 << slot)) != 0 || MapGatherTable.Contains(mapItemIds, itemId) || NeedsPerception(addon, slot))
+            if (itemId == 0 || (refusedSlots & (1 << slot)) != 0 || MapGatherTable.Contains(mapItemIds, itemId) || NeedsPerception(addon, slot) || IsCollectable(addon, slot))
             {
                 continue;
             }
@@ -156,7 +160,7 @@ internal static unsafe class GatherOps
                 return slot;
             }
 
-            if (fallback == NoSlot)
+            if (bagItemsAllowed && fallback == NoSlot)
             {
                 fallback = slot;
             }
@@ -188,10 +192,12 @@ internal static unsafe class GatherOps
         return true;
     }
 
-    public static bool HasFreeBagSlot()
+    public static bool HasFreeBagSlot() => FreeBagSlots() > 0;
+
+    public static uint FreeBagSlots()
     {
         var inventory = InventoryManager.Instance();
-        return inventory is not null && inventory->GetEmptySlotsInBag() > 0;
+        return inventory is null ? 0 : inventory->GetEmptySlotsInBag();
     }
 
     private static bool IsStanding(List<GatherNodeKey> standing, IGameObject candidate)
@@ -209,16 +215,15 @@ internal static unsafe class GatherOps
         return false;
     }
 
-    private static bool NeedsPerception(AddonGathering* addon, int slot)
-    {
-        var valueIndex = FirstSlotValue + ValuesPerSlot * slot + SlotFlagsOffset;
-        var unitBase = &addon->AtkUnitBase;
-        if (unitBase->AtkValues is null || valueIndex >= unitBase->AtkValuesCount)
-        {
-            return false;
-        }
+    private static bool NeedsPerception(AddonGathering* addon, int slot) => (SlotValue(addon, slot, SlotFlagsOffset) & NeedsPerceptionFlag) != 0;
 
-        return (unitBase->AtkValues[valueIndex].UInt & NeedsPerceptionFlag) != 0;
+    private static bool IsCollectable(AddonGathering* addon, int slot) => SlotValue(addon, slot, CollectableOffset) == CollectableValue;
+
+    private static uint SlotValue(AddonGathering* addon, int slot, int offset)
+    {
+        var valueIndex = FirstSlotValue + ValuesPerSlot * slot + offset;
+        var unitBase = &addon->AtkUnitBase;
+        return unitBase->AtkValues is null || valueIndex >= unitBase->AtkValuesCount ? 0 : unitBase->AtkValues[valueIndex].UInt;
     }
 
     private static bool TryGetWindow(out AddonGathering* addon)
