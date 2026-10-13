@@ -10,4 +10,7 @@ public sealed partial class Configuration
     public HashSet<byte> DisabledMapRanks { get; set; } = [];
 
     public MapOrder MapOrder { get; set; } = MapOrder.HighestFirst;
+
+    // How the run answers the game's Need or Greed window for the coffer's rolled items.
+    public LootRoll LootRoll { get; set; } = LootRoll.Need;
 }

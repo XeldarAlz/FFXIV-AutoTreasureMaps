@@ -361,30 +361,9 @@ internal static unsafe class DecipherOps
             var addons = Svc.Data.GetExcelSheet<Addon>();
             var title = GameText.Fold(addons.GetRowOrDefault(TitleAddonRow)?.Text.ExtractText() ?? string.Empty);
             var description = GameText.Fold(addons.GetRowOrDefault(DescriptionAddonRow)?.Text.ExtractText() ?? string.Empty);
-            var fragments = addons.GetRowOrDefault(PromptAddonRow) is { } prompt ? FixedFragments(prompt.Text) : [];
+            var fragments = addons.GetRowOrDefault(PromptAddonRow) is { } prompt ? GameText.FixedFragments(prompt.Text) : [];
             RunLog.Debug($"Decipher texts: action {actionId}, unlock link {unlockLink}, title '{title}', description '{description}', prompt fragments '{string.Join("' '", fragments)}'.");
             return new Texts(actionId, unlockLink, title, description, fragments);
-        }
-
-        // The words around the item name: the text payloads between the template's macros.
-        private static string[] FixedFragments(ReadOnlySeString template)
-        {
-            var fragments = new List<string>();
-            foreach (var payload in template.AsSpan())
-            {
-                if (payload.Type != ReadOnlySePayloadType.Text)
-                {
-                    continue;
-                }
-
-                var fragment = GameText.Fold(Encoding.UTF8.GetString(payload.Body));
-                if (fragment.Length > 0)
-                {
-                    fragments.Add(fragment);
-                }
-            }
-
-            return fragments.ToArray();
         }
     }
 }

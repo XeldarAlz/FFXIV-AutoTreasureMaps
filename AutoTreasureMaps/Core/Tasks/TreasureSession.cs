@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Treasure;
 using ECommons.DalamudServices;
 using System.Threading;
 
@@ -29,6 +30,9 @@ public sealed class TreasureSession
     internal bool Recorded;
     internal bool AfterActionDispatched;
 
+    // The map under way, or null between maps; a pause or a fault restart resumes its hunt from here.
+    internal MapInProgress? ActiveMap;
+
     public bool DidNothing => MapsCompleted == 0;
 
     public TimeSpan Elapsed => (endedAt ?? DateTime.UtcNow) - StartedAt - TimeSpan.FromMilliseconds(PausedTotalMs);
@@ -37,6 +41,14 @@ public sealed class TreasureSession
         => pausedMs + (pauseStartedAtMs == 0 ? 0 : Environment.TickCount64 - pauseStartedAtMs);
 
     internal void CreditMap() => MapsCompleted++;
+
+    internal void RecordMap(in MapResult result)
+    {
+        if (result.Outcome == MapOutcome.Looted)
+        {
+            CreditMap();
+        }
+    }
 
     public void Sample()
     {

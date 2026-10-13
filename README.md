@@ -70,6 +70,7 @@ The plugin needs a few helpers for movement and combat to be installed and loade
 | `/atm spot` | Print the deciphered map you hold and its dig spot |
 | `/atm flag` | Flag that dig spot on the map |
 | `/atm goto spot` | Travel to that dig spot and land on it |
+| `/atm dig` | Run the held map: travel, dig, fight the guards, loot the coffer |
 | `/atm decipher [map]` | Decipher the next timeworn map in your bags by the order in Settings, or the one named (a piece of its name or its item id) |
 | `/atm tiers` | List every map tier in the Console (debug helper) |
 | `/atm goto <territory> <x> <y> <z>` | Travel to a point, `/atm goto stop` cancels (debug helper) |

@@ -50,6 +50,24 @@ internal sealed partial class TreasureController
         Diag("Start refused: No treasure run exists yet.");
     }
 
+    // One held map from travel to loot, under the same pause, stop and fault handling as any run. The caller has
+    // checked MapRunReadiness first.
+    public void StartHeldMap()
+    {
+        if (Running)
+        {
+            Diag("Map run ignored: a run is already going.");
+            return;
+        }
+
+        if (!RequiredPluginsReady())
+        {
+            return;
+        }
+
+        BeginRun(new TreasureSession(), owningSession => new AutoMapRun(owningSession, progress), "the held map");
+    }
+
     public void Stop()
     {
         var ending = session;
@@ -159,4 +177,4 @@ internal sealed partial class TreasureController
     }
 }
 
-internal enum TreasurePhase { Idle, Preparing, Travelling, Fighting, Upkeep, Finishing, Paused }
+internal enum TreasurePhase { Idle, Preparing, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused }

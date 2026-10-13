@@ -1,3 +1,6 @@
+using Lumina.Text.ReadOnly;
+using System.Text;
+
 namespace AutoTreasureMaps.Core.Game;
 
 // Sheet text and window text spell the same words with different invisible characters: soft hyphens in long German
@@ -45,4 +48,25 @@ internal static class GameText
 
     public static bool Contains(string folded, string foldedPart)
         => foldedPart.Length > 0 && folded.Contains(foldedPart, StringComparison.OrdinalIgnoreCase);
+
+    // The words around a template's macros, its text payloads folded; a window built from the template shows every one.
+    public static string[] FixedFragments(ReadOnlySeString template)
+    {
+        var fragments = new List<string>();
+        foreach (var payload in template.AsSpan())
+        {
+            if (payload.Type != ReadOnlySePayloadType.Text)
+            {
+                continue;
+            }
+
+            var fragment = Fold(Encoding.UTF8.GetString(payload.Body));
+            if (fragment.Length > 0)
+            {
+                fragments.Add(fragment);
+            }
+        }
+
+        return fragments.ToArray();
+    }
 }
