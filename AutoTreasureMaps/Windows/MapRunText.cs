@@ -58,11 +58,12 @@ internal static class MapRunText
 
         lastMapFor = result;
         lastMapLanguage = Loc.Current;
-        var parts = new List<string>(6)
+        var parts = new List<string>(6) { result.HasTier ? result.Tier.Name : Loc.T(MapOutcomes.Cause(result)) };
+        if (result.HasTier || result.Refusal != MapRefusal.None)
         {
-            result.HasTier ? result.Tier.Name : Loc.T(MapOutcomes.Reason(result.Refusal)),
-            Loc.T(MapOutcomes.Label(result.Outcome)),
-        };
+            parts.Add(Loc.T(MapOutcomes.Label(result.Outcome)));
+        }
+
         if (result.Gil > 0)
         {
             parts.Add(Loc.T(L.MapRun.Gil, result.Gil.ToString("N0", Loc.Culture)));

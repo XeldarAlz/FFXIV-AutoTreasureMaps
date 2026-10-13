@@ -67,6 +67,9 @@ internal static class MapOutcomes
         _ => L.MapRun.OutcomeFaulted,
     };
 
+    // What a result with no tier tells: why it was refused, or how it ended when it failed before its map was read.
+    public static LocString Cause(in MapResult result) => result.Refusal == MapRefusal.None ? Label(result.Outcome) : Reason(result.Refusal);
+
     public static LocString Reason(MapRefusal refusal) => refusal switch
     {
         MapRefusal.NotLoggedIn => L.Decipher.NotLoggedIn,
