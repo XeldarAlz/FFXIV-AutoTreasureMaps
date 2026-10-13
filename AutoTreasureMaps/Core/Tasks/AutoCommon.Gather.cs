@@ -118,12 +118,13 @@ public abstract partial class AutoCommon
         }
     }
 
-    // Asks the server afresh, as the field may be stale since the last request.
+    // Asks the server afresh, as the field may be stale since the last request. Without a reply, Read would fall back
+    // to the value from before the request, so the allowance counts as unknown instead.
     private protected async Task<AllowanceReading> RefreshAllowance(string reason)
     {
         MapAllowance.Request(reason);
-        await WaitUntilTimed(() => !MapAllowance.ReplyPending, GatherReplyWaitMs, "allowance reply");
-        return MapAllowance.Read();
+        var replied = await WaitUntilTimed(() => !MapAllowance.ReplyPending, GatherReplyWaitMs, "allowance reply");
+        return replied ? MapAllowance.Read() : default;
     }
 
     // Every way out of the gather passes here, a cancel or a fault included. One still on the gatherer asks for the switch
