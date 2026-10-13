@@ -112,6 +112,11 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
             return LoopStep.Continue;
         }
 
+        if (CancelToken.IsCancellationRequested)
+        {
+            return LoopStep.Stop;
+        }
+
         Finish(RunEnd.Refused, result.Refusal);
         return LoopStep.Stop;
     }
@@ -138,8 +143,13 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
         var shortest = now + PartyRetryShortestMs;
         var waitMs = (int)(Math.Min(deadline, now + PartyRetryLongestMs) - now);
         var gathered = await WaitUntilTimed(() => Environment.TickCount64 >= shortest && PartyPresence.AllInZone(), waitMs, "party in the area");
+        if (CancelToken.IsCancellationRequested)
+        {
+            return false;
+        }
+
         Diag($"Run: trying the dig again ({(gathered ? "the party shows as present" : "still waiting on the party")}).");
-        return !CancelToken.IsCancellationRequested;
+        return true;
     }
 
     private async Task<LoopStep> SupplyMap(Plugin plugin)
@@ -159,6 +169,11 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
             }
 
             var task = await RunSupplyStep(step);
+            if (CancelToken.IsCancellationRequested)
+            {
+                return LoopStep.Stop;
+            }
+
             if (task.Fault is { } fault)
             {
                 session.RecordFault(fault, CancelToken);
@@ -177,12 +192,8 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
                     Finish(RunEnd.SupplyFailed);
                     return LoopStep.Stop;
                 default:
-                    if (!CancelToken.IsCancellationRequested)
-                    {
-                        Warn($"Run: the {step.Name} step did not finish within {step.TimeoutMs / TimeUnits.MillisecondsPerSecond}s.");
-                        Finish(RunEnd.SupplyFailed);
-                    }
-
+                    Warn($"Run: the {step.Name} step did not finish within {step.TimeoutMs / TimeUnits.MillisecondsPerSecond}s.");
+                    Finish(RunEnd.SupplyFailed);
                     return LoopStep.Stop;
             }
         }
