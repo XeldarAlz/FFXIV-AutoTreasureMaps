@@ -32,8 +32,13 @@ internal static class GearsetSwitcher
     private const int SwitchPollFrames = 5;
     // 0 keeps the glamour plate linked to the gearset.
     private const byte LinkedGlamourPlate = 0;
+    // Crafters and gatherers are the ClassJob rows 8 to 18; every other class can fight.
+    private const uint FirstCrafterClassJobId = 8;
+    private const uint LastGathererClassJobId = 18;
 
     public static uint CurrentClassJobId() => Svc.Objects.LocalPlayer?.ClassJob.RowId ?? 0;
+
+    public static bool OnCombatClass() => CurrentClassJobId() is not (0 or (>= FirstCrafterClassJobId and <= LastGathererClassJobId));
 
     public static unsafe int CurrentGearsetIndex()
     {

@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "The game refused the dig because a party member is bound by another duty.",
   "mapRun.refused.portalDug": "The dig turned up a teleportation portal. Portals are not handled yet, so the rest is up to you.",
   "mapRun.refused.cofferPrompt": "The coffer's confirmation did not read as expected, so it was declined.",
+  "mapRun.refused.notCombatClass": "Switch to a combat job first: a crafter or gatherer cannot fight off the coffer's guards.",
   "mapRun.chat.started": "Running {0} in {1}.",
   "mapRun.chat.refused": "Cannot run the map. {0}",
   "mapRun.chat.looted.one": "{1}: coffer looted for {2} gil and {0} item.",

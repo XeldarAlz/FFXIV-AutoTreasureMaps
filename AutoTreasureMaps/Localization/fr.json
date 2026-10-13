@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "Le jeu a refusé la fouille, car un membre de l'équipe est engagé dans une autre mission.",
   "mapRun.refused.portalDug": "La fouille a révélé un portail de téléportation. Les portails ne sont pas encore pris en charge, la suite est donc entre vos mains.",
   "mapRun.refused.cofferPrompt": "La confirmation du coffre ne correspondait pas à celle attendue, elle a donc été refusée.",
+  "mapRun.refused.notCombatClass": "Passez d'abord à une classe de combat : un artisan ou un récolteur ne peut pas repousser les gardiens du coffre.",
   "mapRun.chat.started": "Carte en cours : {0} à {1}.",
   "mapRun.chat.refused": "Impossible de faire la carte. {0}",
   "mapRun.chat.looted.one": "{1} : coffre pillé, {2} gils et {0} objet.",

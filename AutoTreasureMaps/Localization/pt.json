@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "O jogo recusou a escavação porque um membro do grupo está em outro conteúdo.",
   "mapRun.refused.portalDug": "A escavação revelou um portal de teletransporte. Portais ainda não são suportados, então o resto fica com você.",
   "mapRun.refused.cofferPrompt": "A confirmação do baú não dizia o esperado, então foi recusada.",
+  "mapRun.refused.notCombatClass": "Troque primeiro para uma classe de combate: um artesão ou coletor não consegue enfrentar os guardiões do baú.",
   "mapRun.chat.started": "Fazendo {0} em {1}.",
   "mapRun.chat.refused": "Não é possível fazer o mapa. {0}",
   "mapRun.chat.looted.one": "{1}: baú saqueado, {2} gil e {0} item.",

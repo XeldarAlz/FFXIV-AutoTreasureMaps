@@ -43,6 +43,7 @@ internal static partial class L
         public static readonly LocString RefusedPartyBoundByDuty = new("mapRun.refused.partyBoundByDuty", "The game refused the dig because a party member is bound by another duty.");
         public static readonly LocString RefusedPortalDug = new("mapRun.refused.portalDug", "The dig turned up a teleportation portal. Portals are not handled yet, so the rest is up to you.");
         public static readonly LocString RefusedCofferPrompt = new("mapRun.refused.cofferPrompt", "The coffer's confirmation did not read as expected, so it was declined.");
+        public static readonly LocString RefusedNotCombatClass = new("mapRun.refused.notCombatClass", "Switch to a combat job first: a crafter or gatherer cannot fight off the coffer's guards.");
 
         public static readonly LocString ChatStarted = new("mapRun.chat.started", "Running {0} in {1}.");
         public static readonly LocString ChatRefused = new("mapRun.chat.refused", "Cannot run the map. {0}");

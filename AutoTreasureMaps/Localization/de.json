@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "Das Spiel hat das Graben abgelehnt, weil ein Gruppenmitglied in einem anderen Inhalt gebunden ist.",
   "mapRun.refused.portalDug": "Beim Graben ist ein Teleportationsportal aufgetaucht. Portale werden noch nicht unterstützt, der Rest liegt also bei dir.",
   "mapRun.refused.cofferPrompt": "Die Bestätigung der Truhe sah nicht wie erwartet aus, deshalb wurde sie abgelehnt.",
+  "mapRun.refused.notCombatClass": "Wechsle zuerst zu einer Kampfklasse: Ein Handwerker oder Sammler kann die Wächter der Truhe nicht abwehren.",
   "mapRun.chat.started": "{0} in {1} wird abgearbeitet.",
   "mapRun.chat.refused": "Die Karte kann nicht abgearbeitet werden. {0}",
   "mapRun.chat.looted.one": "{1}: Truhe geplündert, {2} Gil und {0} Gegenstand.",

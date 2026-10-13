@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "Bir grup üyesi başka bir içerikte olduğu için oyun kazmayı reddetti.",
   "mapRun.refused.portalDug": "Kazı bir ışınlanma portalı çıkardı. Portallar henüz desteklenmiyor, gerisi size kalmış.",
   "mapRun.refused.cofferPrompt": "Sandığın onay penceresi beklendiği gibi değildi, bu yüzden reddedildi.",
+  "mapRun.refused.notCombatClass": "Önce bir savaş sınıfına geçin: zanaatkâr ya da toplayıcı sandığın bekçileriyle savaşamaz.",
   "mapRun.chat.started": "{1} bölgesinde {0} yapılıyor.",
   "mapRun.chat.refused": "Harita yapılamıyor. {0}",
   "mapRun.chat.looted.one": "{1}: sandık yağmalandı, {2} gil ve {0} eşya.",

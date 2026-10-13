@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "パーティメンバーが別のコンテンツに参加中のため、ディグできませんでした。",
   "mapRun.refused.portalDug": "ディグで転送魔紋が見つかりました。転送魔紋にはまだ対応していないため、この先は手動で進めてください。",
   "mapRun.refused.cofferPrompt": "宝箱の確認メッセージが想定と異なったため、キャンセルしました。",
+  "mapRun.refused.notCombatClass": "先に戦闘職に切り替えてください。製作職や採集職では宝箱の番人と戦えません。",
   "mapRun.chat.started": "{1}で{0}を実行します。",
   "mapRun.chat.refused": "地図を実行できません。{0}",
   "mapRun.chat.looted.one": "{1}：宝箱から{2}ギルとアイテム{0}個を入手しました。",

@@ -33,6 +33,7 @@ internal enum MapRefusal : byte
     PartyBoundByDuty,
     PortalDug,
     CofferPrompt,
+    NotCombatClass,
 }
 
 internal static class MapOutcomes
@@ -86,6 +87,7 @@ internal static class MapOutcomes
         MapRefusal.BoundByDuty => L.MapRun.RefusedBoundByDuty,
         MapRefusal.PartyBoundByDuty => L.MapRun.RefusedPartyBoundByDuty,
         MapRefusal.PortalDug => L.MapRun.RefusedPortalDug,
+        MapRefusal.NotCombatClass => L.MapRun.RefusedNotCombatClass,
         _ => L.MapRun.RefusedCofferPrompt,
     };
 }

@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.External;
+using AutoTreasureMaps.Core.Game.Ops;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Supply;
 using ECommons.DalamudServices;
@@ -11,6 +12,7 @@ internal enum RunBlocker : byte
     NotLoggedIn,
     NeedsPlugins,
     TaskRunning,
+    NotCombatClass,
     HeldMap,
     NoMaps,
 }
@@ -43,6 +45,11 @@ internal static class RunReadiness
         if (clib.Services.Svc.Automation.CurrentTask is not null)
         {
             return new RunCheck(RunBlocker.TaskRunning, L.Decipher.TaskRunning, 0);
+        }
+
+        if (!GearsetSwitcher.OnCombatClass())
+        {
+            return new RunCheck(RunBlocker.NotCombatClass, L.MapRun.RefusedNotCombatClass, 0);
         }
 
         var supply = MapSupplyChain.Check(plugin);

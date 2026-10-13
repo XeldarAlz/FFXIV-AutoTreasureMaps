@@ -68,6 +68,12 @@ internal static class MapRunReadiness
             return MapRefusal.NotUnlocked;
         }
 
+        // The guards are fought with the combat plugin's preset, which does nothing for a crafter or a gatherer.
+        if (!GearsetSwitcher.OnCombatClass())
+        {
+            return MapRefusal.NotCombatClass;
+        }
+
         return DutyWatcher.InContent() && !TreasureHuntDirector.IsActive() ? MapRefusal.InDuty : MapRefusal.None;
     }
 }

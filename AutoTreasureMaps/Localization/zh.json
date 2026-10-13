@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "有小队成员正在参加其他任务，游戏拒绝了挖宝。",
   "mapRun.refused.portalDug": "挖到了传送魔纹。尚不支持传送魔纹，之后请自行操作。",
   "mapRun.refused.cofferPrompt": "宝箱的确认提示与预期不符，因此已拒绝。",
+  "mapRun.refused.notCombatClass": "请先切换到战斗职业：能工巧匠或大地使者无法击退宝箱的守卫。",
   "mapRun.chat.started": "正在执行{1}的{0}。",
   "mapRun.chat.refused": "无法执行藏宝图。{0}",
   "mapRun.chat.looted.one": "{1}：已拾取宝箱，获得{2}金币和{0}件物品。",

@@ -540,6 +540,7 @@
   "mapRun.refused.partyBoundByDuty": "El juego rechazó la excavación porque un miembro del grupo está en otro contenido.",
   "mapRun.refused.portalDug": "La excavación sacó a la luz un portal de teletransporte. Los portales aún no se gestionan, así que el resto depende de ti.",
   "mapRun.refused.cofferPrompt": "La confirmación del cofre no decía lo esperado, así que se rechazó.",
+  "mapRun.refused.notCombatClass": "Cambia antes a un oficio de combate: un artesano o un recolector no puede luchar contra los guardianes del cofre.",
   "mapRun.chat.started": "Haciendo {0} en {1}.",
   "mapRun.chat.refused": "No se puede hacer el mapa. {0}",
   "mapRun.chat.looted.one": "{1}: cofre saqueado, {2} guiles y {0} objeto.",
