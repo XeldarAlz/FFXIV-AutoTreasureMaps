@@ -73,6 +73,11 @@ internal sealed class GatherMapTask(bool forRun) : MapSupplyTask
         Diag($"Supply: gathering the daily map as {plan.Gatherer} (level {plan.ClassLevel}, gearset {plan.GearsetIndex + 1}), group of level {plan.Group.Level}.");
         Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Gather.ChatStarted, Loc.T(DailyMapPlanner.GathererName(plan.Gatherer)), TerritoryNames.Of(plan.Area.TerritoryId))}");
         var answer = await GatherDailyMap(plan, Math.Max(1, plugin.Configuration.DailyMapNodeVisits));
+        if (answer.Outcome == GatherOutcome.AllowanceUsed)
+        {
+            MapAllowance.MarkUsed();
+        }
+
         if (answer.Outcome != GatherOutcome.Cancelled)
         {
             MapAllowance.Request("after a gather attempt");
@@ -88,7 +93,7 @@ internal sealed class GatherMapTask(bool forRun) : MapSupplyTask
         {
             case GatherOutcome.Cancelled:
                 return MapSupplyAnswer.Cancelled;
-            case GatherOutcome.NoMap:
+            case GatherOutcome.NoMap or GatherOutcome.AllowanceUsed:
                 Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Gather.ChatNoMap, Loc.T(answer.Reason))}");
                 return MapSupplyAnswer.Empty(answer.Reason);
             case GatherOutcome.Failed:

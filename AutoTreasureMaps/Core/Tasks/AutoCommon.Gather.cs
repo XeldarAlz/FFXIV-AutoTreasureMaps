@@ -15,6 +15,8 @@ internal enum GatherOutcome : byte
 {
     Gathered,
     NoMap,
+    // The game refused the map as over the day's limit, though the allowance read as available.
+    AllowanceUsed,
     Failed,
     Cancelled,
 }
@@ -26,6 +28,8 @@ internal readonly record struct GatherAnswer(GatherOutcome Outcome, LocString Re
     public static GatherAnswer Gathered(uint mapItemId) => new(GatherOutcome.Gathered, default, mapItemId);
 
     public static GatherAnswer NoMap(LocString reason) => new(GatherOutcome.NoMap, reason, 0);
+
+    public static GatherAnswer AllowanceUsed => new(GatherOutcome.AllowanceUsed, L.Gather.ReasonLimitReached, 0);
 
     public static GatherAnswer Failed(LocString reason) => new(GatherOutcome.Failed, reason, 0);
 }
@@ -436,7 +440,7 @@ public abstract partial class AutoCommon
 
         if (Messages.ArrivedSince(TreasureLogMessages.GatheringLimitReached, since) || Messages.ArrivedSince(TreasureLogMessages.GatheringNoLongerAble, since))
         {
-            return GatherAnswer.Failed(L.Gather.ReasonLimitReached);
+            return GatherAnswer.AllowanceUsed;
         }
 
         if (Messages.ArrivedSince(TreasureLogMessages.GatheringCannotCarryMore, since))
