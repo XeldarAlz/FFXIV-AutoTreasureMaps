@@ -1,4 +1,6 @@
+using AutoTreasureMaps.Core.Game.Ops;
 using AutoTreasureMaps.Core.Game.Player;
+using AutoTreasureMaps.Core.Gather;
 using AutoTreasureMaps.Core.Ipc;
 using Dalamud.Game.ClientState.Conditions;
 using ECommons.DalamudServices;
@@ -25,6 +27,13 @@ public abstract partial class AutoCommon
     {
         if (!Svc.Condition[ConditionFlag.InCombat] || IsKnockedOut())
         {
+            return;
+        }
+
+        // A Miner or Botanist has nothing to fight with, so the daily map gather leaves instead.
+        if (MapGatherTable.IsGathererClassJob(GearsetSwitcher.CurrentClassJobId()))
+        {
+            Diag($"{scope}: in combat on a gatherer ({ConditionTag()}); not fighting");
             return;
         }
 

@@ -158,6 +158,11 @@ public abstract partial class AutoCommon
         var start = NearestKnownNode(area, area.Centre);
         gatherRetreat = AetherytePosition(area) ?? start;
         Diag($"Gather: base {area.BaseId} in {TerritoryNames.Of(area.TerritoryId)} for {plan.Group.MapItemIds.Length} map(s) of level {plan.Group.Level}, up to {maxVisits} node(s)");
+        if (UnderAttack())
+        {
+            return await LeaveAttackers($"{scope}-start");
+        }
+
         Status = "Travelling to the gathering area";
         var arrived = await TravelTo(area.TerritoryId, start, GatherAreaArriveMeters);
         if (UnderAttack())
