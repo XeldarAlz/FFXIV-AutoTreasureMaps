@@ -23,6 +23,9 @@ internal interface IMapSupplyStep
 
     int TimeoutMs { get; }
 
+    // False for a step that only puts a timeworn map in the bags; the run loops back and the bag step deciphers it.
+    bool SuppliesHeldMap { get; }
+
     // Cheap enough for every frame: the Treasure page asks it whether a run can start.
     MapSupplyCheck Check(Plugin plugin);
 

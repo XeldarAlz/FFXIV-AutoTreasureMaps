@@ -190,4 +190,4 @@ internal sealed partial class TreasureController
     }
 }
 
-internal enum TreasurePhase { Idle, Preparing, Deciphering, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused }
+internal enum TreasurePhase { Idle, Preparing, Deciphering, Buying, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused }

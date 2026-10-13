@@ -169,7 +169,7 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
             switch (answer.Outcome)
             {
                 case MapSupplyOutcome.Supplied:
-                    return await AwaitHeldMap(plugin, step);
+                    return step.SuppliesHeldMap ? await AwaitHeldMap(plugin, step) : LoopStep.Continue;
                 case MapSupplyOutcome.Empty:
                     NoteReason(answer.Reason, ref emptyReason, ref hasReason);
                     continue;
@@ -282,6 +282,6 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
     private void LogFinish(RunEnd end)
     {
         var refusal = session.EndRefusal == MapRefusal.None ? string.Empty : $" ({session.EndRefusal})";
-        Diag($"Run: over, {end}{refusal}: {session.MapsRun} map(s) run, {session.MapsCompleted} looted, {session.MapsFailed} failed, {session.Gil} gil, {session.PortalsSeen} portal(s), {session.Elapsed.TotalMinutes:F1} min.");
+        Diag($"Run: over, {end}{refusal}: {session.MapsRun} map(s) run, {session.MapsCompleted} looted, {session.MapsFailed} failed, {session.Gil} gil, {session.MapsBought} bought for {session.GilSpentOnMaps} gil, {session.PortalsSeen} portal(s), {session.Elapsed.TotalMinutes:F1} min.");
     }
 }

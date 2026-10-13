@@ -17,6 +17,8 @@ internal sealed class BagSupplyStep : IMapSupplyStep
 
     public int TimeoutMs => TaskTimeoutMs;
 
+    public bool SuppliesHeldMap => true;
+
     public MapSupplyCheck Check(Plugin plugin)
     {
         if (!DecipherOps.Unlocked())

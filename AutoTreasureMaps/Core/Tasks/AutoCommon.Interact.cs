@@ -24,11 +24,11 @@ public abstract partial class AutoCommon
     private const int InteractResultTimeoutMs = 5_000;
     private const int InteractUiCheckFrames = 2;
 
-    private Task<IGameObject?> ApproachObject(uint baseId, string scope)
+    private protected Task<IGameObject?> ApproachObject(uint baseId, string scope)
         => ApproachObject(() => NpcInteraction.FindNearest(baseId), $"object {baseId}", scope);
 
     // find is asked afresh each time, so an object that respawns or changes is never held past its frame.
-    private async Task<IGameObject?> ApproachObject(Func<IGameObject?> find, string name, string scope)
+    private protected async Task<IGameObject?> ApproachObject(Func<IGameObject?> find, string name, string scope)
     {
         if (!await WaitUntilTimed(() => find() is not null, InteractObjectWaitMs, $"{scope}-object"))
         {
@@ -74,7 +74,7 @@ public abstract partial class AutoCommon
             && Vector3.DistanceSquared(player.Position, target.Position) <= InteractRangeMeters * InteractRangeMeters
             && target.IsInInteractRange();
 
-    private async Task<bool> ReadyToInteract(string scope)
+    private protected async Task<bool> ReadyToInteract(string scope)
     {
         if (Svc.Condition[ConditionFlag.Mounted])
         {
@@ -92,7 +92,7 @@ public abstract partial class AutoCommon
     }
 
     // True once doneWhen holds after the interaction; a message the object shows first is moved past.
-    private async Task<bool> InteractWithObject(IGameObject target, Func<bool> doneWhen, string scope)
+    private protected async Task<bool> InteractWithObject(IGameObject target, Func<bool> doneWhen, string scope)
     {
         NpcInteraction.Target(target);
         await WaitUntilTimed(() => NpcInteraction.IsTargeted(target), InteractTargetSettleMs, $"{scope}-target", checkFrames: 1);

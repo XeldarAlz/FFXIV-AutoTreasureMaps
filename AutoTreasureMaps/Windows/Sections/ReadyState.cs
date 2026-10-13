@@ -73,6 +73,7 @@ internal static class ReadyState
     {
         TreasurePhase.Preparing   => Loc.T(L.Run.PhasePreparing),
         TreasurePhase.Deciphering => Loc.T(L.Run.PhaseDeciphering),
+        TreasurePhase.Buying      => Loc.T(L.Run.PhaseBuying),
         TreasurePhase.Travelling  => Loc.T(L.Run.PhaseTravelling),
         TreasurePhase.Digging     => Loc.T(L.MapRun.PhaseDigging),
         TreasurePhase.Opening     => Loc.T(L.MapRun.PhaseOpening),
