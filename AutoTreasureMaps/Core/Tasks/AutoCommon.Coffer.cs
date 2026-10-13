@@ -152,6 +152,12 @@ public abstract partial class AutoCommon
         var openedAt = map.CofferOpenedAtMs;
         var catalog = Plugin.Instance.Catalog;
         await WaitUntilTimed(() => CofferOpenedSince(openedAt) || !HeldMapReader.TryRead(catalog, out _), CofferOpenConfirmMs, "coffer opened", MessagePollFrames);
+        // The Yes has gone out and the map is as good as spent, so a stop now keeps the coffer as opened for the resume.
+        if (CancelToken.IsCancellationRequested)
+        {
+            return CofferStep.Cancelled;
+        }
+
         if (!CofferOpenedSince(openedAt) && HeldMapReader.TryRead(catalog, out _))
         {
             Diag($"{scope}: the map is still held and no trap sprang, so the coffer did not open.");
