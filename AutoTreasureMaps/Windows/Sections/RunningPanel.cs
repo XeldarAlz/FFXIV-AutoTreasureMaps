@@ -1,5 +1,6 @@
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Tasks;
+using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -13,7 +14,7 @@ namespace AutoTreasureMaps.Windows.Sections;
 internal static class RunningPanel
 {
     private const float PadX = 18f;
-    private const int TileCount = 2;
+    private const int TileCount = 3;
 
     private static uint cachedTerritoryId = uint.MaxValue;
     private static string cachedZoneName = string.Empty;
@@ -100,7 +101,9 @@ internal static class RunningPanel
         y += barHeight + 8f * scale;
         using (Fonts.PushCaption())
         {
-            TextDraw.At(MapsDone(controller), new Vector2(columnX, y), Styling.WithAlpha(accentSoft, 0.9f));
+            var mapsDone = MapsDone(controller);
+            TextDraw.At(mapsDone, new Vector2(columnX, y), Styling.WithAlpha(accentSoft, 0.9f));
+            DrawMapDetail(controller.Progress, columnX + TextDraw.Measure(mapsDone).X, columnX + columnWidth, y, accentSoft);
         }
 
         ImGui.Dummy(size);
@@ -124,6 +127,28 @@ internal static class RunningPanel
         }
 
         ProgressRing.CenterIcon(center, FontAwesomeIcon.Map, Styling.TextDim, radius * 0.55f);
+    }
+
+    // The wave and guards left during a fight, and the hunt's time left once the game shows it.
+    private static void DrawMapDetail(TreasureProgress progress, float x, float right, float y, Vector4 accentSoft)
+    {
+        if (!progress.HasMap)
+        {
+            return;
+        }
+
+        var color = Styling.WithAlpha(accentSoft, 0.9f);
+        var fight = MapRunText.Fight(progress);
+        if (fight.Length > 0)
+        {
+            TextDraw.Trailing(fight, x, right, y, color);
+            x += TextDraw.Measure(TextDraw.Separator).X + TextDraw.Measure(fight).X;
+        }
+
+        if (MapRunText.HasHuntTime(progress) && x < right)
+        {
+            TextDraw.Trailing(MapRunText.HuntTime(progress), x, right, y, color);
+        }
     }
 
     private static string MapsDone(TreasureController controller)
@@ -184,6 +209,10 @@ internal static class RunningPanel
         StatTile.Draw(Loc.T(L.Run.TileMaps), (session?.MapsCompleted ?? 0).ToString(Loc.Culture), null, Styling.AccentGlow, tileWidth);
         ImGui.SameLine(0, gap);
         StatTile.Draw(Loc.T(L.Run.TileElapsed), Formatting.Elapsed(session?.Elapsed ?? TimeSpan.Zero), null, Styling.AccentBlue, tileWidth);
+        ImGui.SameLine(0, gap);
+        var lastMap = controller.Progress.LastMap;
+        var lastAccent = lastMap is { Outcome: MapOutcome.Looted } ? Styling.AccentMint : Styling.AccentAmber;
+        StatTile.Draw(Loc.T(L.MapRun.LastMap), MapRunText.Outcome(lastMap), null, lastMap is null ? Styling.TextDim : lastAccent, tileWidth);
     }
 
     private static string CurrentZoneName()

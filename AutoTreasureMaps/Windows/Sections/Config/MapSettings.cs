@@ -25,6 +25,17 @@ internal static class MapSettings
         new(L.Maps.OrderLowestName, L.Maps.OrderLowestDetail),
     ];
 
+    private static readonly LootRoll[] rolls = [LootRoll.Need, LootRoll.Greed, LootRoll.Pass, LootRoll.Manual];
+
+    // Ordered like rolls, because the picked index reads both.
+    private static readonly SettingsControls.Choices.Choice[] rollChoices =
+    [
+        new(L.MapRun.RollNeedName, L.MapRun.RollNeedDetail),
+        new(L.MapRun.RollGreedName, L.MapRun.RollGreedDetail),
+        new(L.MapRun.RollPassName, L.MapRun.RollPassDetail),
+        new(L.MapRun.RollManualName, L.MapRun.RollManualDetail),
+    ];
+
     private static readonly ExpansionKind[] expansions =
         [ExpansionKind.ARR, ExpansionKind.HW, ExpansionKind.SB, ExpansionKind.ShB, ExpansionKind.EW, ExpansionKind.DT];
 
@@ -36,6 +47,7 @@ internal static class MapSettings
     public static void Draw(Configuration configuration, TreasureCatalog catalog)
     {
         DrawOrderGroup(configuration);
+        DrawLootGroup(configuration);
         DrawTiersIntro();
         for (var index = 0; index < expansions.Length; index++)
         {
@@ -57,6 +69,22 @@ internal static class MapSettings
                 configuration.SaveDebounced();
             }));
         SettingsRow.Caption(Loc.T(orderChoices[selected].Detail));
+    }
+
+    private static void DrawLootGroup(Configuration configuration)
+    {
+        using var group = SettingsGroup.Begin(Loc.T(L.MapRun.Loot));
+
+        var selected = Math.Max(0, Array.IndexOf(rolls, configuration.LootRoll));
+        SettingsRow.Draw(Loc.T(L.MapRun.Roll),
+            Loc.T(L.MapRun.RollHelp),
+            SettingsControls.RowComboWidth,
+            () => SettingsControls.Choices.DrawCombo("##atm_maps_roll", rollChoices, selected, choice =>
+            {
+                configuration.LootRoll = rolls[choice];
+                configuration.SaveDebounced();
+            }));
+        SettingsRow.Caption(Loc.T(rollChoices[selected].Detail));
     }
 
     private static void DrawTiersIntro()

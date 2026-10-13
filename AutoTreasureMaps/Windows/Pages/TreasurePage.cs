@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows.Components;
 using AutoTreasureMaps.Windows.Sections;
@@ -15,6 +16,9 @@ internal sealed class TreasurePage
     private const float SwitchRevealMs = 320f;
     private const float EmptyCardHeight = 118f;
     private const float EmptyCardPadX = 24f;
+    private const float LastMapGap = 10f;
+    private const float LastMapIconGap = 8f;
+    private const float LastMapLabelGap = 12f;
 
     public void Draw(Plugin plugin, AppWindow window)
     {
@@ -25,6 +29,7 @@ internal sealed class TreasurePage
         if (running)
         {
             RunningPanel.Draw(controller);
+            DrawLiveMap(controller.Progress);
             return;
         }
 
@@ -41,6 +46,7 @@ internal sealed class TreasurePage
         Styling.VSpace(20f);
         SectionTitle(Loc.T(L.Treasure.CurrentMap));
         DrawCurrentMap(plugin);
+        DrawLastMap(plugin.Controller.Progress);
         Styling.VSpace(20f);
         SectionTitle(Loc.T(L.Maps.BagTitle));
         MapBagCard.Draw(plugin);
@@ -54,7 +60,7 @@ internal sealed class TreasurePage
         if (state == HeldSpotState.Resolved)
         {
             var setupNeeded = ReadyState.Resolve(plugin.Controller).Kind == ReadyState.Kind.SetupNeeded;
-            CurrentMapCard.Draw(tier, spot, setupNeeded, plugin.Controller.Running);
+            CurrentMapCard.Draw(tier, spot, MapRunReadiness.Blocker(plugin), setupNeeded, plugin.Controller.Running);
             return;
         }
 
@@ -65,6 +71,42 @@ internal sealed class TreasurePage
         }
 
         EmptyCard(FontAwesomeIcon.Map, Loc.T(L.Treasure.CurrentMapEmpty));
+    }
+
+    private static void DrawLiveMap(TreasureProgress progress)
+    {
+        if (!progress.HasMap)
+        {
+            return;
+        }
+
+        Styling.VSpace(20f);
+        SectionTitle(Loc.T(L.Treasure.CurrentMap));
+        CurrentMapCard.DrawLive(progress);
+    }
+
+    private static void DrawLastMap(TreasureProgress progress)
+    {
+        if (progress.LastMap is not { } last)
+        {
+            return;
+        }
+
+        var scale = ImGuiHelpers.GlobalScale;
+        Styling.VSpace(LastMapGap);
+        var origin = ImGui.GetCursorScreenPos();
+        var width = ImGui.GetContentRegionAvail().X;
+        var lineHeight = ImGui.GetTextLineHeight();
+        var color = last.Outcome == MapOutcome.Looted ? Styling.AccentMintSoft : Styling.AccentAmberSoft;
+        var iconSize = TextDraw.IconSize(FontAwesomeIcon.History);
+        TextDraw.Icon(FontAwesomeIcon.History, new Vector2(origin.X, origin.Y + (lineHeight - iconSize.Y) * 0.5f), Styling.TextDim);
+        var label = Loc.T(L.MapRun.LastMap);
+        var labelX = origin.X + iconSize.X + LastMapIconGap * scale;
+        var labelSize = TextDraw.SmallCapsSize(label);
+        TextDraw.SmallCaps(label, new Vector2(labelX, origin.Y + (lineHeight - labelSize.Y) * 0.5f), Styling.TextMuted);
+        var lineX = labelX + labelSize.X + LastMapLabelGap * scale;
+        TextDraw.At(TextDraw.Truncate(MapRunText.LastMap(last), origin.X + width - lineX), new Vector2(lineX, origin.Y), color);
+        ImGui.Dummy(new Vector2(width, lineHeight));
     }
 
     private static void SectionTitle(string text)
