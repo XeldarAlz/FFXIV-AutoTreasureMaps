@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "Session terminée : K.O. deux fois dans la même session.",
   "run.chat.refused": "Session terminée : la carte a été refusée, pour la raison ci-dessus.",
   "run.chat.supplyFailed": "Session terminée : la carte suivante n'a pas pu être préparée.",
+  "run.chat.navmeshInput": "Le plugin de recherche de chemin a activé \"Cancel current path on player movement input\" : la moindre touche de déplacement que vous pressez arrête le trajet de la session. Désactivez cette option dans ses réglages pour des sessions fluides.",
   "run.end.stopped": "Arrêtée",
   "run.end.outOfMaps": "Plus de cartes",
   "run.end.mapLimit": "Limite de cartes",

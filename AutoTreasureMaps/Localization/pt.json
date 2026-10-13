@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "Sessão encerrada: nocauteado duas vezes na mesma sessão.",
   "run.chat.refused": "Sessão encerrada: o mapa foi recusado pelo motivo acima.",
   "run.chat.supplyFailed": "Sessão encerrada: não foi possível preparar o próximo mapa.",
+  "run.chat.navmeshInput": "O plugin de busca de rotas está com \"Cancel current path on player movement input\" ativado, então qualquer tecla de movimento que você pressionar para a viagem da sessão. Desative isso nas configurações dele para sessões tranquilas.",
   "run.end.stopped": "Parada",
   "run.end.outOfMaps": "Sem mapas",
   "run.end.mapLimit": "Limite de mapas",

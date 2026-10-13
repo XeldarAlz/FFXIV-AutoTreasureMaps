@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "Run over: knocked out twice in one run.",
   "run.chat.refused": "Run over: the map was refused, for the reason above.",
   "run.chat.supplyFailed": "Run over: the next map could not be readied.",
+  "run.chat.navmeshInput": "The pathfinder has \"Cancel current path on player movement input\" turned on, so any movement key you press stops the run's travel. Turn it off in the pathfinder's settings for smooth runs.",
   "run.end.stopped": "Stopped",
   "run.end.outOfMaps": "Out of maps",
   "run.end.mapLimit": "Map limit",

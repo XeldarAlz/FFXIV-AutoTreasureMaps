@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "周回終了：1回の周回で2回戦闘不能になりました。",
   "run.chat.refused": "周回終了：上記の理由で地図を実行できませんでした。",
   "run.chat.supplyFailed": "周回終了：次の地図を用意できませんでした。",
+  "run.chat.navmeshInput": "経路探索プラグインで「Cancel current path on player movement input」がオンになっているため、移動キーを押すと周回の移動が止まります。快適に周回するには、そのプラグインの設定でオフにしてください。",
   "run.end.stopped": "停止",
   "run.end.outOfMaps": "地図切れ",
   "run.end.mapLimit": "地図の上限",

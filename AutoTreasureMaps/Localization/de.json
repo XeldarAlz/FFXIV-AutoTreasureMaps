@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "Lauf beendet: in einem Lauf zweimal kampfunfähig geworden.",
   "run.chat.refused": "Lauf beendet: die Karte wurde abgelehnt, aus dem oben genannten Grund.",
   "run.chat.supplyFailed": "Lauf beendet: die nächste Karte konnte nicht bereitgestellt werden.",
+  "run.chat.navmeshInput": "Das Wegfindungs-Plugin hat \"Cancel current path on player movement input\" eingeschaltet, daher stoppt jede Bewegungstaste, die du drückst, die Reise des Laufs. Schalte die Option in seinen Einstellungen aus, damit die Läufe reibungslos laufen.",
   "run.end.stopped": "Angehalten",
   "run.end.outOfMaps": "Keine Karten mehr",
   "run.end.mapLimit": "Kartenlimit",

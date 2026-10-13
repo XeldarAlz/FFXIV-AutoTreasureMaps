@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "Oturum bitti: bir oturumda iki kez bayıldınız.",
   "run.chat.refused": "Oturum bitti: harita yukarıdaki nedenle reddedildi.",
   "run.chat.supplyFailed": "Oturum bitti: sıradaki harita hazırlanamadı.",
+  "run.chat.navmeshInput": "Yol bulma eklentisinde \"Cancel current path on player movement input\" açık; bu yüzden bastığınız her hareket tuşu oturumun yolculuğunu durdurur. Sorunsuz oturumlar için eklentinin ayarlarından kapatın.",
   "run.end.stopped": "Durduruldu",
   "run.end.outOfMaps": "Harita kalmadı",
   "run.end.mapLimit": "Harita sınırı",

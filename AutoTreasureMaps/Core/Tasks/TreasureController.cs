@@ -139,6 +139,7 @@ internal sealed partial class TreasureController
         session = newSession;
         runTaskFactory = taskFactory;
         Diag($"Run starting: {plan}, job {newSession.JobAbbreviation}.");
+        NavmeshSettings.WarnIfInputCancelsMovement();
         StartRun(newSession);
     }
 

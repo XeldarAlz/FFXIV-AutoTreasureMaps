@@ -137,6 +137,7 @@ internal static partial class L
         public static readonly LocString ChatKnockedOutTwice = new("run.chat.knockedOutTwice", "Run over: knocked out twice in one run.");
         public static readonly LocString ChatRefused = new("run.chat.refused", "Run over: the map was refused, for the reason above.");
         public static readonly LocString ChatSupplyFailed = new("run.chat.supplyFailed", "Run over: the next map could not be readied.");
+        public static readonly LocString ChatNavmeshInput = new("run.chat.navmeshInput", "The pathfinder has \"Cancel current path on player movement input\" turned on, so any movement key you press stops the run's travel. Turn it off in the pathfinder's settings for smooth runs.");
 
         public static readonly LocString EndStopped = new("run.end.stopped", "Stopped");
         public static readonly LocString EndOutOfMaps = new("run.end.outOfMaps", "Out of maps");

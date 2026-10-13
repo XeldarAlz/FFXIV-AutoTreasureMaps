@@ -122,6 +122,7 @@
   "run.chat.knockedOutTwice": "运行结束：一次运行中两次无法战斗。",
   "run.chat.refused": "运行结束：藏宝图因上述原因被拒绝。",
   "run.chat.supplyFailed": "运行结束：无法准备下一张藏宝图。",
+  "run.chat.navmeshInput": "寻路插件开启了“Cancel current path on player movement input”，因此按下任何移动键都会中断运行的移动。为了运行顺畅，请在该插件的设置中关闭它。",
   "run.end.stopped": "已停止",
   "run.end.outOfMaps": "藏宝图用完",
   "run.end.mapLimit": "藏宝图上限",
