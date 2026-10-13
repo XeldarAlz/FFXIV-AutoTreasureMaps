@@ -30,9 +30,6 @@ internal readonly record struct GatherAnswer(GatherOutcome Outcome, LocString Re
     public static GatherAnswer Failed(LocString reason) => new(GatherOutcome.Failed, reason, 0);
 }
 
-// The gearset worn before the switch to the gatherer, to go back to, and the character it belongs to.
-internal readonly record struct GearsetReturn(int GearsetIndex, uint ClassJobId, ulong ContentId);
-
 // The daily map gather: switch to the gatherer's gearset, reach the area, open live nodes until one shows the map, gather
 // it, and switch back. A node without the map is gathered out, because a node that is only closed stays up with the same
 // items, and only a node gathered out makes way for the next one. The gatherer never fights: under attack it leaves.
@@ -63,27 +60,19 @@ public abstract partial class AutoCommon
     // The game refuses a gearset change for a moment after combat or a gathering window ends.
     private const int SwitchBackRetryMs = 3_000;
 
-    private static GearsetReturn? pendingGearsetReturn;
-
     private Vector3? gatherRetreat;
 
-    // Before the run carries on: a gather cut short in combat can leave the character on the gatherer. A class the
-    // player picked since is left alone.
+    // Before the run carries on: a gather cut short can leave the character on the gatherer. A class the player picked
+    // since is left alone.
     private protected async Task<bool> ReturnFromGatherer()
     {
-        if (pendingGearsetReturn is not { } pending)
+        if (!GatherGearsetReturn.TryGetOwed(out var owed))
         {
-            return true;
-        }
-
-        if (pending.ContentId != Svc.PlayerState.ContentId || !MapGatherTable.IsGathererClassJob(GearsetSwitcher.CurrentClassJobId()))
-        {
-            pendingGearsetReturn = null;
             return true;
         }
 
         Diag($"Gather: the character is still on {GearsetSwitcher.ClassJobLabel(GearsetSwitcher.CurrentClassJobId())} from an earlier gather; switching back first");
-        return await SwitchBack(pending, "gather-return");
+        return await SwitchBack(owed, "gather-return");
     }
 
     // The caller has planned the gather and confirmed the allowance; the gearset is switched back on every way out.
@@ -101,30 +90,28 @@ public abstract partial class AutoCommon
             return GatherAnswer.Failed(L.Gather.ReasonInCombat);
         }
 
-        var memory = RememberGearset();
-        GatherAnswer answer;
+        var memory = GatherGearsetReturn.Remember(plan.ClassJobId);
         try
         {
-            answer = await SwitchAndGather(plan, maxVisits, scope);
-        }
-        catch
-        {
-            SwitchBackWithoutWaiting(memory);
-            throw;
-        }
+            var answer = await SwitchAndGather(plan, maxVisits, scope);
+            if (CancelToken.IsCancellationRequested)
+            {
+                return GatherAnswer.Cancelled;
+            }
 
-        if (CancelToken.IsCancellationRequested)
-        {
-            SwitchBackWithoutWaiting(memory);
-            return GatherAnswer.Cancelled;
-        }
+            if (await SwitchBack(memory, $"{scope}-switch-back"))
+            {
+                return answer;
+            }
 
-        if (!await SwitchBack(memory, $"{scope}-switch-back"))
-        {
-            return CancelToken.IsCancellationRequested ? GatherAnswer.Cancelled : GatherAnswer.Failed(L.Gather.ReasonSwitchBackFailed);
+            return CancelToken.IsCancellationRequested
+                ? GatherAnswer.Cancelled
+                : GatherAnswer.Failed(L.Gather.ReasonSwitchBackFailed) with { MapItemId = answer.MapItemId };
         }
-
-        return answer;
+        finally
+        {
+            LetGoOfGearset();
+        }
     }
 
     // Asks the server afresh, as the field may be stale since the last request.
@@ -135,16 +122,15 @@ public abstract partial class AutoCommon
         return MapAllowance.Read();
     }
 
-    private static GearsetReturn RememberGearset()
+    // Every way out of the gather passes here, a cancel or a fault included. One still on the gatherer asks for the switch
+    // at once; the game refuses it in combat or while a node is open, so GatherGearsetReturn asks again once it can.
+    private static void LetGoOfGearset()
     {
-        var current = new GearsetReturn(GearsetSwitcher.CurrentGearsetIndex(), GearsetSwitcher.CurrentClassJobId(), Svc.PlayerState.ContentId);
-        if (pendingGearsetReturn is { } pending && pending.ContentId == current.ContentId && MapGatherTable.IsGathererClassJob(current.ClassJobId))
+        GatherGearsetReturn.Release();
+        if (GatherGearsetReturn.TryGetOwed(out var owed))
         {
-            return pending;
+            GatherGearsetReturn.Ask(owed, "gather cut short");
         }
-
-        pendingGearsetReturn = current;
-        return current;
     }
 
     private async Task<GatherAnswer> SwitchAndGather(DailyMapPlan plan, int maxVisits, string scope)
@@ -485,7 +471,7 @@ public abstract partial class AutoCommon
     {
         if (GearsetSwitcher.CurrentClassJobId() == memory.ClassJobId)
         {
-            pendingGearsetReturn = null;
+            GatherGearsetReturn.Done();
             return true;
         }
 
@@ -502,34 +488,16 @@ public abstract partial class AutoCommon
 
         if (result is GearsetSwitchResult.Switched or GearsetSwitchResult.AlreadyOnClass)
         {
-            pendingGearsetReturn = null;
+            GatherGearsetReturn.Done();
             return true;
         }
 
-        if (CancelToken.IsCancellationRequested)
+        if (!CancelToken.IsCancellationRequested)
         {
-            SwitchBackWithoutWaiting(memory);
-            return false;
+            Warn($"{scope}: could not switch back to {GearsetSwitcher.ClassJobLabel(memory.ClassJobId)} ({result}, {ConditionTag()})");
         }
 
-        Warn($"{scope}: could not switch back to {GearsetSwitcher.ClassJobLabel(memory.ClassJobId)} ({result})");
-        Svc.Chat.PrintError($"{AtmConstants.LogPrefix} {Loc.T(L.Gather.ReasonSwitchBackFailed)}");
         return false;
-    }
-
-    // A cancelled or faulted task cannot wait any more, so the switch is only asked for; the run's next start checks it
-    // took effect.
-    private void SwitchBackWithoutWaiting(GearsetReturn memory)
-    {
-        GatherOps.Close();
-        if (GearsetSwitcher.EquipWithoutWaiting(memory.ClassJobId, memory.GearsetIndex))
-        {
-            Diag($"Gather: cut short; asked the game to switch back to {GearsetSwitcher.ClassJobLabel(memory.ClassJobId)}");
-            return;
-        }
-
-        Warn($"Gather: cut short and could not switch back to {GearsetSwitcher.ClassJobLabel(memory.ClassJobId)} ({ConditionTag()})");
-        Svc.Chat.PrintError($"{AtmConstants.LogPrefix} {Loc.T(L.Gather.ReasonSwitchBackFailed)}");
     }
 
     private static Vector3 NearestKnownNode(in MapGatherArea area, Vector3 point)

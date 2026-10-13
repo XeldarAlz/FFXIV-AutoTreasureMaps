@@ -103,6 +103,7 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         Controller.Stop();
+        GatherGearsetReturn.AskBeforeUnload();
         TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
 
         PluginInterface.UiBuilder.Draw -= OnDraw;
@@ -247,6 +248,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         Controller.Tick();
         MapAllowance.Tick(Configuration);
+        GatherGearsetReturn.Tick();
     }
 
     private static string CommandHelp() => string.Concat(Loc.T(L.Plugin.CommandHelp), " ", Loc.T(L.Gather.CommandHelp));
