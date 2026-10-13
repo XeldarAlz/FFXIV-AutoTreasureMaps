@@ -40,7 +40,7 @@ public abstract partial class AutoCommon
         EnsureCombatPreset();
         ReleaseCombatMovement(scope);
         map.Wave = Math.Max(map.Wave, 1);
-        var waveSeenAt = openedAt;
+        var waveSeenAt = Math.Max(openedAt, map.WaveSeenAtMs);
         var sawGuard = false;
         var quietSince = 0L;
         ulong lastPickedGuard = 0;
@@ -85,6 +85,7 @@ public abstract partial class AutoCommon
                 if (Messages.TryGetLatest(TreasureLogMessages.Reinforcements, waveSeenAt + 1, out var reinforcements))
                 {
                     waveSeenAt = reinforcements.AtMs;
+                    map.WaveSeenAtMs = waveSeenAt;
                     map.Wave++;
                     quietSince = 0;
                     Diag($"{scope}: reinforcements, wave {map.Wave}.");

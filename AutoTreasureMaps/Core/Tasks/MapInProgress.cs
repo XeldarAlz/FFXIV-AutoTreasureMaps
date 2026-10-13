@@ -28,5 +28,8 @@ internal sealed class MapInProgress(TreasureTier tier, DigSpot spot)
 
     public int Wave { get; set; }
 
+    // The reinforcement message the wave count last took, so a later fight round or a resume does not count it again.
+    public long WaveSeenAtMs { get; set; }
+
     public bool CofferOpened => CofferOpenedAtMs != 0;
 }
