@@ -32,7 +32,7 @@ public abstract partial class AutoCommon
 
     private enum CofferStep : byte { Opened, NotFound, Unreachable, PromptMismatch, Cancelled }
 
-    private enum UnlockStep : byte { Unlocked, Sealed, TimedOut, Gone, Unreachable, Cancelled }
+    private enum UnlockStep : byte { Unlocked, Sealed, TimedOut, KnockedOut, Gone, Unreachable, Cancelled }
 
     private static ReadOnlySpan<uint> CofferOpenedMessages =>
     [
@@ -181,6 +181,8 @@ public abstract partial class AutoCommon
                     continue;
                 case UnlockStep.TimedOut:
                     return Conclude(map, map.Tier, MapOutcome.TimedOut);
+                case UnlockStep.KnockedOut:
+                    return Conclude(map, map.Tier, MapOutcome.Died);
                 case UnlockStep.Cancelled:
                     return Conclude(map, map.Tier, MapOutcome.Cancelled);
                 default:
@@ -211,6 +213,17 @@ public abstract partial class AutoCommon
             if (Messages.ArrivedSince(TreasureLogMessages.HuntTimeExpired, map.CofferOpenedAtMs))
             {
                 return UnlockStep.TimedOut;
+            }
+
+            // A guard or an add can still knock the character out after the fight, and nothing is reached while down.
+            if (IsKnockedOut())
+            {
+                if (!await RecoverInHunt(map))
+                {
+                    return CancelToken.IsCancellationRequested ? UnlockStep.Cancelled : UnlockStep.KnockedOut;
+                }
+
+                EnterStep(TreasurePhase.Looting);
             }
 
             if (TreasureCoffers.Gone(map.CofferId))
