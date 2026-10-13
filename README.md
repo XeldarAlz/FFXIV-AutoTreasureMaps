@@ -35,6 +35,7 @@ Planned for the first release:
 - **After-run action**: stay logged in, return to the inn, log out, or close the game once the last map is done.
 - **Auto-repair**: Dark Matter first, Grand Company mender as fallback.
 - **Auto-consume**: keeps food and medicine buffs up between maps, HQ first.
+- **Daily map**: once a day, gathers the free timeworn map as a Miner or Botanist when the run has no map left, then switches back to your gearset (off by default).
 - **Humanizer**: waits a random moment before each teleport, dig, coffer and fight, and takes city breaks between maps, so long sessions look less mechanical.
 - **Pause & resume**: park a run without losing your place, and auto-pause while you're in a duty.
 - **Party invites**: auto-declines incoming invites during a run after a random delay, with an optional reply message.
@@ -75,6 +76,7 @@ The plugin needs a few helpers for movement and combat to be installed and loade
 | `/atm goto spot` | Travel to that dig spot and land on it |
 | `/atm dig` | Run the held map: travel, dig, fight the guards, loot the coffer |
 | `/atm decipher [map]` | Decipher the next timeworn map in your bags by the order in Settings, or the one named (a piece of its name or its item id) |
+| `/atm gather` | Gather today's timeworn map once as a Miner or Botanist, `/atm gather stop` cancels |
 | `/atm tiers` | List every map tier in the Console (debug helper) |
 | `/atm goto <territory> <x> <y> <z>` | Travel to a point, `/atm goto stop` cancels (debug helper) |
 
@@ -99,5 +101,7 @@ If you liked this plugin, take a look at my other Dalamud work. You might find s
 ## License
 
 AGPL-3.0-or-later. See [LICENSE.md](LICENSE.md). [NOTICE](NOTICE) adds the attribution terms the AGPL allows: a fork, or any project that reuses this code, must credit the original author and must not pass itself off as the original. The license covers the code, not the name or the icon: read the [trademark and naming policy](TRADEMARK.md) before you publish a fork.
+
+Data taken from other projects, with its source and license, is listed in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md).
 
 How AI is used to build this plugin is written down in [AI usage](AI-USAGE.md).
