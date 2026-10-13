@@ -50,12 +50,10 @@ internal abstract class MapSupplyTask : AutoCommon
         }
         finally
         {
-            // The run does not wait for a cancelled step to unwind, so a fight inside the step can take the movement
-            // hold again after a Stop or a Pause has released it.
-            if (CancelToken.IsCancellationRequested)
-            {
-                ReleaseCombatMovement("supply");
-            }
+            // A fight inside the step takes the movement hold again as it ends, after a Stop or a Pause may already have
+            // released it, and a step run from a command has no run around it to let go. A run takes the hold again on
+            // the ground before it travels to the dig spot.
+            ReleaseCombatMovement("supply");
         }
     }
 

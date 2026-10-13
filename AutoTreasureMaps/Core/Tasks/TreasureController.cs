@@ -89,11 +89,12 @@ internal sealed partial class TreasureController
     {
         var ending = session;
         var wasPaused = Paused;
+        var taskWasRunning = Svc.Automation.Running;
         ending?.MarkStopped();
         currentTask = null;
         PauseReason = PauseReason.None;
         Svc.Automation.Stop();
-        if (ending is not null)
+        if (ending is not null || taskWasRunning)
         {
             ReleaseHelpers();
         }
