@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "Sandığı açma",
   "humanizer.openCofferHelp": "Kazıyla çıkan sandığın yanına varınca, açmadan önce.",
   "humanizer.engage": "Bekçilere saldırma",
-  "humanizer.engageHelp": "Sandık açılıp bekçileri belirdikten sonra, savaşa katılmadan önce."
+  "humanizer.engageHelp": "Sandık açılıp bekçileri belirdikten sonra, savaşa katılmadan önce. Karakter saldırı altındayken canı yarıya veya altına düştüyse bekleme kesilir."
 }

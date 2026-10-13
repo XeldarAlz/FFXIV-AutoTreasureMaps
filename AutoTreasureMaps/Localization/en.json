@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "Opening the coffer",
   "humanizer.openCofferHelp": "Once beside the coffer the dig turned up, before opening it.",
   "humanizer.engage": "Engaging the guards",
-  "humanizer.engageHelp": "Once the coffer has opened and its guards appear, before joining the fight."
+  "humanizer.engageHelp": "Once the coffer has opened and its guards appear, before joining the fight. Cut short when the character is under attack at half health or less."
 }

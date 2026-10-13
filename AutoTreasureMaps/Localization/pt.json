@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "Abrir o baú",
   "humanizer.openCofferHelp": "Ao lado do baú desenterrado, antes de abri-lo.",
   "humanizer.engage": "Atacar os guardiões",
-  "humanizer.engageHelp": "Depois que o baú abre e os guardiões aparecem, antes de entrar na luta."
+  "humanizer.engageHelp": "Depois que o baú abre e os guardiões aparecem, antes de entrar na luta. A espera é interrompida se o personagem estiver sob ataque com metade dos PV ou menos."
 }

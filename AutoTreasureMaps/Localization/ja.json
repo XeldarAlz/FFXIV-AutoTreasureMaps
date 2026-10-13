@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "宝箱の開封",
   "humanizer.openCofferHelp": "掘り出した宝箱のそばに着いた後、開ける前。",
   "humanizer.engage": "番人への攻撃",
-  "humanizer.engageHelp": "宝箱が開いて番人が現れた後、戦闘に加わる前。"
+  "humanizer.engageHelp": "宝箱が開いて番人が現れた後、戦闘に加わる前。攻撃を受けていてHPが半分以下なら、待たずに戦います。"
 }

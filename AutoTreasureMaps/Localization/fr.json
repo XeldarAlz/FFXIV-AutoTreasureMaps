@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "Ouvrir le coffre",
   "humanizer.openCofferHelp": "À côté du coffre déterré, avant de l'ouvrir.",
   "humanizer.engage": "Engager les gardiens",
-  "humanizer.engageHelp": "Une fois le coffre ouvert et ses gardiens apparus, avant de rejoindre le combat."
+  "humanizer.engageHelp": "Une fois le coffre ouvert et ses gardiens apparus, avant de rejoindre le combat. L'attente est écourtée si le personnage est attaqué avec la moitié de ses PV ou moins."
 }

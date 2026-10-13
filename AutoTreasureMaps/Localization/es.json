@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "Abrir el cofre",
   "humanizer.openCofferHelp": "Junto al cofre que desenterró la excavación, antes de abrirlo.",
   "humanizer.engage": "Atacar a los guardianes",
-  "humanizer.engageHelp": "Cuando el cofre se ha abierto y aparecen sus guardianes, antes de unirse al combate."
+  "humanizer.engageHelp": "Cuando el cofre se ha abierto y aparecen sus guardianes, antes de unirse al combate. La espera se interrumpe si el personaje recibe ataques con la mitad de sus PV o menos."
 }

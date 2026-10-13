@@ -571,5 +571,5 @@
   "humanizer.openCoffer": "开启宝箱",
   "humanizer.openCofferHelp": "来到挖出的宝箱旁边后，打开之前。",
   "humanizer.engage": "攻击守卫",
-  "humanizer.engageHelp": "宝箱打开、守卫出现后，加入战斗之前。"
+  "humanizer.engageHelp": "宝箱打开、守卫出现后，加入战斗之前。若角色正受到攻击且体力不高于一半，则不再等待，直接战斗。"
 }
