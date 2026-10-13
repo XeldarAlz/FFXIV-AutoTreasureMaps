@@ -96,7 +96,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         }
 
         // A stop can cut the waits below short at any point, so the board's windows are closed from the cancel itself.
-        using var stopRegistration = CancelToken.Register(CloseBoardOnStop);
+        using var stopRegistration = CancelToken.Register(CloseBoardNow);
         try
         {
             var answer = await Visit(plugin.Configuration, tiers);
@@ -106,6 +106,11 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
             }
 
             return answer;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            CloseBoardNow();
+            throw;
         }
         finally
         {
@@ -592,8 +597,9 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         Warn("Market: a board window stayed open after its own close; closed it directly.");
     }
 
-    // Runs inside the stop's Cancel, where a throw would cut the stop short.
-    private void CloseBoardOnStop()
+    // For a stop and an error, which cannot wait out the close throttle. A stop runs it inside its Cancel, where a throw
+    // would cut the stop short.
+    private void CloseBoardNow()
     {
         try
         {
@@ -601,7 +607,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         }
         catch (Exception exception)
         {
-            Warn($"Market: closing the board's windows on stop threw: {exception.Message}");
+            Warn($"Market: closing the board's windows at once threw: {exception.Message}");
         }
     }
 
