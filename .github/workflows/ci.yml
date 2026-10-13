@@ -60,10 +60,10 @@ jobs:
             fi
           done
           dash=$(printf '\xe2\x80\x94')
-          offenders=$(grep -n -F -- "$dash" "$dir"/*.json AutoTreasureMaps/Core/Localization/L.cs || true)
+          offenders=$(grep -n -F -- "$dash" "$dir"/*.json AutoTreasureMaps/Core/Localization/L*.cs || true)
           if [ -n "$offenders" ]; then
             echo "$offenders"
-            echo "::error::No em dashes in L.cs or the language catalogs. Use commas, colons, or parentheses."
+            echo "::error::No em dashes in the L*.cs string tables or the language catalogs. Use commas, colons, or parentheses."
             exit 1
           fi
 
