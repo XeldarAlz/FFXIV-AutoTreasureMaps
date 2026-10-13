@@ -22,6 +22,9 @@ internal sealed class HistoryPage
     private const float BadgeGap = 6f;
 
     private bool confirmClear;
+    private CachedText mapsText;
+    private CachedText gilText;
+    private CachedText portalsText;
     private CachedText runsText;
     private CachedText perMapText;
 
@@ -78,12 +81,15 @@ internal sealed class HistoryPage
         var perMap = totals.MapsRun > 0
             ? perMapText.Get(revision, static _ => Loc.T(L.History.TilePerMap, Plugin.Instance.History.Lifetime.GilPerMap.ToString("N0", Loc.Culture)))
             : null;
+        var maps = mapsText.Get(totals.Maps, static key => key.ToString("N0", Loc.Culture));
+        var gil = gilText.Get(totals.Gil, static key => key.ToString("N0", Loc.Culture));
+        var portals = portalsText.Get(totals.Portals, static key => key.ToString("N0", Loc.Culture));
 
-        StatTile.Draw(Loc.T(L.History.TileMaps), totals.Maps.ToString("N0", Loc.Culture), runs, Styling.AccentBlue, tileWidth);
+        StatTile.Draw(Loc.T(L.History.TileMaps), maps, runs, Styling.AccentBlue, tileWidth);
         ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileGil), totals.Gil.ToString("N0", Loc.Culture), perMap, Styling.AccentAmber, tileWidth);
+        StatTile.Draw(Loc.T(L.History.TileGil), gil, perMap, Styling.AccentAmber, tileWidth);
         ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TilePortals), totals.Portals.ToString("N0", Loc.Culture), null, Styling.AccentNebula, tileWidth);
+        StatTile.Draw(Loc.T(L.History.TilePortals), portals, null, Styling.AccentNebula, tileWidth);
     }
 
     private static void DrawEmptyState()
