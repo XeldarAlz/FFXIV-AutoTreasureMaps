@@ -38,5 +38,4 @@ internal sealed class RunRecord
 
     public TimeSpan Duration => TimeSpan.FromSeconds(DurationSeconds);
     public double MapsPerHour => DurationSeconds > 0 ? MapsCompleted / (DurationSeconds / 3600.0) : 0;
-    public int MapsFailed => MapsRun - MapsCompleted;
 }

@@ -66,7 +66,7 @@ public sealed class TreasureSession
 
     public bool DidNothing => MapsRun == 0;
 
-    public int MapsFailed => MapsRun - MapsCompleted;
+    public int MapsFailed => MapsTimedOut + MapsKnockedOut + MapsDigFailed + MapsUnreachable;
 
     public TimeSpan Elapsed => (endedAt ?? DateTime.UtcNow) - StartedAt - TimeSpan.FromMilliseconds(PausedTotalMs);
 
