@@ -27,6 +27,7 @@ public sealed class Plugin : IDalamudPlugin
     private const string SpotSubcommand = "spot";
     private const string DecipherSubcommand = "decipher";
     private const string DigSubcommand = "dig";
+    private const string BuySubcommand = "buy";
     private const string NavmeshIpcProviderMarker = "Navmesh.IPCProvider";
 
     [PluginService]
@@ -207,6 +208,10 @@ public sealed class Plugin : IDalamudPlugin
         else if (CommandWords.StartsWith(trimmed, DecipherSubcommand))
         {
             AutoDecipher.HandleCommand(CommandWords.After(trimmed, DecipherSubcommand), this);
+        }
+        else if (CommandWords.StartsWith(trimmed, BuySubcommand))
+        {
+            AutoBuyMap.HandleCommand(CommandWords.After(trimmed, BuySubcommand), this);
         }
         else if (IsGotoCommand(trimmed))
         {

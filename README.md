@@ -29,6 +29,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 Planned for the first release:
 
 - **Decipher and dig**: reads each timeworn map you carry, works out where it points, and digs at the spot.
+- **Market board**: when your bags run out of enabled maps, buys the next one on the market board under a price cap you set per tier, within a gil budget per run and never below the gil you choose to keep.
 - **Travel**: teleports to the nearest aetheryte, then flies, rides or walks to the dig spot, and lands where it can dig.
 - **Hands-off combat**: fights off every wave that guards a coffer with a bundled combat preset, then opens the coffer.
 - **Recovery**: gets back up after a death; re-paths, jumps, or teleports out when it gets stuck.
@@ -40,7 +41,7 @@ Planned for the first release:
 - **Party invites**: auto-declines incoming invites during a run after a random delay, with an optional reply message.
 - **GM alert**: stops the bot when a GM is near, with optional toast, beeps, or custom commands.
 - **Stop conditions**: a run ends when no enabled map is left, after a set number of maps or minutes, after failed maps in a row, or after a second knockout.
-- **History**: every run recorded with its maps, gil, portals seen and how it ended.
+- **History**: every run recorded with its maps, gil (less what it spent on maps), portals seen and how it ended.
 
 ## Install
 
@@ -75,6 +76,7 @@ The plugin needs a few helpers for movement and combat to be installed and loade
 | `/atm goto spot` | Travel to that dig spot and land on it |
 | `/atm dig` | Run the held map: travel, dig, fight the guards, loot the coffer |
 | `/atm decipher [map]` | Decipher the next timeworn map in your bags by the order in Settings, or the one named (a piece of its name or its item id) |
+| `/atm buy [map]` | Buy the next map on the market board under its price cap, or the one named (a piece of its name or its item id); market buying must be on in Settings, Maps |
 | `/atm tiers` | List every map tier in the Console (debug helper) |
 | `/atm goto <territory> <x> <y> <z>` | Travel to a point, `/atm goto stop` cancels (debug helper) |
 

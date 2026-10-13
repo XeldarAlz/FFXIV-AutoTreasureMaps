@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Market;
 using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows.Components;
@@ -22,6 +23,7 @@ internal static class MapBagCard
     private const float LabelGap = 10f;
     private const float SectionGap = 12f;
     private const string ButtonId = "##atm_decipher_next";
+    private const string BuyButtonId = "##atm_buy_map";
     private const string CountPrefix = "×";
 
     private static readonly Dictionary<int, string> countLabels = [];
@@ -106,7 +108,10 @@ internal static class MapBagCard
         var label = Loc.T(L.Maps.DecipherNext);
         var buttonX = right - PillButton.Width(label, FontAwesomeIcon.Magic);
         var midY = top + buttonHeight * 0.5f;
-        var textRight = buttonX - LabelGap * scale;
+        var buying = plugin.Configuration.MarketBuyingEnabled;
+        var buyLabel = Loc.T(L.Market.BuyMap);
+        var buyX = buying ? buttonX - LabelGap * scale - PillButton.Width(buyLabel, FontAwesomeIcon.Coins) : buttonX;
+        var textRight = buyX - LabelGap * scale;
         if (pickIssue == DecipherIssue.None)
         {
             var caption = Loc.T(L.Maps.Next);
@@ -124,6 +129,11 @@ internal static class MapBagCard
             TextDraw.At(reason, new Vector2(left, midY - reasonSize.Y * 0.5f), Styling.AccentAmberSoft);
         }
 
+        if (buying)
+        {
+            DrawBuyButton(plugin, buyLabel, buyX, buttonX - LabelGap * scale, top, buttonHeight);
+        }
+
         var enabled = issue == DecipherIssue.None;
         ImGui.SetCursorScreenPos(new Vector2(buttonX, top));
         if (PillButton.Draw(ButtonId, label, Styling.AccentGlow, PillButton.Emphasis.Filled, FontAwesomeIcon.Magic,
@@ -136,6 +146,23 @@ internal static class MapBagCard
         if (!enabled && Hit.HoveringRect(new Vector2(buttonX, top), new Vector2(right, top + buttonHeight)))
         {
             Tooltip.Show(Loc.T(DecipherIssues.Reason(issue)));
+        }
+    }
+
+    private static void DrawBuyButton(Plugin plugin, string label, float left, float right, float top, float buttonHeight)
+    {
+        var refusal = AutoBuyMap.Refusal(plugin, MarketRules.AnyTier);
+        var enabled = refusal.Key is null;
+        ImGui.SetCursorScreenPos(new Vector2(left, top));
+        if (PillButton.Draw(BuyButtonId, label, Styling.AccentAmber, PillButton.Emphasis.Tinted, FontAwesomeIcon.Coins,
+                enabled, Layout.ActionPillHeight, enabled ? Loc.T(L.Market.BuyMapHint) : null))
+        {
+            AutoBuyMap.Start(plugin, MarketRules.AnyTier);
+        }
+
+        if (!enabled && Hit.HoveringRect(new Vector2(left, top), new Vector2(right, top + buttonHeight)))
+        {
+            Tooltip.Show(Loc.T(refusal));
         }
     }
 
