@@ -184,7 +184,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
                 return (TierStep.NextTier, default);
             }
 
-            var attempt = await Buy(tier, pick);
+            var attempt = await Buy(configuration, tier, pick);
             if (attempt is not (Attempt.Stale or Attempt.Cancelled))
             {
                 purchases++;
@@ -331,7 +331,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         return found;
     }
 
-    private async Task<Attempt> Buy(TreasureTier tier, MarketListing listing)
+    private async Task<Attempt> Buy(Configuration configuration, TreasureTier tier, MarketListing listing)
     {
         Status = $"Buying {tier.Name}";
         await DelayMs(Random.Shared.Next(ReadPauseMinMs, ReadPauseMaxMs + 1));
@@ -341,9 +341,17 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         }
 
         var itemId = tier.TimewornItemId;
-        if (!MarketBoardOps.StillListed(listing, itemId))
+        if (!MarketBoardOps.SearchOpen() || !MarketBoardOps.StillListed(listing, itemId))
         {
-            Diag($"Market: listing {listing.ListingId:X} changed or left the board before the purchase; reading the listings again.");
+            Diag($"Market: the board closed, or listing {listing.ListingId:X} changed or left it, before the purchase; reading the listings again.");
+            return Attempt.Stale;
+        }
+
+        // Gil can move during the pause, so the budget and the gil to keep are held to once more as the purchase goes out.
+        var spendable = MarketRules.Spendable(configuration, session);
+        if (listing.Total > spendable)
+        {
+            Diag($"Market: listing {listing.ListingId:X} at {listing.Total} gil with tax no longer fits the {spendable} gil that may be spent; reading the listings again.");
             return Attempt.Stale;
         }
 
