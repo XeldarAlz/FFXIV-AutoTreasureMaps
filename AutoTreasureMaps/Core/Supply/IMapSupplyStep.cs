@@ -19,15 +19,13 @@ internal interface IMapSupplyStep
     // English, for the log.
     string Name { get; }
 
-    // What the run shows while the step works.
     TreasurePhase Phase { get; }
 
-    // How long the step's task may take before the run cancels it.
     int TimeoutMs { get; }
 
     // Cheap enough for every frame: the Treasure page asks it whether a run can start.
     MapSupplyCheck Check(Plugin plugin);
 
-    // The step's work, built afresh for every try and run by the run task under the step's time limit.
+    // Built afresh for every try, since a finished task cannot run again.
     MapSupplyTask CreateTask();
 }
