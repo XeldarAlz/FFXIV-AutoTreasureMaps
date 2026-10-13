@@ -89,6 +89,7 @@ internal static partial class L
     internal static class Run
     {
         public static readonly LocString PhasePreparing = new("run.phase.preparing", "Getting ready");
+        public static readonly LocString PhaseDeciphering = new("run.phase.deciphering", "Deciphering");
         public static readonly LocString PhaseTravelling = new("run.phase.travelling", "Travelling");
         public static readonly LocString PhaseFighting = new("run.phase.fighting", "Fighting");
         public static readonly LocString PhaseFinishing = new("run.phase.finishing", "Finishing up");
@@ -100,6 +101,42 @@ internal static partial class L
         public static readonly LocPlural MapsDone = new("run.mapsDone", "{0} map done", "{0} maps done");
         public static readonly LocString TileMaps = new("run.tile.maps", "Maps");
         public static readonly LocString TileElapsed = new("run.tile.elapsed", "Elapsed");
+
+        public static readonly LocString SettingsGroup = new("run.settings.group", "Run");
+        public static readonly LocString MapLimit = new("run.settings.mapLimit", "Stop after maps");
+        public static readonly LocString MapLimitHelp = new("run.settings.mapLimitHelp", "End the run once this many maps have been run, whatever came of them. At 0 it goes on until no enabled map is left.");
+        public static readonly LocString MinuteLimit = new("run.settings.minuteLimit", "Stop after minutes");
+        public static readonly LocString MinuteLimitHelp = new("run.settings.minuteLimitHelp", "End the run once it has gone this long, pauses not counted. A map under way is finished first. At 0 there is no time limit.");
+        public static readonly LocString FailureLimit = new("run.settings.failureLimit", "Stop after failed maps in a row");
+        public static readonly LocString FailureLimitHelp = new("run.settings.failureLimitHelp", "End the run once this many maps in a row end with nothing dug up, the spot out of reach or an error, so it never loops on a bad spot.");
+        public static readonly LocString NoLimit = new("run.settings.noLimit", "No limit");
+        public static readonly LocString AlsoStops = new("run.settings.alsoStops", "A run also stops once no enabled map is left, when a map is refused (a portal map, an undersea spot, a duty, or a party member who stays out of the area for a minute) and after a second knockout.");
+
+        public static readonly LocPlural ChatStarted = new("run.chat.started", "Run started with {0} map to go.", "Run started with {0} maps to go.");
+        public static readonly LocString ChatCannotStart = new("run.chat.cannotStart", "Cannot start the run. {0}");
+        public static readonly LocString ChatStopped = new("run.chat.stopped", "Stopped.");
+        public static readonly LocString ChatNothingToStop = new("run.chat.nothingToStop", "Nothing to stop.");
+        public static readonly LocString ChatPartyWait = new("run.chat.partyWait", "A party member is not in the area, so the game will not allow the dig. Waiting up to {0} seconds for the party.");
+        public static readonly LocString ChatOutOfMaps = new("run.chat.outOfMaps", "Run over: no maps left to run.");
+        public static readonly LocString ChatOutOfMapsReason = new("run.chat.outOfMapsReason", "Run over: no maps left to run. {0}");
+        public static readonly LocPlural ChatMapLimit = new("run.chat.mapLimit", "Run over: {0} map run, the limit you set.", "Run over: {0} maps run, the limit you set.");
+        public static readonly LocPlural ChatTimeLimit = new("run.chat.timeLimit", "Run over: the {0} minute limit you set is up.", "Run over: the {0} minute limit you set is up.");
+        public static readonly LocPlural ChatFailureStreak = new("run.chat.failureStreak", "Run over: {0} map in a row failed, so the run stops before it loops on a bad spot.", "Run over: {0} maps in a row failed, so the run stops before it loops on a bad spot.");
+        public static readonly LocString ChatKnockedOutTwice = new("run.chat.knockedOutTwice", "Run over: knocked out twice in one run.");
+        public static readonly LocString ChatRefused = new("run.chat.refused", "Run over: the map was refused, for the reason above.");
+        public static readonly LocString ChatSupplyFailed = new("run.chat.supplyFailed", "Run over: the next map could not be readied.");
+
+        public static readonly LocString EndStopped = new("run.end.stopped", "Stopped");
+        public static readonly LocString EndOutOfMaps = new("run.end.outOfMaps", "Out of maps");
+        public static readonly LocString EndMapLimit = new("run.end.mapLimit", "Map limit");
+        public static readonly LocString EndTimeLimit = new("run.end.timeLimit", "Time limit");
+        public static readonly LocString EndFailureStreak = new("run.end.failureStreak", "Failures in a row");
+        public static readonly LocString EndKnockedOutTwice = new("run.end.knockedOutTwice", "Knocked out twice");
+        public static readonly LocString EndRefused = new("run.end.refused", "Map refused");
+        public static readonly LocString EndSupplyFailed = new("run.end.supplyFailed", "No map readied");
+        public static readonly LocString EndStillKnockedOut = new("run.end.stillKnockedOut", "Could not get up");
+        public static readonly LocString EndFaulted = new("run.end.faulted", "Error");
+        public static readonly LocString EndSingleMap = new("run.end.singleMap", "One map");
     }
 
     internal static class History
@@ -299,7 +336,7 @@ internal static partial class L
 
     internal static class Plugin
     {
-        public static readonly LocString CommandHelp = new("plugin.commandHelp", "Toggle the Auto Treasure Maps window. /atm config | stats | deps | log | changelog | about | pause (pause or resume the run) | spot (show the held map's dig spot) | flag (flag the dig spot on the map) | goto spot (travel to the dig spot) | dig (run the held map: travel, dig, fight the guards and loot the coffer) | tiers (list every map tier in the console) | decipher [map] (decipher the next timeworn map in your bags, or the one named) | target (dump the current target's BaseId).");
+        public static readonly LocString CommandHelp = new("plugin.commandHelp", "Toggle the Auto Treasure Maps window. /atm config | stats | deps | log | changelog | about | start (run your maps until a stop condition: decipher, travel, dig, fight and loot) | stop (stop the run) | pause (pause or resume the run) | spot (show the held map's dig spot) | flag (flag the dig spot on the map) | goto spot (travel to the dig spot) | dig (run the held map: travel, dig, fight the guards and loot the coffer) | tiers (list every map tier in the console) | decipher [map] (decipher the next timeworn map in your bags, or the one named) | target (dump the current target's BaseId).");
         public static readonly LocString CommandHelpAlias = new("plugin.commandHelpAlias", "Alias for /atm.");
     }
 }

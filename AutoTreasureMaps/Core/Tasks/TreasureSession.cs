@@ -4,8 +4,8 @@ using System.Threading;
 
 namespace AutoTreasureMaps.Core.Tasks;
 
-// One run of the controller: the clock, the job and the maps finished. It outlives a pause, since every resume builds
-// the run task afresh.
+// One run of the controller: the clock, the job, what the maps came to and how the run ended. It outlives a pause,
+// since every resume builds the run task afresh.
 public sealed class TreasureSession
 {
     private long pausedMs;
@@ -21,11 +21,35 @@ public sealed class TreasureSession
 
     public string JobAbbreviation { get; private set; }
 
+    // Maps looted.
     public int MapsCompleted { get; private set; }
+
+    // Maps carried to an end: looted, failed, or dug up into a portal. A refused map is still held and does not count.
+    public int MapsRun { get; private set; }
+
+    public int MapsTimedOut { get; private set; }
+
+    public int MapsKnockedOut { get; private set; }
+
+    public int MapsDigFailed { get; private set; }
+
+    public int MapsUnreachable { get; private set; }
+
+    // Faults during a map; the map itself resumes after the restart, so it is counted again once it ends.
+    public int MapsFaulted { get; private set; }
+
+    public int PortalsSeen { get; private set; }
+
+    public int Gil { get; private set; }
+
+    public int ItemsGained { get; private set; }
+
+    // Maps in a row that ended with nothing dug up, out of reach or on an error; any other end starts it over.
+    public int FailedInARow { get; private set; }
 
     public bool EndedWithFault { get; private set; }
 
-    public bool CompletedByStopCondition;
+    public bool CompletedByStopCondition { get; private set; }
 
     internal bool Recorded;
     internal bool AfterActionDispatched;
@@ -33,22 +57,58 @@ public sealed class TreasureSession
     // The map under way, or null between maps; a pause or a fault restart resumes its hunt from here.
     internal MapInProgress? ActiveMap;
 
-    public bool DidNothing => MapsCompleted == 0;
+    internal Dictionary<uint, int> NotableItems { get; } = [];
+
+    // Null while the run goes on, and for a run stopped from outside before it decided.
+    internal RunEnd? EndedBy { get; private set; }
+
+    internal MapRefusal EndRefusal { get; private set; }
+
+    public bool DidNothing => MapsRun == 0;
+
+    public int MapsFailed => MapsRun - MapsCompleted;
 
     public TimeSpan Elapsed => (endedAt ?? DateTime.UtcNow) - StartedAt - TimeSpan.FromMilliseconds(PausedTotalMs);
 
     private long PausedTotalMs
         => pausedMs + (pauseStartedAtMs == 0 ? 0 : Environment.TickCount64 - pauseStartedAtMs);
 
-    internal void CreditMap() => MapsCompleted++;
-
+    // Gains count only once a map has ended: a faulted map is measured again from the same bags when it resumes.
     internal void RecordMap(in MapResult result)
     {
-        if (result.Outcome == MapOutcome.Looted)
+        switch (result.Outcome)
         {
-            CreditMap();
+            case MapOutcome.Cancelled:
+                return;
+            case MapOutcome.Faulted:
+                MapsFaulted++;
+                FailedInARow++;
+                return;
+            case MapOutcome.Refused when result.Refusal != MapRefusal.PortalDug:
+                return;
         }
+
+        MapsRun++;
+        Gil += result.Gil;
+        ItemsGained += result.ItemCount;
+        if (result.PortalSeen || result.Refusal == MapRefusal.PortalDug)
+        {
+            PortalsSeen++;
+        }
+
+        NoteNotableItems(result);
+        CountOutcome(result.Outcome);
     }
+
+    internal void Finish(RunEnd end, MapRefusal refusal = MapRefusal.None)
+    {
+        EndedBy = end;
+        EndRefusal = refusal;
+        CompletedByStopCondition = RunEnds.MetStopCondition(end);
+    }
+
+    // A run stopped from outside keeps the end it had already decided on.
+    internal void MarkStopped() => EndedBy ??= RunEnd.Stopped;
 
     public void Sample()
     {
@@ -104,6 +164,51 @@ public sealed class TreasureSession
 
         EndPause();
         endedAt = DateTime.UtcNow;
+    }
+
+    private void CountOutcome(MapOutcome outcome)
+    {
+        switch (outcome)
+        {
+            case MapOutcome.Looted:
+                MapsCompleted++;
+                FailedInARow = 0;
+                break;
+            case MapOutcome.TimedOut:
+                MapsTimedOut++;
+                FailedInARow = 0;
+                break;
+            case MapOutcome.Died:
+                MapsKnockedOut++;
+                FailedInARow = 0;
+                break;
+            case MapOutcome.DigFailed:
+                MapsDigFailed++;
+                FailedInARow++;
+                break;
+            case MapOutcome.Unreachable:
+                MapsUnreachable++;
+                FailedInARow++;
+                break;
+        }
+    }
+
+    private void NoteNotableItems(in MapResult result)
+    {
+        if (result.Items.IsDefaultOrEmpty)
+        {
+            return;
+        }
+
+        var items = result.Items.AsSpan();
+        for (var index = 0; index < items.Length; index++)
+        {
+            var item = items[index];
+            if (NotableLoot.IsNotable(item.ItemId))
+            {
+                NotableItems[item.ItemId] = NotableItems.GetValueOrDefault(item.ItemId) + item.Quantity;
+            }
+        }
     }
 
     private static string CurrentJobAbbreviation()

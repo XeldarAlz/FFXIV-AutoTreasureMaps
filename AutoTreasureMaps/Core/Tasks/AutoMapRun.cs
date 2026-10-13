@@ -33,7 +33,10 @@ internal sealed class AutoMapRun(TreasureSession session, TreasureProgress progr
                 return;
             }
 
-            session.CompletedByStopCondition = MapOutcomes.Final(result.Outcome);
+            if (MapOutcomes.Final(result.Outcome))
+            {
+                session.Finish(result.Outcome == MapOutcome.Refused ? RunEnd.Refused : RunEnd.SingleMap, result.Refusal);
+            }
         }
         catch (Exception exception)
         {

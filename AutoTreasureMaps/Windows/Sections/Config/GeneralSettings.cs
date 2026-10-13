@@ -5,6 +5,11 @@ namespace AutoTreasureMaps.Windows.Sections.Config;
 
 internal static class GeneralSettings
 {
+    private const int MapLimitMax = 200;
+    private const int MinuteLimitMax = 600;
+    private const int FailureLimitMin = 1;
+    private const int FailureLimitMax = 10;
+
     private static readonly AfterRunAction[] afterRunOrder =
         [AfterRunAction.StayLoggedIn, AfterRunAction.ReturnToInn, AfterRunAction.Logout, AfterRunAction.CloseGame];
 
@@ -22,7 +27,38 @@ internal static class GeneralSettings
         DrawLanguageGroup(configuration);
         DrawWindowGroup(configuration);
         DrawBehaviorGroup(configuration);
+        DrawRunGroup(configuration);
         DrawAfterRunGroup(configuration);
+    }
+
+    private static void DrawRunGroup(Configuration configuration)
+    {
+        using var group = SettingsGroup.Begin(Loc.T(L.Run.SettingsGroup));
+
+        var mapFormat = configuration.RunMapLimit == 0 ? Loc.T(L.Run.NoLimit) : Loc.T(L.Safety.MapsFormat);
+        SettingsRow.Draw(Loc.T(L.Run.MapLimit),
+            Loc.T(L.Run.MapLimitHelp),
+            SettingsControls.RowSliderWidth,
+            () => SettingsControls.DrawIntSlider(configuration, "##atm_run_maps",
+                () => configuration.RunMapLimit, value => configuration.RunMapLimit = value,
+                0, MapLimitMax, mapFormat));
+
+        var minuteFormat = configuration.RunMinuteLimit == 0 ? Loc.T(L.Run.NoLimit) : Loc.T(L.Safety.MinutesFormat);
+        SettingsRow.Draw(Loc.T(L.Run.MinuteLimit),
+            Loc.T(L.Run.MinuteLimitHelp),
+            SettingsControls.RowSliderWidth,
+            () => SettingsControls.DrawIntSlider(configuration, "##atm_run_minutes",
+                () => configuration.RunMinuteLimit, value => configuration.RunMinuteLimit = value,
+                0, MinuteLimitMax, minuteFormat));
+
+        SettingsRow.Draw(Loc.T(L.Run.FailureLimit),
+            Loc.T(L.Run.FailureLimitHelp),
+            SettingsControls.RowSliderWidth,
+            () => SettingsControls.DrawIntSlider(configuration, "##atm_run_failures",
+                () => configuration.RunFailureLimit, value => configuration.RunFailureLimit = value,
+                FailureLimitMin, FailureLimitMax, Loc.T(L.Safety.MapsFormat)));
+
+        SettingsRow.Note(Loc.T(L.Run.AlsoStops));
     }
 
     private static void DrawLanguageGroup(Configuration configuration)

@@ -1,0 +1,59 @@
+using AutoTreasureMaps.Core.External;
+using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Supply;
+using ECommons.DalamudServices;
+
+namespace AutoTreasureMaps.Core.Treasure;
+
+internal enum RunBlocker : byte
+{
+    None,
+    NotLoggedIn,
+    NeedsPlugins,
+    TaskRunning,
+    HeldMap,
+    NoMaps,
+}
+
+// Available counts the held map and every map the supply chain could put in hand after it. Reason is set whenever
+// Blocker is.
+internal readonly record struct RunCheck(RunBlocker Blocker, LocString Reason, int Available)
+{
+    public bool CanStart => Blocker == RunBlocker.None;
+}
+
+// What stops a run from starting. Cheap enough for every frame: the held map and the bags are read once a frame, and
+// the rest are flag and unlock reads. The caller checks first that no run is going.
+internal static class RunReadiness
+{
+    private const int HeldMapCount = 1;
+
+    public static RunCheck Check(Plugin plugin)
+    {
+        if (!Svc.ClientState.IsLoggedIn || Svc.Objects.LocalPlayer is null)
+        {
+            return new RunCheck(RunBlocker.NotLoggedIn, L.Decipher.NotLoggedIn, 0);
+        }
+
+        if (!ExternalPlugins.AllRequiredInstalled())
+        {
+            return new RunCheck(RunBlocker.NeedsPlugins, L.Treasure.DetailSetupNeeded, 0);
+        }
+
+        if (clib.Services.Svc.Automation.CurrentTask is not null)
+        {
+            return new RunCheck(RunBlocker.TaskRunning, L.Decipher.TaskRunning, 0);
+        }
+
+        var supply = MapSupplyChain.Check(plugin);
+        if (!HeldMapReader.TryRead(plugin.Catalog, out _))
+        {
+            return supply.CanSupply ? new RunCheck(RunBlocker.None, default, supply.Available) : new RunCheck(RunBlocker.NoMaps, supply.Reason, 0);
+        }
+
+        var refusal = MapRunReadiness.MapBlocker(plugin.Catalog, out _, out _);
+        return refusal == MapRefusal.None
+            ? new RunCheck(RunBlocker.None, default, HeldMapCount + supply.Available)
+            : new RunCheck(RunBlocker.HeldMap, MapOutcomes.Reason(refusal), 0);
+    }
+}

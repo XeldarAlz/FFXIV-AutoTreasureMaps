@@ -1,5 +1,7 @@
 using AutoTreasureMaps.Core.External;
 using AutoTreasureMaps.Core.Ipc;
+using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Treasure;
 using clib.Services;
 
 namespace AutoTreasureMaps.Core.Tasks;
@@ -33,10 +35,10 @@ internal sealed partial class TreasureController
     private static void Diag(string message)
         => RunLog.Info(message);
 
-    // The run task lands with the treasure logic; until then there is nothing to begin.
+    // Maps until a stop condition: the held one first, then whatever the supply chain puts in hand.
     public void Start()
     {
-        if (Running)
+        if (session is not null)
         {
             Diag("Start ignored: a run is already going.");
             return;
@@ -47,7 +49,16 @@ internal sealed partial class TreasureController
             return;
         }
 
-        Diag("Start refused: No treasure run exists yet.");
+        var check = RunReadiness.Check(Plugin.Instance);
+        if (!check.CanStart)
+        {
+            Diag($"Start refused: {check.Blocker}.");
+            ECommons.DalamudServices.Svc.Chat.PrintError($"{AtmConstants.LogPrefix} {Loc.T(L.Run.ChatCannotStart, Loc.T(check.Reason))}");
+            return;
+        }
+
+        ECommons.DalamudServices.Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.Plural(L.Run.ChatStarted, check.Available)}");
+        BeginRun(new TreasureSession(), owningSession => new AutoTreasureRun(owningSession, progress), $"maps until a stop condition, {check.Available} to go");
     }
 
     // One held map from travel to loot, under the same pause, stop and fault handling as any run. The caller has
@@ -72,6 +83,7 @@ internal sealed partial class TreasureController
     {
         var ending = session;
         var wasPaused = Paused;
+        ending?.MarkStopped();
         currentTask = null;
         PauseReason = PauseReason.None;
         Svc.Automation.Stop();
@@ -177,4 +189,4 @@ internal sealed partial class TreasureController
     }
 }
 
-internal enum TreasurePhase { Idle, Preparing, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused }
+internal enum TreasurePhase { Idle, Preparing, Deciphering, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused }

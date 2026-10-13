@@ -172,6 +172,14 @@ public sealed class Plugin : IDalamudPlugin
         {
             ToggleChangelogUi();
         }
+        else if (trimmed.Equals("start", StringComparison.OrdinalIgnoreCase))
+        {
+            Controller.Start();
+        }
+        else if (trimmed.Equals("stop", StringComparison.OrdinalIgnoreCase))
+        {
+            StopFromCommand();
+        }
         else if (trimmed.Equals("pause", StringComparison.OrdinalIgnoreCase) || trimmed.Equals("resume", StringComparison.OrdinalIgnoreCase))
         {
             Controller.TogglePause();
@@ -208,6 +216,18 @@ public sealed class Plugin : IDalamudPlugin
         {
             ToggleMainUi();
         }
+    }
+
+    private void StopFromCommand()
+    {
+        if (!Controller.Running)
+        {
+            Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Run.ChatNothingToStop)}");
+            return;
+        }
+
+        Controller.Stop();
+        Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Run.ChatStopped)}");
     }
 
     private void OnDraw()
