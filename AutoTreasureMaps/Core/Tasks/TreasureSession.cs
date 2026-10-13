@@ -76,6 +76,10 @@ public sealed class TreasureSession
     // Set once the game refused a purchase for want of gil; the run buys nothing more.
     internal bool MarketStopped { get; private set; }
 
+    // Set once the daily map gather was tried. A node shows the map only by chance, so a run that came back without it
+    // does not go back after every map.
+    internal bool DailyGatherTried { get; private set; }
+
     // A run that only bought or gathered a map still spent gil or the day's allowance, so it is recorded.
     public bool DidNothing => MapsRun == 0 && MapsBought == 0 && MapsGathered == 0;
 
@@ -134,6 +138,8 @@ public sealed class TreasureSession
     }
 
     internal void NoteMapGathered() => MapsGathered++;
+
+    internal void NoteDailyGatherTried() => DailyGatherTried = true;
 
     // A run stopped from outside keeps the end it had already decided on.
     internal void MarkStopped() => EndedBy ??= RunEnd.Stopped;

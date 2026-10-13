@@ -35,8 +35,8 @@ internal static unsafe class MapAllowance
     private const int ViewedWindowMs = 2_000;
 
     private static bool requestedThisLogin;
-    // Set when the game refused a gather as over the day's limit. The field then counts as unknown until a reply to a
-    // request sent after it comes in, so a stale reading cannot send the run to gather again.
+    // Set once a gather took today's map or the game refused one as over the day's limit. The field then counts as
+    // unknown until a reply to a request sent after it comes in, so a stale reading cannot send the run to gather again.
     private static bool markedUsed;
     private static bool askedSinceMarkedUsed;
     private static long lastKnown = Pending;
@@ -119,7 +119,7 @@ internal static unsafe class MapAllowance
         markedUsed = true;
         askedSinceMarkedUsed = false;
         lastKnown = Pending;
-        RunLog.Debug("Daily map: the game says today's map was already gathered; the allowance counts as used until the server replies again.");
+        RunLog.Debug("Daily map: today's map is gathered; the allowance counts as used until the server replies again.");
     }
 
     public static void NoteViewed() => viewedAtMs = Environment.TickCount64;

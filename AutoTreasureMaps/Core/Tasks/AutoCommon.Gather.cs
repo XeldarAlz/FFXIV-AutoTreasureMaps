@@ -109,7 +109,7 @@ public abstract partial class AutoCommon
             var answer = await SwitchAndGather(plan, maxVisits, scope);
             if (CancelToken.IsCancellationRequested)
             {
-                return GatherAnswer.Cancelled;
+                return GatherAnswer.Cancelled with { MapItemId = answer.MapItemId };
             }
 
             if (await SwitchBack(memory, $"{scope}-switch-back"))
@@ -118,7 +118,7 @@ public abstract partial class AutoCommon
             }
 
             return CancelToken.IsCancellationRequested
-                ? GatherAnswer.Cancelled
+                ? GatherAnswer.Cancelled with { MapItemId = answer.MapItemId }
                 : GatherAnswer.Failed(L.Gather.ReasonSwitchBackFailed) with { MapItemId = answer.MapItemId };
         }
         finally

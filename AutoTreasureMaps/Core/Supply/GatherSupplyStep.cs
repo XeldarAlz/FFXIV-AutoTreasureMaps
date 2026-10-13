@@ -29,6 +29,11 @@ internal sealed class GatherSupplyStep : IMapSupplyStep
             return MapSupplyCheck.Unable(DailyMapPlanner.Reason(refusal, reading));
         }
 
+        if (plugin.Controller.SessionSnapshot is { DailyGatherTried: true })
+        {
+            return MapSupplyCheck.Unable(L.Gather.ReasonNoMap);
+        }
+
         return DecipherOps.Unlocked() ? MapSupplyCheck.Ready(OneMap) : MapSupplyCheck.Unable(L.Decipher.NotUnlocked);
     }
 

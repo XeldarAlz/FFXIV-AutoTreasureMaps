@@ -73,7 +73,7 @@ internal sealed class GatherMapTask(bool forRun) : MapSupplyTask
         Diag($"Supply: gathering the daily map as {plan.Gatherer} (level {plan.ClassLevel}, gearset {plan.GearsetIndex + 1}), group of level {plan.Group.Level}.");
         Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Gather.ChatStarted, Loc.T(DailyMapPlanner.GathererName(plan.Gatherer)), TerritoryNames.Of(plan.Area.TerritoryId))}");
         var answer = await GatherDailyMap(plan, Math.Max(1, plugin.Configuration.DailyMapNodeVisits));
-        if (answer.Outcome == GatherOutcome.AllowanceUsed)
+        if (answer.MapItemId != 0 || answer.Outcome == GatherOutcome.AllowanceUsed)
         {
             MapAllowance.MarkUsed();
         }
@@ -81,6 +81,7 @@ internal sealed class GatherMapTask(bool forRun) : MapSupplyTask
         if (answer.Outcome != GatherOutcome.Cancelled)
         {
             MapAllowance.Request("after a gather attempt");
+            plugin.Controller.SessionSnapshot?.NoteDailyGatherTried();
         }
 
         // A map gathered before the switch back failed still counts.
