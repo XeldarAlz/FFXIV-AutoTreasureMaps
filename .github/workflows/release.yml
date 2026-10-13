@@ -20,7 +20,7 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
-    # Job-level so the hub-ping step's `if` can see it — `secrets` can't be used
+    # Job-level so the hub-ping step's `if` can see it; `secrets` can't be used
     # directly in an `if:` condition, but `env` mapped from a secret can.
     env:
       HUB_REPO_PAT: ${{ secrets.HUB_REPO_PAT }}
@@ -38,7 +38,7 @@ jobs:
             target="$ref_name"
           fi
           if [[ ! "$target" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Resolved target '$target' is not a four-part v*.*.*.* tag — pass the tag input or dispatch on a tag ref."
+            echo "::error::Resolved target '$target' is not a four-part v*.*.*.* tag; pass the tag input or dispatch on a tag ref."
             exit 1
           fi
           echo "target=$target" >> "$GITHUB_OUTPUT"
