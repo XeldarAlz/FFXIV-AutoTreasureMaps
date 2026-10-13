@@ -70,6 +70,11 @@ public abstract partial class AutoCommon
     // since is left alone.
     private protected async Task<bool> ReturnFromGatherer()
     {
+        if (GatherGearsetReturn.Settling)
+        {
+            await WaitUntilTimed(static () => !GatherGearsetReturn.Settling, GatherGearsetReturn.SwitchSettleMs, "gather-return-settle", 1);
+        }
+
         if (!GatherGearsetReturn.TryGetOwed(out var owed))
         {
             return true;

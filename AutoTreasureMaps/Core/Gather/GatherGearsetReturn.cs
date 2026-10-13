@@ -16,6 +16,9 @@ internal readonly record struct GearsetReturn(int GearsetIndex, uint ClassJobId,
 // once the wait or the tries run out, so a later session is never switched unasked. Framework thread only.
 internal static class GatherGearsetReturn
 {
+    // A switch to the gatherer asked for just before the gather was cut short can still land this long after.
+    public const int SwitchSettleMs = 10_000;
+
     private const long HeldByTask = long.MaxValue;
     private const int RetryMs = 3_000;
     // Room for a fight to end or a knocked-out gatherer to get back on its feet.
@@ -25,6 +28,8 @@ internal static class GatherGearsetReturn
 
     private static GearsetReturn? pending;
     private static long giveUpAtMs = HeldByTask;
+    private static long settleUntilMs;
+    private static bool seenOnGatherer;
     private static long nextTryAtMs;
     private static int tries;
 
@@ -52,12 +57,24 @@ internal static class GatherGearsetReturn
 
         var now = Environment.TickCount64;
         giveUpAtMs = now + GiveUpMs;
+        settleUntilMs = now + SwitchSettleMs;
+        seenOnGatherer = false;
         nextTryAtMs = now + RetryMs;
         tries = 0;
     }
 
-    // True while the same character is still on the gatherer the gather put on, within the wait; anything else drops
-    // the return. A character not loaded yet, between areas, keeps it without owing it for now.
+    // Not seen on the gatherer since the task let go, but a switch to it may still land, so whether the return is owed
+    // is not known yet.
+    public static bool Settling
+        => pending is { } candidate
+        && giveUpAtMs != HeldByTask
+        && !seenOnGatherer
+        && Environment.TickCount64 < settleUntilMs
+        && GearsetSwitcher.CurrentClassJobId() != candidate.GathererClassJobId;
+
+    // True while the same character is on the gatherer the gather put on, within the wait. Off it, the return is kept
+    // while a task holds it or while a switch to it may still land, and dropped after that. A character not loaded yet,
+    // between areas, keeps it without owing it for now.
     public static bool TryGetOwed(out GearsetReturn owed)
     {
         owed = default;
@@ -78,26 +95,29 @@ internal static class GatherGearsetReturn
             return false;
         }
 
-        if (classJobId == candidate.ClassJobId)
+        var now = Environment.TickCount64;
+        if (classJobId == candidate.GathererClassJobId)
         {
-            Drop($"back on {GearsetSwitcher.ClassJobLabel(classJobId)}");
+            seenOnGatherer = true;
+            if (now >= giveUpAtMs)
+            {
+                GiveUp(candidate, $"still on {GearsetSwitcher.ClassJobLabel(classJobId)} {GiveUpMs / TimeUnits.MillisecondsPerMinute} min after the gather");
+                return false;
+            }
+
+            owed = candidate;
+            return true;
+        }
+
+        if (giveUpAtMs == HeldByTask || (!seenOnGatherer && now < settleUntilMs))
+        {
             return false;
         }
 
-        if (classJobId != candidate.GathererClassJobId)
-        {
-            Drop($"the player picked {GearsetSwitcher.ClassJobLabel(classJobId)} since");
-            return false;
-        }
-
-        if (Environment.TickCount64 >= giveUpAtMs)
-        {
-            GiveUp(candidate, $"still on {GearsetSwitcher.ClassJobLabel(classJobId)} {GiveUpMs / TimeUnits.MillisecondsPerMinute} min after the gather");
-            return false;
-        }
-
-        owed = candidate;
-        return true;
+        Drop(classJobId == candidate.ClassJobId
+            ? $"back on {GearsetSwitcher.ClassJobLabel(classJobId)}"
+            : $"the player picked {GearsetSwitcher.ClassJobLabel(classJobId)} since");
+        return false;
     }
 
     // Closes the gathering window first, as the game refuses the change while it is open. True when the request went out.
