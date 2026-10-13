@@ -147,6 +147,8 @@ internal static class GearsetSwitcher
         return gearsetIndex != NoGearset && !Svc.Condition[ConditionFlag.InCombat] && TryEquip(gearsetIndex);
     }
 
+    public static bool HasGearsetFor(uint classJobId, int preferredIndex) => PickGearset(classJobId, preferredIndex) != NoGearset;
+
     public static string ClassJobLabel(uint classJobId)
     {
         var abbreviation = Svc.Data.GetExcelSheet<ClassJob>().GetRowOrDefault(classJobId)?.Abbreviation.ExtractText();

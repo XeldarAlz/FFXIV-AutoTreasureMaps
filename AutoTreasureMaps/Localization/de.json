@@ -623,5 +623,6 @@
   "gather.chat.stopped": "Sammeln gestoppt.",
   "gather.commandHelp": "/atm gather sammelt die heutige vergilbte Karte einmal als Minenarbeiter oder Gärtner, /atm gather stop bricht ab.",
   "gather.phase": "Sammeln",
-  "gather.mapsGathered": "Gesammelte Karten"
+  "gather.mapsGathered": "Gesammelte Karten",
+  "gather.reason.noReturnGearset": "Kein Ausrüstungsset gehört zu deiner aktuellen Klasse, daher könnte dich das Sammeln nicht zurückwechseln. Speichere zuerst eines in der Liste der Ausrüstungssets."
 }

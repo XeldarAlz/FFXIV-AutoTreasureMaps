@@ -623,5 +623,6 @@
   "gather.chat.stopped": "Récolte arrêtée.",
   "gather.commandHelp": "/atm gather récolte une fois la vieille carte du jour en tant que mineur ou botaniste, et /atm gather stop l'arrête.",
   "gather.phase": "Récolte",
-  "gather.mapsGathered": "Cartes récoltées"
+  "gather.mapsGathered": "Cartes récoltées",
+  "gather.reason.noReturnGearset": "Aucun ensemble d'équipement ne correspond à votre classe actuelle, la récolte ne pourrait donc pas vous y ramener. Enregistrez-en d'abord un dans la liste des ensembles."
 }

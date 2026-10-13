@@ -623,5 +623,6 @@
   "gather.chat.stopped": "Coleta interrompida.",
   "gather.commandHelp": "/atm gather coleta uma vez o mapa do tesouro de hoje como minerador ou botânico, e /atm gather stop a interrompe.",
   "gather.phase": "Coletando",
-  "gather.mapsGathered": "Mapas coletados"
+  "gather.mapsGathered": "Mapas coletados",
+  "gather.reason.noReturnGearset": "Nenhum conjunto de equipamento tem a sua classe atual, então a coleta não conseguiria trazer você de volta. Salve um na lista de conjuntos primeiro."
 }

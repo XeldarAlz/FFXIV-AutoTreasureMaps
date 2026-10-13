@@ -17,6 +17,7 @@ internal enum DailyMapRefusal : byte
     NoEnabledTier,
     LevelTooLow,
     AlreadyHeld,
+    NoReturnGearset,
 }
 
 internal readonly record struct DailyMapPlan(Gatherer Gatherer, int GearsetIndex, int ClassLevel, int GroupIndex)
@@ -82,7 +83,14 @@ internal static unsafe class DailyMapPlanner
             return refusal;
         }
 
-        return PickGroup(plugin, gatherer, gearsetIndex, level, out plan);
+        refusal = PickGroup(plugin, gatherer, gearsetIndex, level, out plan);
+        if (refusal != DailyMapRefusal.None || CanComeBack(plan.ClassJobId))
+        {
+            return refusal;
+        }
+
+        plan = default;
+        return DailyMapRefusal.NoReturnGearset;
     }
 
     // A map of the group the run can use: its tier is enabled and none of it is in the bags yet.
@@ -108,6 +116,7 @@ internal static unsafe class DailyMapPlanner
         DailyMapRefusal.NoEnabledTier => L.Gather.ReasonNoEnabledTier,
         DailyMapRefusal.LevelTooLow => L.Gather.ReasonLevelTooLow,
         DailyMapRefusal.AlreadyHeld => L.Gather.ReasonAlreadyHeld,
+        DailyMapRefusal.NoReturnGearset => L.Gather.ReasonNoReturnGearset,
         _ => default,
     };
 
@@ -122,6 +131,19 @@ internal static unsafe class DailyMapPlanner
 
     public static LocString GathererName(Gatherer gatherer)
         => gatherer == Gatherer.Miner ? L.Gather.GathererMinerName : L.Gather.GathererBotanistName;
+
+    // The switch back looks for a gearset of the class worn now, or of the one an earlier gather still owes; without one
+    // the character would be left on the gatherer.
+    private static bool CanComeBack(uint gathererClassJobId)
+    {
+        if (GatherGearsetReturn.TryGetOwed(out var owed))
+        {
+            return GearsetSwitcher.HasGearsetFor(owed.ClassJobId, owed.GearsetIndex);
+        }
+
+        var classJobId = GearsetSwitcher.CurrentClassJobId();
+        return classJobId == gathererClassJobId || GearsetSwitcher.HasGearsetFor(classJobId, GearsetSwitcher.CurrentGearsetIndex());
+    }
 
     private static DailyMapRefusal PickGatherer(DailyMapGatherer preference, out Gatherer gatherer, out int gearsetIndex, out int level)
     {

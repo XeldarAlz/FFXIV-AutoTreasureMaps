@@ -623,5 +623,6 @@
   "gather.chat.stopped": "采集已停止。",
   "gather.commandHelp": "/atm gather 以采矿工或园艺工采集一次今天的陈旧的地图，/atm gather stop 可停止。",
   "gather.phase": "采集中",
-  "gather.mapsGathered": "已采集的藏宝图"
+  "gather.mapsGathered": "已采集的藏宝图",
+  "gather.reason.noReturnGearset": "没有保存你当前职业的套装，采集后无法换回。请先在套装列表中保存一个。"
 }

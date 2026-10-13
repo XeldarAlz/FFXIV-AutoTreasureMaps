@@ -623,5 +623,6 @@
   "gather.chat.stopped": "Toplama durduruldu.",
   "gather.commandHelp": "/atm gather bugünün hazine haritasını madenci ya da botanikçi olarak bir kez toplar, /atm gather stop durdurur.",
   "gather.phase": "Toplanıyor",
-  "gather.mapsGathered": "Toplanan haritalar"
+  "gather.mapsGathered": "Toplanan haritalar",
+  "gather.reason.noReturnGearset": "Şu anki sınıfınız için bir ekipman seti yok, bu yüzden toplamadan sonra geri dönülemez. Önce ekipman seti listesine bir tane kaydedin."
 }

@@ -623,5 +623,6 @@
   "gather.chat.stopped": "Gather stopped.",
   "gather.commandHelp": "/atm gather gathers today's timeworn map once as a Miner or Botanist, and /atm gather stop ends it.",
   "gather.phase": "Gathering",
-  "gather.mapsGathered": "Maps gathered"
+  "gather.mapsGathered": "Maps gathered",
+  "gather.reason.noReturnGearset": "No gearset holds the class you are on, so the gather could not switch you back. Save one in the gearset list first."
 }

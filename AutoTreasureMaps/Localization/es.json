@@ -623,5 +623,6 @@
   "gather.chat.stopped": "Recolección detenida.",
   "gather.commandHelp": "/atm gather recolecta una vez el mapa del tesoro de hoy como minero o botánico, y /atm gather stop la detiene.",
   "gather.phase": "Recolectando",
-  "gather.mapsGathered": "Mapas recolectados"
+  "gather.mapsGathered": "Mapas recolectados",
+  "gather.reason.noReturnGearset": "Ningún conjunto de equipo tiene tu clase actual, así que la recolección no podría devolverte a ella. Guarda uno primero en la lista de conjuntos."
 }

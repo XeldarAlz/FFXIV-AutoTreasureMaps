@@ -623,5 +623,6 @@
   "gather.chat.stopped": "採集を停止しました。",
   "gather.commandHelp": "/atm gather で今日の古ぼけた地図を採掘師か園芸師で1回採集し、/atm gather stop で中止します。",
   "gather.phase": "採集中",
-  "gather.mapsGathered": "採集した地図"
+  "gather.mapsGathered": "採集した地図",
+  "gather.reason.noReturnGearset": "今のクラスのギアセットがないため、採集の後に元へ戻せません。先にギアセットリストに登録してください。"
 }
