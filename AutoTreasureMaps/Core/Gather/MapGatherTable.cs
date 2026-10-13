@@ -36,12 +36,17 @@ internal static partial class MapGatherTable
 {
     private const uint MinerClassJobId = 16;
     private const uint BotanistClassJobId = 17;
+    // Heatwells, the only Miner area for Gargantuaskin: its nodes hold nothing but a collectable, which the gather never
+    // takes, so a node there without the map can never be gathered out to make way for one that might show it.
+    private const ushort CollectableOnlyBaseId = 1019;
 
     public static ReadOnlySpan<MapGatherGroup> Groups => groups;
 
     public static uint ClassJobId(Gatherer gatherer) => gatherer == Gatherer.Miner ? MinerClassJobId : BotanistClassJobId;
 
     public static bool IsGathererClassJob(uint classJobId) => classJobId is MinerClassJobId or BotanistClassJobId;
+
+    public static bool CanBeGatheredOut(in MapGatherArea area) => area.BaseId != CollectableOnlyBaseId;
 
     public static bool Contains(ImmutableArray<uint> ids, uint id)
     {

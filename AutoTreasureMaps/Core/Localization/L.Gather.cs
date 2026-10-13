@@ -10,7 +10,7 @@ internal static partial class L
         public static readonly LocString Gatherer = new("gather.gatherer", "Gatherer");
         public static readonly LocString GathererHelp = new("gather.gathererHelp", "Which class gathers the map. Its gearset is found by class, wherever it sits in your gearset list.");
         public static readonly LocString GathererAutomaticName = new("gather.gatherer.automatic.name", "Automatic");
-        public static readonly LocString GathererAutomaticDetail = new("gather.gatherer.automatic.detail", "Whichever of your Miner and Botanist gearsets has the higher level.");
+        public static readonly LocString GathererAutomaticDetail = new("gather.gatherer.automatic.detail", "Whichever of your Miner and Botanist gearsets has the higher level, the Botanist on a tie.");
         public static readonly LocString GathererMinerName = new("gather.gatherer.miner.name", "Miner");
         public static readonly LocString GathererMinerDetail = new("gather.gatherer.miner.detail", "Always gather as a Miner.");
         public static readonly LocString GathererBotanistName = new("gather.gatherer.botanist.name", "Botanist");
@@ -18,7 +18,7 @@ internal static partial class L
         public static readonly LocString Visits = new("gather.visits", "Nodes per attempt");
         public static readonly LocString VisitsHelp = new("gather.visitsHelp", "How many nodes one attempt opens before it gives up until the next run. A node shows the map only by chance, so a node without it is gathered out to bring up the next one.");
         public static readonly LocString VisitsFormat = new("gather.visitsFormat", "%d nodes");
-        public static readonly LocString TierNote = new("gather.tierNote", "The map gathered is the highest enabled tier the gatherer's level allows, skipping tiers already in your bags. Map tiers below chooses which tiers are enabled.");
+        public static readonly LocString TierNote = new("gather.tierNote", "The map gathered is the highest enabled tier the gatherer's level allows, skipping tiers already in your bags. A Miner skips one level 100 tier, as its only Miner nodes hold nothing but collectables. Map tiers below chooses which tiers are enabled.");
 
         public static readonly LocString LineAvailable = new("gather.line.available", "Daily map: available now");
         public static readonly LocString LineWaiting = new("gather.line.waiting", "Daily map: in {0}");

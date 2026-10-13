@@ -30,7 +30,8 @@ internal readonly record struct DailyMapPlan(Gatherer Gatherer, int GearsetIndex
 }
 
 // Which gatherer gathers the daily map and which tier it goes for: the highest enabled tier its level allows, skipping
-// tiers already in the bags. The run's check is cached for the frame, as the Treasure page asks it every frame.
+// tiers already in the bags and areas it could not gather out. The run's check is cached for the frame, as the
+// Treasure page asks it every frame.
 internal static unsafe class DailyMapPlanner
 {
     private const long NoFrame = -1;
@@ -171,7 +172,8 @@ internal static unsafe class DailyMapPlanner
             default:
                 var minerLevel = hasMiner ? GearsetSwitcher.ClassLevel(MapGatherTable.ClassJobId(Gatherer.Miner)) : -1;
                 var botanistLevel = hasBotanist ? GearsetSwitcher.ClassLevel(MapGatherTable.ClassJobId(Gatherer.Botanist)) : -1;
-                gatherer = botanistLevel > minerLevel ? Gatherer.Botanist : Gatherer.Miner;
+                // On a tie the Botanist, which can gather every tier the Miner can and Gargantuaskin besides.
+                gatherer = botanistLevel >= minerLevel ? Gatherer.Botanist : Gatherer.Miner;
                 break;
         }
 
@@ -188,7 +190,7 @@ internal static unsafe class DailyMapPlanner
         for (var groupIndex = 0; groupIndex < groups.Length; groupIndex++)
         {
             var group = groups[groupIndex];
-            if (!AnyEnabled(plugin, group))
+            if (!MapGatherTable.CanBeGatheredOut(group.AreaFor(gatherer)) || !AnyEnabled(plugin, group))
             {
                 continue;
             }
