@@ -206,7 +206,7 @@ public abstract partial class AutoCommon
                 break;
             }
 
-            if (Svc.ClientState.TerritoryType != hopTerritoryId)
+            if (Svc.ClientState.TerritoryType != hopTerritoryId && await HumanDelay(HumanAction.Teleport, scope))
             {
                 var operation = new MoveOp(move => move.Teleport(hopTerritoryId, hopDestination, allowSameZoneTeleport: false));
                 var completed = await RunCancellable(operation, perAttemptTimeoutMs, scope, StuckDetector.IdleStallAbort(StuckDetector.IdleStallTimeoutMs));

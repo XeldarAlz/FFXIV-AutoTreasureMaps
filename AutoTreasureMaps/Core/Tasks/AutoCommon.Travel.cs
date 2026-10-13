@@ -557,7 +557,7 @@ public abstract partial class AutoCommon
         await RunWithStatusPinned($"Teleporting to {aetheryte.Name}", async () =>
         {
             await PrepareForTeleport(label);
-            if (CancelToken.IsCancellationRequested || Svc.Objects.LocalPlayer is not { } current)
+            if (!await HumanDelay(HumanAction.Teleport, label) || Svc.Objects.LocalPlayer is not { } current)
             {
                 return;
             }

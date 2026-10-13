@@ -36,6 +36,12 @@ public abstract partial class AutoCommon
             return FightEnd.Cleared;
         }
 
+        // Only a map's first round waits: a later one goes back to a fight already joined.
+        if (map.Wave == 0)
+        {
+            await HumanDelay(HumanAction.Engage, scope, IsKnockedOut);
+        }
+
         EnsureCombatPreset();
         ReleaseCombatMovement(scope);
         map.Wave = Math.Max(map.Wave, 1);

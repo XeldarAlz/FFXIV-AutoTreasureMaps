@@ -107,6 +107,11 @@ public abstract partial class AutoCommon
             return new DigResult(DigAnswer.Cancelled);
         }
 
+        if (!await HumanDelay(HumanAction.Dig, "map-dig"))
+        {
+            return new DigResult(DigAnswer.Cancelled);
+        }
+
         Status = "Digging for the coffer";
         LogOffsetFrom("Dig", map.Spot.Position);
         var since = TreasureMessageWatcher.Now;

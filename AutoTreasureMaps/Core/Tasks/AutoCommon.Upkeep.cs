@@ -63,7 +63,7 @@ public abstract partial class AutoCommon
         && RepairOps.NeedsRepair(configuration.AutoRepairThresholdPercent);
 
     private bool UpkeepBreakDue(Configuration configuration)
-        => configuration.HumanizerEnabled
+        => configuration.CityBreaksEnabled
         && Environment.TickCount64 >= breakRetryAtMs
         && mapsSinceBreak >= Math.Max(1, configuration.HumanizerMapsBeforeBreak);
 

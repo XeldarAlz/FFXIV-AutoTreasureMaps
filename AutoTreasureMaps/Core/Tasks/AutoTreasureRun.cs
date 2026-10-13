@@ -73,6 +73,15 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
 
     private async Task<LoopStep> RunMap(Plugin plugin)
     {
+        if (session.ActiveMap is null)
+        {
+            progress.SetPhase(TreasurePhase.Preparing);
+            if (!await HumanDelay(HumanAction.MoveOff, "run"))
+            {
+                return LoopStep.Stop;
+            }
+        }
+
         var result = await RunHeldMap(session, progress);
         if (MapFault is { } fault)
         {

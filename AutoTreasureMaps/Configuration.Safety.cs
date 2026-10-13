@@ -16,7 +16,7 @@ public sealed partial class Configuration
     public int AutoConsumeMinMinutes { get; set; } = 3;
     public List<ConsumableEntry> AutoConsumeItems { get; set; } = [];
 
-    public bool HumanizerEnabled { get; set; } = false;
+    public bool CityBreaksEnabled { get; set; } = false;
     public int HumanizerMapsBeforeBreak { get; set; } = 10;
     public int HumanizerBreakMinMinutes { get; set; } = 5;
     public int HumanizerBreakMaxMinutes { get; set; } = 10;

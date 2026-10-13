@@ -101,6 +101,11 @@ public abstract partial class AutoCommon
         }
 
         LogOffsetFrom("Coffer", map.Spot.Position);
+        if (!await HumanDelay(HumanAction.OpenCoffer, scope))
+        {
+            return CofferStep.Cancelled;
+        }
+
         var since = TreasureMessageWatcher.Now;
         await InteractWithObject(target, () => NpcInteraction.SelectYesnoOpen() || CofferOpenedSince(since), scope);
         if (!CofferOpenedSince(since))

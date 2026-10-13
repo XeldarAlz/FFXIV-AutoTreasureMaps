@@ -14,7 +14,7 @@ internal static partial class L
         public static readonly LocString CatConsumables = new("safety.cat.consumables", "Consumables");
         public static readonly LocString CatConsumablesSub = new("safety.cat.consumablesSub", "Keep food and medicine buffs up while running maps: Well Fed is a free +3% EXP.");
         public static readonly LocString CatHumanizer = new("safety.cat.humanizer", "Humanizer");
-        public static readonly LocString CatHumanizerSub = new("safety.cat.humanizerSub", "Take periodic city breaks between maps: teleport to a random hub and wander around for a few minutes before resuming.");
+        public static readonly LocString CatHumanizerSub = new("safety.cat.humanizerSub", "Random pauses before the run acts, the way a player reacts, and periodic city breaks between maps.");
         public static readonly LocString CatPartyInvites = new("safety.cat.partyInvites", "Party invites");
         public static readonly LocString CatPartyInvitesSub = new("safety.cat.partyInvitesSub", "Auto-decline incoming party invites during a run, after a human-like delay, with an optional reply.");
         public static readonly LocString CatGmAlert = new("safety.cat.gmAlert", "GM alert");
@@ -70,7 +70,7 @@ internal static partial class L
         public static readonly LocString HumanizerBreaks = new("safety.humanizer.breaks", "Breaks");
         public static readonly LocString HumanizerEnable = new("safety.humanizer.enable", "Take periodic city breaks");
         public static readonly LocString HumanizerEnableHelp = new("safety.humanizer.enableHelp", "Every N maps, teleport to a random selected city and wander around for a few minutes before resuming. Helps you avoid player reports by acting a little more human, useful when you leave the PC running for long sessions and don't want others noticing you digging non-stop.");
-        public static readonly LocString HumanizerOff = new("safety.humanizer.off", "Humanizer is off. Enable it to configure breaks.");
+        public static readonly LocString HumanizerOff = new("safety.humanizer.off", "City breaks are off. Turn them on to set them up.");
         public static readonly LocString MapsBetween = new("safety.humanizer.mapsBetween", "Maps between breaks");
         public static readonly LocString MapsBetweenHelp = new("safety.humanizer.mapsBetweenHelp", "Take a break after this many finished maps. The count starts over after each break, and whenever a run starts or resumes.");
         public static readonly LocString MapsFormat = new("safety.humanizer.mapsFormat", "%d maps");
