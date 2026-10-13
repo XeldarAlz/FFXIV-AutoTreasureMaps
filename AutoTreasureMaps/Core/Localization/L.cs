@@ -93,6 +93,7 @@ internal static partial class L
     {
         public static readonly LocString PhasePreparing = new("run.phase.preparing", "Getting ready");
         public static readonly LocString PhaseDeciphering = new("run.phase.deciphering", "Deciphering");
+        public static readonly LocString PhaseBuying = new("run.phase.buying", "Buying a map");
         public static readonly LocString PhaseTravelling = new("run.phase.travelling", "Travelling");
         public static readonly LocString PhaseFighting = new("run.phase.fighting", "Fighting");
         public static readonly LocString PhaseFinishing = new("run.phase.finishing", "Finishing up");
@@ -354,7 +355,7 @@ internal static partial class L
 
     internal static class Plugin
     {
-        public static readonly LocString CommandHelp = new("plugin.commandHelp", "Toggle the Auto Treasure Maps window. /atm config | stats | deps | log | changelog | about | start (run your maps until a stop condition: decipher, travel, dig, fight and loot) | stop (stop the run) | pause (pause or resume the run) | spot (show the held map's dig spot) | flag (flag the dig spot on the map) | goto spot (travel to the dig spot) | dig (run the held map: travel, dig, fight the guards and loot the coffer) | tiers (list every map tier in the console) | decipher [map] (decipher the next timeworn map in your bags, or the one named) | target (dump the current target's BaseId).");
+        public static readonly LocString CommandHelp = new("plugin.commandHelp", "Toggle the Auto Treasure Maps window. /atm config | stats | deps | log | changelog | about | start (run your maps until a stop condition: decipher, travel, dig, fight and loot) | stop (stop the run) | pause (pause or resume the run) | spot (show the held map's dig spot) | flag (flag the dig spot on the map) | goto spot (travel to the dig spot) | dig (run the held map: travel, dig, fight the guards and loot the coffer) | tiers (list every map tier in the console) | decipher [map] (decipher the next timeworn map in your bags, or the one named) | buy [map] (buy the next map under its price cap on the market board, or the one named) | target (dump the current target's BaseId).");
         public static readonly LocString CommandHelpAlias = new("plugin.commandHelpAlias", "Alias for /atm.");
     }
 }

@@ -21,3 +21,16 @@ public enum LootRoll
     Pass,
     Manual,
 }
+
+public enum MarketBoardChoice
+{
+    Automatic,
+    LimsaLominsa,
+    OldSharlayan,
+    Tuliyollal,
+    Kugane,
+    UlDah,
+    Crystarium,
+    Ishgard,
+    Gridania,
+}
