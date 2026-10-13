@@ -27,7 +27,7 @@ internal sealed class BagSupplyStep : IMapSupplyStep
         }
 
         var issue = DecipherReadiness.PickNext(plugin.Catalog, plugin.Configuration, out _);
-        return issue == DecipherIssue.None ? MapSupplyCheck.Ready(EnabledMaps(plugin)) : MapSupplyCheck.Unable(DecipherIssues.Reason(issue));
+        return issue == DecipherIssue.None ? MapSupplyCheck.Ready(EnabledMaps(plugin)) : MapSupplyCheck.NothingToGive(DecipherIssues.Reason(issue));
     }
 
     public MapSupplyTask CreateTask() => new BagDecipherTask();

@@ -30,6 +30,11 @@ internal sealed class MarketSupplyStep : IMapSupplyStep
         }
 
         var check = MarketRules.Check(plugin, plugin.Controller.SessionSnapshot);
+        if (check.Blocker == MarketBlocker.Off)
+        {
+            return MapSupplyCheck.NothingToGive(L.Market.ReasonOff);
+        }
+
         return check.CanBuy ? MapSupplyCheck.Ready(check.Available) : MapSupplyCheck.Unable(MarketRules.Reason(check.Blocker));
     }
 

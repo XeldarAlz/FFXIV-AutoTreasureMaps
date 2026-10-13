@@ -13,12 +13,14 @@ internal static class MapSupplyChain
 
     public static IReadOnlyList<IMapSupplyStep> Steps => steps;
 
-    // The counts of every step that can supply added up, or the first step's reason when none can.
+    // The counts of every step that can supply added up. When none can, a step held back speaks before one that is only
+    // out of maps or switched off, so empty bags do not hide why a source the player turned on gives nothing.
     public static MapSupplyCheck Check(Plugin plugin)
     {
         var available = 0;
         var canSupply = false;
         MapSupplyCheck? firstRefusal = null;
+        MapSupplyCheck? firstBlocked = null;
         for (var index = 0; index < steps.Length; index++)
         {
             var check = steps[index].Check(plugin);
@@ -30,6 +32,10 @@ internal static class MapSupplyChain
             }
 
             firstRefusal ??= check;
+            if (check.Blocked)
+            {
+                firstBlocked ??= check;
+            }
         }
 
         if (canSupply)
@@ -37,6 +43,6 @@ internal static class MapSupplyChain
             return MapSupplyCheck.Ready(available);
         }
 
-        return firstRefusal ?? MapSupplyCheck.Unable(default);
+        return firstBlocked ?? firstRefusal ?? MapSupplyCheck.Unable(default);
     }
 }
