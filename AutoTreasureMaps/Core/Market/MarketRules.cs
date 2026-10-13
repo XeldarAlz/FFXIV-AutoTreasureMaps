@@ -211,7 +211,7 @@ internal static class MarketRules
             return MarketBlocker.Off;
         }
 
-        if (!MarketBoardOps.Supported())
+        if (!MarketBoardOps.Supported() || MarketHooks.PlacementFailed)
         {
             return MarketBlocker.Unsupported;
         }

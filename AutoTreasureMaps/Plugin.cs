@@ -2,6 +2,7 @@ using AutoTreasureMaps.Core;
 using AutoTreasureMaps.Core.Debug;
 using AutoTreasureMaps.Core.Game.Watchers;
 using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Market;
 using AutoTreasureMaps.Core.Stats;
 using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Core.Treasure;
@@ -101,6 +102,7 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         Controller.Stop();
+        MarketHooks.DisposeShared();
         TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
 
         PluginInterface.UiBuilder.Draw -= OnDraw;

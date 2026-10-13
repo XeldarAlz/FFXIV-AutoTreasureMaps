@@ -85,13 +85,12 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
             return MapSupplyAnswer.Empty(L.Market.ReasonAllHeld);
         }
 
-        using var placed = MarketHooks.TryCreate();
-        if (placed is null)
+        hooks = MarketHooks.Shared();
+        if (hooks is null)
         {
             return Fail(L.Market.ReasonUnsupported);
         }
 
-        hooks = placed;
         // A stop can cut the waits below short at any point, so the board's windows are closed from the cancel itself.
         using var stopRegistration = CancelToken.Register(CloseBoardOnStop);
         try

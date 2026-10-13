@@ -10,12 +10,15 @@ internal readonly record struct ListingsAnswer(int Sequence, byte Count, int Err
 
 internal readonly record struct PurchaseAnswer(int Sequence, uint ItemId, uint MessageId);
 
-// The game's handlers for the board's answers, hooked only while a visit lasts. The listing count and waiting flag in
-// the game's store mislead, and the purchase event Dalamud raises fires for refusals too, so the answers are taken
-// where the game reads them. Each detour runs the game's code first and only copies what it was given; the lock covers
-// a handler that runs off the framework thread.
+// The game's handlers for the board's answers, hooked from the first visit until unload. The listing count and waiting
+// flag in the game's store mislead, and the purchase event Dalamud raises fires for refusals too, so the answers are
+// taken where the game reads them. Each detour runs the game's code first and only copies what it was given; the lock
+// covers a handler that runs off the framework thread.
 internal sealed unsafe class MarketHooks : IDisposable
 {
+    private static MarketHooks? shared;
+    private static bool placementFailed;
+
     private readonly object gate = new();
     private readonly Hook<InfoProxyItemSearch.Delegates.ProcessRequestResult> requestResultHook;
     private readonly Hook<InfoProxyItemSearch.Delegates.ProcessPurchaseResponse> purchaseResponseHook;
@@ -63,8 +66,30 @@ internal sealed unsafe class MarketHooks : IDisposable
         }
     }
 
-    // Null when this game version lacks one of the functions the visit needs, or a hook could not be placed.
-    public static MarketHooks? TryCreate()
+    // True once placing the hooks failed, which turns buying off until the plugin is loaded again.
+    public static bool PlacementFailed => placementFailed;
+
+    // Placed once and kept: Dalamud only disables a disposed hook, so a fresh pair on every visit would stack one more
+    // layer on each of the game's functions. Null when they could not be placed.
+    public static MarketHooks? Shared()
+    {
+        if (shared is not null || placementFailed)
+        {
+            return shared;
+        }
+
+        shared = TryCreate();
+        placementFailed = shared is null;
+        return shared;
+    }
+
+    public static void DisposeShared()
+    {
+        shared?.Dispose();
+        shared = null;
+    }
+
+    private static MarketHooks? TryCreate()
     {
         if (!MarketBoardOps.Supported())
         {
