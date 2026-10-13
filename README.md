@@ -18,31 +18,30 @@
 
 ---
 
-> **In development.** Auto Treasure Maps is not released yet. The window, the travel engine and the safety features are in place, but the treasure run itself is still being built, so pressing **Start** does nothing yet. The Treasure page already shows the deciphered map you hold and can flag or travel to its dig spot, and it can decipher the next map in your bags. Follow the repository or the Discord to hear when the first build is out.
-
 ## What it does
 
-Works through the timeworn maps in your bags for you. Press **Start** and the plugin deciphers a map, travels to its dig spot, digs up the coffer, fights off the monsters that guard it, opens it, and moves on to the next map until your bags are empty.
+Works through the timeworn maps in your bags for you. Press **Start** and the plugin deciphers a map, travels to its dig spot, digs up the coffer, fights off the monsters that guard it, opens it, and moves on to the next map until your bags are empty. Once they are, it can gather the day's free map and buy more on the market board, if you turn those on. Portals and undersea maps are left to you.
 
 ## Features
 
-Planned for the first release:
-
 - **Decipher and dig**: reads each timeworn map you carry, works out where it points, and digs at the spot.
-- **Market board**: when your bags run out of enabled maps, buys the next one on the market board under a price cap you set per tier, within a gil budget per run and never below the gil you choose to keep.
 - **Travel**: teleports to the nearest aetheryte, then flies, rides or walks to the dig spot, and lands where it can dig.
 - **Hands-off combat**: fights off every wave that guards a coffer with a bundled combat preset, then opens the coffer.
+- **Map choice**: pick which map tiers to run and whether the highest or the lowest goes first.
+- **Loot rolls**: answers the Need or Greed window for the coffer's items the way you choose, or leaves it to you.
+- **Daily map**: once a day, gathers the free timeworn map as a Miner or Botanist when the run has no map left, then switches back to your gearset (off by default). A Miner skips Gargantuaskin, whose only Miner nodes hold nothing but collectables.
+- **Market board**: when no map is left in your bags and no daily map can be gathered, buys the next one on the market board under a price cap you set per tier, within a gil budget per run and never below the gil you choose to keep (off by default).
 - **Recovery**: gets back up after a death; re-paths, jumps, or teleports out when it gets stuck.
 - **After-run action**: stay logged in, return to the inn, log out, or close the game once the last map is done.
-- **Auto-repair**: Dark Matter first, Grand Company mender as fallback.
+- **Auto-repair**: Dark Matter first, then your Grand Company mender or a repair NPC you pick.
 - **Auto-consume**: keeps food and medicine buffs up between maps, HQ first.
-- **Daily map**: once a day, gathers the free timeworn map as a Miner or Botanist when the run has no map left, then switches back to your gearset (off by default).
 - **Humanizer**: waits a random moment before each teleport, dig, coffer and fight, and takes city breaks between maps, so long sessions look less mechanical.
 - **Pause & resume**: park a run without losing your place, and auto-pause while you're in a duty.
 - **Party invites**: auto-declines incoming invites during a run after a random delay, with an optional reply message.
 - **GM alert**: stops the bot when a GM is near, with optional toast, beeps, or custom commands.
 - **Stop conditions**: a run ends when no enabled map is left, after a set number of maps or minutes, after failed maps in a row, or after a second knockout.
 - **History**: every run recorded with its maps, gil (less what it spent on maps), portals seen and how it ended.
+- **Console**: a live log of every step, with filters and a copy button for bug reports.
 
 ## Install
 
@@ -52,7 +51,7 @@ In-game: `/xlsettings` → **Experimental** → paste into **Custom Plugin Repos
 https://raw.githubusercontent.com/XeldarAlz/DalamudPlugins/main/repo.json
 ```
 
-Tick **Enabled**, click **+**, then **Save and Close**. Open `/xlplugins` → **All Plugins**, search for **Auto Treasure Maps**, and install. The plugin shows up there once its first release is out.
+Tick **Enabled**, click **+**, then **Save and Close**. Open `/xlplugins` → **All Plugins**, search for **Auto Treasure Maps**, and install.
 
 The plugin needs a few helpers for movement and combat to be installed and loaded. Open `/atm deps` after install to see the list and one-click each missing one.
 
