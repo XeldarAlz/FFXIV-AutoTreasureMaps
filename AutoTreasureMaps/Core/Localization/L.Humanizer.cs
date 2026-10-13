@@ -18,6 +18,6 @@ internal static partial class L
         public static readonly LocString OpenCoffer = new("humanizer.openCoffer", "Opening the coffer");
         public static readonly LocString OpenCofferHelp = new("humanizer.openCofferHelp", "Once beside the coffer the dig turned up, before opening it.");
         public static readonly LocString Engage = new("humanizer.engage", "Engaging the guards");
-        public static readonly LocString EngageHelp = new("humanizer.engageHelp", "Once the coffer has opened and its guards appear, before joining the fight.");
+        public static readonly LocString EngageHelp = new("humanizer.engageHelp", "Once the coffer has opened and its guards appear, before joining the fight. Cut short when the character is under attack at half health or less.");
     }
 }

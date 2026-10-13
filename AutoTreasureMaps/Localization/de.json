@@ -572,7 +572,7 @@
   "humanizer.openCoffer": "Truhe öffnen",
   "humanizer.openCofferHelp": "Neben der ausgegrabenen Truhe, bevor sie geöffnet wird.",
   "humanizer.engage": "Angriff auf die Wächter",
-  "humanizer.engageHelp": "Nachdem die Truhe geöffnet ist und ihre Wächter erscheinen, vor dem Einstieg in den Kampf.",
+  "humanizer.engageHelp": "Nachdem die Truhe geöffnet ist und ihre Wächter erscheinen, vor dem Einstieg in den Kampf. Die Wartezeit entfällt, wenn die Figur angegriffen wird und höchstens noch die Hälfte ihrer LP hat.",
   "market.group": "Marktbrett",
   "market.enabled": "Karten am Marktbrett kaufen",
   "market.enabledHelp": "Liegt keine aktivierte Karte mehr im Inventar, reist der Lauf zu einem Marktbrett, kauft die günstigste Karte unter der Preisgrenze ihrer Stufe und entziffert und erledigt sie dann.",

@@ -19,6 +19,8 @@ public abstract partial class AutoCommon
     private const int GuardFightCapMs = 600_000;
     private const int MinTrustedHuntMs = 60_000;
     private const float GuardRejoinWithinMeters = 3f;
+    // Under attack at half health or less, a wait before fighting back only costs the character more.
+    private const float EngageAtOnceAtHealth = 0.5f;
 
     private enum FightEnd : byte { Cleared, TimedOut, Died, Cancelled }
 
@@ -39,7 +41,7 @@ public abstract partial class AutoCommon
         // Only a map's first round waits: a later one goes back to a fight already joined.
         if (map.Wave == 0)
         {
-            await HumanDelay(HumanAction.Engage, scope, IsKnockedOut);
+            await HumanDelay(HumanAction.Engage, scope, EngageAtOnce);
         }
 
         var roundStartedAt = Environment.TickCount64;
@@ -146,6 +148,12 @@ public abstract partial class AutoCommon
             HoldCombatMovement(scope);
         }
     }
+
+    private static bool EngageAtOnce()
+        => IsKnockedOut()
+        || (Svc.Condition[ConditionFlag.InCombat]
+            && Svc.Objects.LocalPlayer is { MaxHp: > 0 } player
+            && player.CurrentHp <= player.MaxHp * EngageAtOnceAtHealth);
 
     // The preset only takes attackers, so a guard that has not engaged yet is targeted by hand; a target that is dead,
     // or neither an attacker nor a guard of ours, is dropped so the preset can take the next attacker.

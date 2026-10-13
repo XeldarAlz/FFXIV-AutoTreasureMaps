@@ -572,7 +572,7 @@
   "humanizer.openCoffer": "Abrir el cofre",
   "humanizer.openCofferHelp": "Junto al cofre que desenterró la excavación, antes de abrirlo.",
   "humanizer.engage": "Atacar a los guardianes",
-  "humanizer.engageHelp": "Cuando el cofre se ha abierto y aparecen sus guardianes, antes de unirse al combate.",
+  "humanizer.engageHelp": "Cuando el cofre se ha abierto y aparecen sus guardianes, antes de unirse al combate. La espera se interrumpe si el personaje recibe ataques con la mitad de sus PV o menos.",
   "market.group": "Tablón del mercado",
   "market.enabled": "Comprar mapas en el tablón del mercado",
   "market.enabledHelp": "Cuando tu inventario no tiene ningún mapa activado, la sesión viaja a un tablón del mercado, compra el mapa más barato por debajo del precio máximo de su nivel y luego lo descifra y lo hace.",

@@ -572,7 +572,7 @@
   "humanizer.openCoffer": "Ouvrir le coffre",
   "humanizer.openCofferHelp": "À côté du coffre déterré, avant de l'ouvrir.",
   "humanizer.engage": "Engager les gardiens",
-  "humanizer.engageHelp": "Une fois le coffre ouvert et ses gardiens apparus, avant de rejoindre le combat.",
+  "humanizer.engageHelp": "Une fois le coffre ouvert et ses gardiens apparus, avant de rejoindre le combat. L'attente est écourtée si le personnage est attaqué avec la moitié de ses PV ou moins.",
   "market.group": "Tableau des ventes",
   "market.enabled": "Acheter des cartes au tableau des ventes",
   "market.enabledHelp": "Quand votre inventaire ne contient plus de carte activée, la session se rend à un tableau des ventes, achète la carte la moins chère sous le prix plafond de son niveau, puis la déchiffre et la fait.",

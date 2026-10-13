@@ -48,6 +48,15 @@ internal abstract class MapSupplyTask : AutoCommon
             Fault = exception;
             Answer = MapSupplyAnswer.Cancelled;
         }
+        finally
+        {
+            // The run does not wait for a cancelled step to unwind, so a fight inside the step can take the movement
+            // hold again after a Stop or a Pause has released it.
+            if (CancelToken.IsCancellationRequested)
+            {
+                ReleaseCombatMovement("supply");
+            }
+        }
     }
 
     protected abstract Task<MapSupplyAnswer> Supply();
