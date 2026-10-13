@@ -55,6 +55,16 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
                 return;
             }
 
+            if (!await ReturnFromGatherer())
+            {
+                if (!CancelToken.IsCancellationRequested)
+                {
+                    Finish(RunEnd.SupplyFailed);
+                }
+
+                return;
+            }
+
             if (RunLimits.Reached(session, plugin.Configuration) is { } limit)
             {
                 Finish(limit);

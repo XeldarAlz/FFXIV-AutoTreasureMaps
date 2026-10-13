@@ -6,8 +6,10 @@ internal static class TreasureLogMessages
 {
     public const uint CannotExecute = 579;
     public const uint ItemObtained = 1053;
+    public const uint GatheringBagsFull = 1057;
     public const uint CofferEmpty = 1245;
     public const uint CofferOfAnotherPlayer = 1246;
+    public const uint GatheringCannotCarryMore = 3524;
     public const uint GatheringLimitReached = 3526;
     public const uint Deciphered = 3750;
     public const uint NothingToDigHere = 3751;
@@ -36,20 +38,25 @@ internal static class TreasureLogMessages
     public const uint PortalDeactivated = 3779;
     public const uint DecipherBoundByDuty = 3788;
     public const uint MapCrumbledSecondRow = 4405;
+    public const uint GatheringNoLongerAble = 5544;
+    public const uint GatheringRateZero = 5545;
     public const uint TrapSprungSecondRow = 9361;
     public const uint TrapSprungThirdRow = 9363;
 
     public static bool IsTracked(uint logMessageId) => NameOf(logMessageId) is not null;
 
     // Item rows fire for every item the player gets, so the watcher keeps them only when the item is a timeworn map.
-    public static bool NamesAnItem(uint logMessageId) => logMessageId is ItemObtained or GatheringLimitReached;
+    public static bool NamesAnItem(uint logMessageId)
+        => logMessageId is ItemObtained or GatheringLimitReached or GatheringCannotCarryMore or GatheringNoLongerAble or GatheringRateZero;
 
     public static string? NameOf(uint logMessageId) => logMessageId switch
     {
         CannotExecute => nameof(CannotExecute),
         ItemObtained => nameof(ItemObtained),
+        GatheringBagsFull => nameof(GatheringBagsFull),
         CofferEmpty => nameof(CofferEmpty),
         CofferOfAnotherPlayer => nameof(CofferOfAnotherPlayer),
+        GatheringCannotCarryMore => nameof(GatheringCannotCarryMore),
         GatheringLimitReached => nameof(GatheringLimitReached),
         Deciphered => nameof(Deciphered),
         NothingToDigHere => nameof(NothingToDigHere),
@@ -78,6 +85,8 @@ internal static class TreasureLogMessages
         PortalDeactivated => nameof(PortalDeactivated),
         DecipherBoundByDuty => nameof(DecipherBoundByDuty),
         MapCrumbledSecondRow => nameof(MapCrumbledSecondRow),
+        GatheringNoLongerAble => nameof(GatheringNoLongerAble),
+        GatheringRateZero => nameof(GatheringRateZero),
         TrapSprungSecondRow => nameof(TrapSprungSecondRow),
         TrapSprungThirdRow => nameof(TrapSprungThirdRow),
         _ => null,

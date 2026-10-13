@@ -1,8 +1,10 @@
 using AutoTreasureMaps.Core;
 using AutoTreasureMaps.Core.Debug;
+using AutoTreasureMaps.Core.Gather;
 using AutoTreasureMaps.Core.Game.Watchers;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Stats;
+using AutoTreasureMaps.Core.Supply;
 using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows;
@@ -27,6 +29,7 @@ public sealed class Plugin : IDalamudPlugin
     private const string SpotSubcommand = "spot";
     private const string DecipherSubcommand = "decipher";
     private const string DigSubcommand = "dig";
+    private const string GatherSubcommand = "gather";
     private const string NavmeshIpcProviderMarker = "Navmesh.IPCProvider";
 
     [PluginService]
@@ -78,7 +81,7 @@ public sealed class Plugin : IDalamudPlugin
         appWindow = new AppWindow(this);
         WindowSystem.AddWindow(appWindow);
 
-        primaryCommand = new CommandInfo(OnCommand) { HelpMessage = Loc.T(L.Plugin.CommandHelp) };
+        primaryCommand = new CommandInfo(OnCommand) { HelpMessage = CommandHelp() };
         aliasCommand = new CommandInfo(OnCommand) { HelpMessage = Loc.T(L.Plugin.CommandHelpAlias) };
         CommandManager.AddHandler(AtmConstants.PrimaryCommand, primaryCommand);
         CommandManager.AddHandler(AtmConstants.AliasCommand, aliasCommand);
@@ -127,7 +130,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void OnLanguageChanged()
     {
-        primaryCommand.HelpMessage = Loc.T(L.Plugin.CommandHelp);
+        primaryCommand.HelpMessage = CommandHelp();
         aliasCommand.HelpMessage = Loc.T(L.Plugin.CommandHelpAlias);
     }
 
@@ -204,6 +207,10 @@ public sealed class Plugin : IDalamudPlugin
         {
             AutoMapRun.Start(this);
         }
+        else if (CommandWords.StartsWith(trimmed, GatherSubcommand))
+        {
+            GatherMapTask.HandleCommand(CommandWords.After(trimmed, GatherSubcommand), this);
+        }
         else if (CommandWords.StartsWith(trimmed, DecipherSubcommand))
         {
             AutoDecipher.HandleCommand(CommandWords.After(trimmed, DecipherSubcommand), this);
@@ -236,7 +243,13 @@ public sealed class Plugin : IDalamudPlugin
         Configuration.FlushPendingSave();
     }
 
-    private void OnFrameworkUpdate(IFramework framework) => Controller.Tick();
+    private void OnFrameworkUpdate(IFramework framework)
+    {
+        Controller.Tick();
+        MapAllowance.Tick(Configuration);
+    }
+
+    private static string CommandHelp() => string.Concat(Loc.T(L.Plugin.CommandHelp), " ", Loc.T(L.Gather.CommandHelp));
 
     private void HandleGoto(string arguments)
     {

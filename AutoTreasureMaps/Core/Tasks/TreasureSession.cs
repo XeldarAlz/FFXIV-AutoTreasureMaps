@@ -44,6 +44,9 @@ public sealed class TreasureSession
 
     public int ItemsGained { get; private set; }
 
+    // Daily maps gathered as a Miner or Botanist.
+    public int MapsGathered { get; private set; }
+
     // Maps in a row that ended with nothing dug up, out of reach or on an error; any other end starts it over.
     public int FailedInARow { get; private set; }
 
@@ -64,7 +67,7 @@ public sealed class TreasureSession
 
     internal MapRefusal EndRefusal { get; private set; }
 
-    public bool DidNothing => MapsRun == 0;
+    public bool DidNothing => MapsRun == 0 && MapsGathered == 0;
 
     public int MapsFailed => MapsTimedOut + MapsKnockedOut + MapsDigFailed + MapsUnreachable;
 
@@ -106,6 +109,8 @@ public sealed class TreasureSession
         EndRefusal = refusal;
         CompletedByStopCondition = RunEnds.MetStopCondition(end);
     }
+
+    internal void NoteMapGathered() => MapsGathered++;
 
     // A run stopped from outside keeps the end it had already decided on.
     internal void MarkStopped() => EndedBy ??= RunEnd.Stopped;

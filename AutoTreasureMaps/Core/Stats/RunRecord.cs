@@ -26,6 +26,7 @@ internal sealed class RunRecord
     public int PortalsSeen { get; set; }
     public int Gil { get; set; }
     public int ItemsGained { get; set; }
+    public int MapsGathered { get; set; }
     public Dictionary<uint, int>? NotableItems { get; set; }
 
     [JsonConverter(typeof(StringEnumConverter))]

@@ -120,6 +120,7 @@ internal sealed partial class TreasureController
                 PortalsSeen = ending.PortalsSeen,
                 Gil = ending.Gil,
                 ItemsGained = ending.ItemsGained,
+                MapsGathered = ending.MapsGathered,
                 NotableItems = ending.NotableItems.Count == 0 ? null : new Dictionary<uint, int>(ending.NotableItems),
                 EndedBy = ending.EndedBy ?? (ending.EndedWithFault ? RunEnd.Faulted : RunEnd.Stopped),
                 Refusal = ending.EndRefusal,

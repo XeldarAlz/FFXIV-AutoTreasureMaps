@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.External;
+using AutoTreasureMaps.Core.Gather;
 using AutoTreasureMaps.Core.Ipc;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Treasure;
@@ -58,6 +59,11 @@ internal sealed partial class TreasureController
         }
 
         ECommons.DalamudServices.Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.Plural(L.Run.ChatStarted, check.Available)}");
+        if (Plugin.Instance.Configuration.GatherDailyMap)
+        {
+            MapAllowance.Request("run start");
+        }
+
         BeginRun(new TreasureSession(), owningSession => new AutoTreasureRun(owningSession, progress), $"maps until a stop condition, {check.Available} to go");
     }
 
@@ -190,4 +196,4 @@ internal sealed partial class TreasureController
     }
 }
 
-internal enum TreasurePhase { Idle, Preparing, Deciphering, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused }
+internal enum TreasurePhase { Idle, Preparing, Deciphering, Travelling, Digging, Opening, Fighting, Looting, Upkeep, Finishing, Paused, Gathering }
