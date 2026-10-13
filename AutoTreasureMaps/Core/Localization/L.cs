@@ -247,9 +247,17 @@ internal static partial class L
         public static readonly LocString New = new("changelog.new", "New");
         public static readonly LocPlural Changes = new("changelog.changes", "{0} change", "{0} changes");
 
-        public static readonly LocString[] Release0100 =
+        public static readonly LocString[] Release1000 =
         [
-            new("changelog.r0100.1", "First development build."),
+            new("changelog.r1000.1", "Runs your timeworn maps from start to finish: deciphers each one, flies to the dig spot, digs up the coffer, fights off its guards and loots it"),
+            new("changelog.r1000.2", "Reads the exact dig spot of the map you hold, shows it on the Treasure page and flags it on your map"),
+            new("changelog.r1000.3", "Lets you choose which map tiers a run uses and in what order; undersea maps stay off and 8-player maps carry a warning"),
+            new("changelog.r1000.4", "Gathers your daily timeworn map as a Miner or Botanist, switching gearsets there and back"),
+            new("changelog.r1000.5", "Buys maps on the market board under a price cap per tier, a budget per run and a gil reserve you set"),
+            new("changelog.r1000.6", "Ends a run when you are out of maps, after a set number of maps or minutes, or after repeated failures"),
+            new("changelog.r1000.7", "Repairs, eats and takes city breaks between maps, with random reaction delays from the Humanizer"),
+            new("changelog.r1000.8", "Records every run in History: maps, coffers, portals seen, gil gained and gil spent"),
+            new("changelog.r1000.9", "Leaves treasure dungeon portals alone for now"),
         ];
     }
 
