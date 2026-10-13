@@ -60,7 +60,16 @@ public abstract partial class AutoCommon
         var spotPosition = map.Spot.Position;
         ulong[] skip = fresh ? coffersBeforeDig.AsSpan(0, coffersBeforeDigCount).ToArray() : [];
         await WaitUntilTimed(() => TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, skip) is not null, CofferSpawnWaitMs, "coffer spawn");
-        var coffer = TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, skip) ?? TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, []);
+        var coffer = TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, skip);
+        if (coffer is null && skip.Length > 0)
+        {
+            coffer = TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, []);
+            if (coffer is not null)
+            {
+                Warn("Coffer: no new coffer appeared after the dig; trying the nearest one, which was there before it.");
+            }
+        }
+
         if (coffer is null)
         {
             Warn($"Coffer: no treasure hunt coffer within {CofferSearchMeters:F0}m of the spot after the dig.");
@@ -107,7 +116,13 @@ public abstract partial class AutoCommon
 
         LogOffsetFrom("Coffer", map.Spot.Position);
         var since = TreasureMessageWatcher.Now;
-        await InteractWithObject(target, () => NpcInteraction.SelectYesnoOpen() || CofferOpenedSince(since), scope);
+        await InteractWithObject(target, () => NpcInteraction.SelectYesnoOpen() || CofferOpenedSince(since) || NotOurCoffer(since), scope);
+        if (NotOurCoffer(since))
+        {
+            Warn($"{scope}: the game says {TreasureCoffers.Describe(map.CofferId)} belongs to another player; leaving it.");
+            return CofferStep.Unreachable;
+        }
+
         if (!CofferOpenedSince(since))
         {
             if (!NpcInteraction.SelectYesnoOpen())
@@ -152,6 +167,8 @@ public abstract partial class AutoCommon
     }
 
     private static bool CofferOpenedSince(long since) => Messages.TryGetLatest(CofferOpenedMessages, since, out _);
+
+    private static bool NotOurCoffer(long since) => Messages.ArrivedSince(TreasureLogMessages.CofferOfAnotherPlayer, since);
 
     // The fight and the unlock alternate: a coffer that answers that it is still sealed has guards left, so the fight
     // goes on, a bounded number of times.
