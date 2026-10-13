@@ -90,11 +90,11 @@ internal static class Stepper
         var size = new Vector2(width * scale, height);
         var origin = ImGui.GetCursorScreenPos();
         var end = origin + size;
-        var dl = ImGui.GetWindowDrawList();
+        var drawList = ImGui.GetWindowDrawList();
         var rounding = height * 0.5f;
 
-        Paint.Fill(dl, origin, end, Styling.WithAlpha(Styling.Surface0, 0.9f), rounding);
-        Paint.Stroke(dl, origin, end, Styling.WithAlpha(Styling.BorderDim, 0.6f), rounding);
+        Paint.Fill(drawList, origin, end, Styling.WithAlpha(Styling.Surface0, 0.9f), rounding);
+        Paint.Stroke(drawList, origin, end, Styling.WithAlpha(Styling.BorderDim, 0.6f), rounding);
 
         ImGui.PushID(id);
         ImGui.SetCursorScreenPos(origin);
