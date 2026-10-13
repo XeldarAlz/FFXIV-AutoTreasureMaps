@@ -32,7 +32,11 @@ internal sealed class DutyWatcher : IDisposable
         if (InContent())
         {
             leftContentAtMs = 0;
-            if (Plugin.Instance.Configuration.AutoPauseInContent && controller.SessionSnapshot is not null && !HuntHoldsTheDuty(controller)) controller.Pause(PauseReason.InContent);
+            if (Plugin.Instance.Configuration.AutoPauseInContent && controller.SessionSnapshot is not null && !HuntHoldsTheDuty(controller))
+            {
+                controller.Pause(PauseReason.InContent);
+            }
+
             return;
         }
 
