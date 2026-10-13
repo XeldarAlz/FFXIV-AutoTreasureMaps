@@ -19,15 +19,20 @@ public abstract partial class AutoCommon
     private const int HuntFightCapMs = 300_000;
     private const int LootAppearWaitMs = 5_000;
     private const int LootRollResendMs = 3_000;
+    // A roll the game has not taken is sent once more, then left to the player, so a refused roll is not repeated.
+    private const int MaxRollRounds = 2;
     private const int LootSettleQuietMs = 2_000;
     private const int LootSettleCapMs = 15_000;
     private const int LootPollFrames = 10;
     private const int MaxOtherChests = 16;
     private const string NeedGreedAddon = "NeedGreed";
 
+    private readonly uint[] chestsBeforeUnlock = new uint[MaxOtherChests];
+    private int chestsBeforeUnlockCount;
+
     private enum CofferStep : byte { Opened, NotFound, Unreachable, PromptMismatch, Cancelled }
 
-    private enum UnlockStep : byte { Unlocked, Sealed, TimedOut, Gone, Unreachable, Cancelled }
+    private enum UnlockStep : byte { Unlocked, Sealed, TimedOut, KnockedOut, Gone, Unreachable, Cancelled }
 
     private static ReadOnlySpan<uint> CofferOpenedMessages =>
     [
@@ -55,7 +60,16 @@ public abstract partial class AutoCommon
         var spotPosition = map.Spot.Position;
         ulong[] skip = fresh ? coffersBeforeDig.AsSpan(0, coffersBeforeDigCount).ToArray() : [];
         await WaitUntilTimed(() => TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, skip) is not null, CofferSpawnWaitMs, "coffer spawn");
-        var coffer = TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, skip) ?? TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, []);
+        var coffer = TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, skip);
+        if (coffer is null && skip.Length > 0)
+        {
+            coffer = TreasureCoffers.FindNearest(spotPosition, CofferSearchMeters, []);
+            if (coffer is not null)
+            {
+                Warn("Coffer: no new coffer appeared after the dig; trying the nearest one, which was there before it.");
+            }
+        }
+
         if (coffer is null)
         {
             Warn($"Coffer: no treasure hunt coffer within {CofferSearchMeters:F0}m of the spot after the dig.");
@@ -107,7 +121,13 @@ public abstract partial class AutoCommon
         }
 
         var since = TreasureMessageWatcher.Now;
-        await InteractWithObject(target, () => NpcInteraction.SelectYesnoOpen() || CofferOpenedSince(since), scope);
+        await InteractWithObject(target, () => NpcInteraction.SelectYesnoOpen() || CofferOpenedSince(since) || NotOurCoffer(since), scope);
+        if (NotOurCoffer(since))
+        {
+            Warn($"{scope}: the game says {TreasureCoffers.Describe(map.CofferId)} belongs to another player; leaving it.");
+            return CofferStep.Unreachable;
+        }
+
         if (!CofferOpenedSince(since))
         {
             if (!NpcInteraction.SelectYesnoOpen())
@@ -137,6 +157,12 @@ public abstract partial class AutoCommon
         var openedAt = map.CofferOpenedAtMs;
         var catalog = Plugin.Instance.Catalog;
         await WaitUntilTimed(() => CofferOpenedSince(openedAt) || !HeldMapReader.TryRead(catalog, out _), CofferOpenConfirmMs, "coffer opened", MessagePollFrames);
+        // The Yes has gone out and the map is as good as spent, so a stop now keeps the coffer as opened for the resume.
+        if (CancelToken.IsCancellationRequested)
+        {
+            return CofferStep.Cancelled;
+        }
+
         if (!CofferOpenedSince(openedAt) && HeldMapReader.TryRead(catalog, out _))
         {
             Diag($"{scope}: the map is still held and no trap sprang, so the coffer did not open.");
@@ -152,6 +178,8 @@ public abstract partial class AutoCommon
     }
 
     private static bool CofferOpenedSince(long since) => Messages.TryGetLatest(CofferOpenedMessages, since, out _);
+
+    private static bool NotOurCoffer(long since) => Messages.ArrivedSince(TreasureLogMessages.CofferOfAnotherPlayer, since);
 
     // The fight and the unlock alternate: a coffer that answers that it is still sealed has guards left, so the fight
     // goes on, a bounded number of times.
@@ -181,6 +209,8 @@ public abstract partial class AutoCommon
                     continue;
                 case UnlockStep.TimedOut:
                     return Conclude(map, map.Tier, MapOutcome.TimedOut);
+                case UnlockStep.KnockedOut:
+                    return Conclude(map, map.Tier, MapOutcome.Died);
                 case UnlockStep.Cancelled:
                     return Conclude(map, map.Tier, MapOutcome.Cancelled);
                 default:
@@ -213,6 +243,17 @@ public abstract partial class AutoCommon
                 return UnlockStep.TimedOut;
             }
 
+            // A guard or an add can still knock the character out after the fight, and nothing is reached while down.
+            if (IsKnockedOut())
+            {
+                if (!await RecoverInHunt(map))
+                {
+                    return CancelToken.IsCancellationRequested ? UnlockStep.Cancelled : UnlockStep.KnockedOut;
+                }
+
+                EnterStep(TreasurePhase.Looting);
+            }
+
             if (TreasureCoffers.Gone(map.CofferId))
             {
                 Warn($"{scope}: the coffer is gone before its lock opened.");
@@ -229,6 +270,8 @@ public abstract partial class AutoCommon
                 continue;
             }
 
+            // The coffer's loot can land in the same frame as its unlock message, so other chests are noted before the lock opens.
+            chestsBeforeUnlockCount = LootRolls.PendingChests(chestsBeforeUnlock);
             var since = TreasureMessageWatcher.Now;
             await InteractWithObject(target, () => Messages.TryGetLatest(UnlockReplies, since, out _) || NpcInteraction.SelectYesnoOpen(), scope);
             AnswerUnlockPrompt(scope);
@@ -275,12 +318,12 @@ public abstract partial class AutoCommon
     }
 
     // Rolls the coffer's rolled items by the Loot setting, then waits until the bags stop changing, so the gains are
-    // measured once everything has arrived. Items of a chest that was already waiting before are left alone.
+    // measured once everything has arrived. Items of a chest that was already waiting before the unlock are left alone.
     private async Task LootCoffer(MapInProgress map)
     {
         Status = "Looting the coffer";
-        var otherChests = new uint[MaxOtherChests];
-        var otherCount = LootRolls.PendingChests(otherChests);
+        var otherChests = chestsBeforeUnlock;
+        var otherCount = chestsBeforeUnlockCount;
         var chestEntityId = map.CofferEntityId;
         Func<uint, bool> fromCoffer = chest => chest == chestEntityId || Array.IndexOf(otherChests, chest, 0, otherCount) < 0;
         var choice = Plugin.Instance.Configuration.LootRoll;
@@ -299,6 +342,7 @@ public abstract partial class AutoCommon
         }
 
         var nextRollAt = 0L;
+        var rollRounds = 0;
         var lastFingerprint = BagSnapshot.Fingerprint();
         var quietSince = Environment.TickCount64;
         var deadline = Environment.TickCount64 + LootSettleCapMs;
@@ -307,9 +351,10 @@ public abstract partial class AutoCommon
             var now = Environment.TickCount64;
             ReadHuntClock();
             pending = LootRolls.Pending(fromCoffer);
-            if (pending > 0 && choice != LootRoll.Manual && now >= nextRollAt)
+            if (pending > 0 && choice != LootRoll.Manual && rollRounds < MaxRollRounds && now >= nextRollAt)
             {
                 LootRolls.Roll(choice, fromCoffer);
+                rollRounds++;
                 nextRollAt = now + LootRollResendMs;
             }
 
@@ -320,7 +365,7 @@ public abstract partial class AutoCommon
                 quietSince = now;
             }
 
-            var rollsDone = pending == 0 || choice == LootRoll.Manual;
+            var rollsDone = pending == 0 || choice == LootRoll.Manual || (rollRounds >= MaxRollRounds && now >= nextRollAt);
             if (rollsDone && now - quietSince >= LootSettleQuietMs)
             {
                 break;

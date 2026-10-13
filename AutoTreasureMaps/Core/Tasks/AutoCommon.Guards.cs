@@ -11,8 +11,8 @@ public abstract partial class AutoCommon
 {
     // A wave can end a moment before the next one spawns, so the field must stay clear this long to count as cleared.
     private const int GuardQuietMs = 3_000;
-    // Long enough for the first wave to spawn and close in; a coffer whose guards never show goes on to its lock, which
-    // answers that it is sealed if any are left.
+    // Long enough for a wave to spawn and close in, counted from each fight round's start; a round whose guards never
+    // show goes on to the lock, which answers that it is sealed if any are left.
     private const int NoGuardsGraceMs = 20_000;
     // Past the director's end the game has had this long to call time on the hunt itself.
     private const long HuntEndGraceSeconds = 10;
@@ -42,10 +42,11 @@ public abstract partial class AutoCommon
             await HumanDelay(HumanAction.Engage, scope, IsKnockedOut);
         }
 
+        var roundStartedAt = Environment.TickCount64;
         EnsureCombatPreset();
         ReleaseCombatMovement(scope);
         map.Wave = Math.Max(map.Wave, 1);
-        var waveSeenAt = openedAt;
+        var waveSeenAt = Math.Max(openedAt, map.WaveSeenAtMs);
         var sawGuard = false;
         var quietSince = 0L;
         ulong lastPickedGuard = 0;
@@ -90,6 +91,7 @@ public abstract partial class AutoCommon
                 if (Messages.TryGetLatest(TreasureLogMessages.Reinforcements, waveSeenAt + 1, out var reinforcements))
                 {
                     waveSeenAt = reinforcements.AtMs;
+                    map.WaveSeenAtMs = waveSeenAt;
                     map.Wave++;
                     quietSince = 0;
                     Diag($"{scope}: reinforcements, wave {map.Wave}.");
@@ -121,7 +123,7 @@ public abstract partial class AutoCommon
                     quietSince = 0;
                 }
 
-                if (!sawGuard && !inCombat && now - openedAt >= NoGuardsGraceMs)
+                if (!sawGuard && !inCombat && now - roundStartedAt >= NoGuardsGraceMs)
                 {
                     Diag($"{scope}: no guard of ours showed up within {NoGuardsGraceMs / TimeUnits.MillisecondsPerSecond}s and nothing attacks ({survey.Others} other hunt guard(s) nearby); trying the lock.");
                     return FightEnd.Cleared;

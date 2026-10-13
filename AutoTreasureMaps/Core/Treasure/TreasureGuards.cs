@@ -12,7 +12,8 @@ namespace AutoTreasureMaps.Core.Treasure;
 internal readonly record struct GuardSurvey(int Ours, int Others, IBattleNpc? Nearest);
 
 // A coffer's guards are combatant battle NPCs run by the treasure hunt director. The game gives the ones that belong to
-// the coffer's own party one of two nameplate icons. Read only on the framework thread.
+// the coffer's own party one of two nameplate icons, which count only on the director's guards, so no other enemy
+// nearby is taken for one of ours. Read only on the framework thread.
 internal static unsafe class TreasureGuards
 {
     private const uint OwnGuardIcon = 60094;
@@ -58,7 +59,7 @@ internal static unsafe class TreasureGuards
 
     public static bool IsOurs(IGameObject gameObject)
     {
-        if (gameObject.Address == 0)
+        if (!IsHuntGuard(gameObject))
         {
             return false;
         }

@@ -244,7 +244,7 @@ public abstract partial class AutoCommon
     {
         if (!result.HasTier)
         {
-            Svc.Chat.PrintError($"{AtmConstants.LogPrefix} {Loc.T(L.MapRun.ChatRefused, Loc.T(MapOutcomes.Reason(result.Refusal)))}");
+            Svc.Chat.PrintError($"{AtmConstants.LogPrefix} {Loc.T(L.MapRun.ChatRefused, Loc.T(MapOutcomes.Cause(result)))}");
             return;
         }
 

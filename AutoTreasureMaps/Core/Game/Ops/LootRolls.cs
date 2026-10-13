@@ -3,13 +3,18 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 
 namespace AutoTreasureMaps.Core.Game.Ops;
 
-// The game's loot list keeps up to 16 items waiting for a roll. The Need or Greed window's buttons end in the client's
-// own roll request, called with the loot list, the roll and the item's index; the request is found through its one
-// call site, the window's roll handler, which passes Need as 1, Greed as 2 and Pass as 5. Read and called only on the
-// framework thread.
+// The game's loot list keeps up to 16 items waiting for a roll. The Need or Greed window's buttons fire no window
+// callback: they hand the roll and the item's index to the UI's roll handler, which calls the client's roll request
+// with the loot list, Need as 1, Greed as 2 and Pass as 5, and nothing on that path checks the item. The window only
+// enables the buttons the item's RollState allows, which RollFor mirrors, so the request is called here as an enabled
+// button would, without the window having to be open. Read and called only on the framework thread.
 internal static unsafe class LootRolls
 {
-    private const string RollRequestCallSite = "E8 ?? ?? ?? ?? EB 4A 48 8D 4F 10";
+    // The handler's Pass branch: lea rcx, [loot list]; mov edx, 5; call the request; jmp; then the Greed branch.
+    private const string RollRequestCallSite = "48 8D 0D ?? ?? ?? ?? BA 05 00 00 00 E8 ?? ?? ?? ?? EB 4A 48 8D 4F 10";
+    private const int LoadLootListLength = 7;
+    private const int PassArgumentLength = 5;
+    private const int CallLength = 5;
 
     private static bool resolved;
     private static delegate* unmanaged<Loot*, uint, uint, void> rollRequest;
@@ -143,14 +148,28 @@ internal static unsafe class LootRolls
         }
 
         resolved = true;
-        if (!Svc.SigScanner.TryScanText(RollRequestCallSite, out var address))
+        var scanner = Svc.SigScanner;
+        if (!scanner.TryScanText(RollRequestCallSite, out var site))
         {
             RunLog.Warning("Loot: the client's roll request was not found, so loot rolls are left to you.");
             return false;
         }
 
-        rollRequest = (delegate* unmanaged<Loot*, uint, uint, void>)address;
-        RunLog.Debug($"Loot: roll request resolved at 0x{address:X}.");
+        // A pattern that lands on some other call after a patch must never be called, so the call has to pass the loot list.
+        var lootList = RelativeTarget(site, LoadLootListLength);
+        var request = RelativeTarget(site + LoadLootListLength + PassArgumentLength, CallLength);
+        var textStart = scanner.Module.BaseAddress + (nint)scanner.TextSectionOffset;
+        if (lootList != Loot.Addresses.Instance.Value || request < textStart || request >= textStart + scanner.TextSectionSize)
+        {
+            RunLog.Warning($"Loot: the call at 0x{site:X} does not pass the loot list to a roll request, so loot rolls are left to you.");
+            return false;
+        }
+
+        rollRequest = (delegate* unmanaged<Loot*, uint, uint, void>)request;
+        RunLog.Debug($"Loot: roll request resolved at 0x{request:X}.");
         return true;
     }
+
+    // A rip-relative operand: the instruction's last four bytes, counted from the instruction's end.
+    private static nint RelativeTarget(nint instruction, int length) => instruction + length + *(int*)(instruction + length - sizeof(int));
 }
