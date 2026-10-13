@@ -575,7 +575,7 @@
   "humanizer.engageHelp": "Once the coffer has opened and its guards appear, before joining the fight. Cut short when the character is under attack at half health or less.",
   "market.group": "Market board",
   "market.enabled": "Buy maps on the market board",
-  "market.enabledHelp": "When your bags hold no enabled map, the run travels to a market board, buys the cheapest map under its tier's price cap, then deciphers and runs it.",
+  "market.enabledHelp": "When your bags hold no enabled map and no daily map can be gathered, the run travels to a market board, buys the cheapest map under its tier's price cap, then deciphers and runs it.",
   "market.off": "Off. Runs use only the maps already in your bags.",
   "market.budget": "Budget per run",
   "market.budgetHelp": "The most gil one run spends on maps, market tax included. Once it is spent, the run stops buying.",

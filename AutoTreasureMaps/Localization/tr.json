@@ -575,7 +575,7 @@
   "humanizer.engageHelp": "Sandık açılıp bekçileri belirdikten sonra, savaşa katılmadan önce. Karakter saldırı altındayken canı yarıya veya altına düştüyse bekleme kesilir.",
   "market.group": "Pazar panosu",
   "market.enabled": "Haritaları pazar panosundan satın al",
-  "market.enabledHelp": "Envanterinizde etkin harita kalmadığında oturum bir pazar panosuna gider, kademesinin tavan fiyatının altındaki en ucuz haritayı satın alır, ardından deşifre edip yapar.",
+  "market.enabledHelp": "Envanterinizde etkin harita kalmadığında ve günlük harita toplanamadığında oturum bir pazar panosuna gider, kademesinin tavan fiyatının altındaki en ucuz haritayı satın alır, ardından deşifre edip yapar.",
   "market.off": "Kapalı. Oturumlar yalnızca envanterinizdeki haritaları kullanır.",
   "market.budget": "Oturum başına bütçe",
   "market.budgetHelp": "Bir oturumun haritalara harcayacağı en fazla gil, pazar vergisi dahil. Bittiğinde oturum satın almayı bırakır.",

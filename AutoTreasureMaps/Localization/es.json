@@ -575,7 +575,7 @@
   "humanizer.engageHelp": "Cuando el cofre se ha abierto y aparecen sus guardianes, antes de unirse al combate. La espera se interrumpe si el personaje recibe ataques con la mitad de sus PV o menos.",
   "market.group": "Tablón del mercado",
   "market.enabled": "Comprar mapas en el tablón del mercado",
-  "market.enabledHelp": "Cuando tu inventario no tiene ningún mapa activado, la sesión viaja a un tablón del mercado, compra el mapa más barato por debajo del precio máximo de su nivel y luego lo descifra y lo hace.",
+  "market.enabledHelp": "Cuando tu inventario no tiene ningún mapa activado y no se puede recolectar el mapa diario, la sesión viaja a un tablón del mercado, compra el mapa más barato por debajo del precio máximo de su nivel y luego lo descifra y lo hace.",
   "market.off": "Desactivado. Las sesiones solo usan los mapas que ya tienes en el inventario.",
   "market.budget": "Presupuesto por sesión",
   "market.budgetHelp": "El máximo de guiles que una sesión gasta en mapas, impuesto del mercado incluido. Una vez gastado, la sesión deja de comprar.",

@@ -575,7 +575,7 @@
   "humanizer.engageHelp": "Nachdem die Truhe geöffnet ist und ihre Wächter erscheinen, vor dem Einstieg in den Kampf. Die Wartezeit entfällt, wenn die Figur angegriffen wird und höchstens noch die Hälfte ihrer LP hat.",
   "market.group": "Marktbrett",
   "market.enabled": "Karten am Marktbrett kaufen",
-  "market.enabledHelp": "Liegt keine aktivierte Karte mehr im Inventar, reist der Lauf zu einem Marktbrett, kauft die günstigste Karte unter der Preisgrenze ihrer Stufe und entziffert und erledigt sie dann.",
+  "market.enabledHelp": "Liegt keine aktivierte Karte mehr im Inventar und lässt sich keine Tageskarte sammeln, reist der Lauf zu einem Marktbrett, kauft die günstigste Karte unter der Preisgrenze ihrer Stufe und entziffert und erledigt sie dann.",
   "market.off": "Aus. Läufe nutzen nur die Karten, die schon im Inventar liegen.",
   "market.budget": "Budget pro Lauf",
   "market.budgetHelp": "Höchstens so viel Gil gibt ein Lauf für Karten aus, Marktsteuer inbegriffen. Ist es aufgebraucht, kauft der Lauf nichts mehr.",

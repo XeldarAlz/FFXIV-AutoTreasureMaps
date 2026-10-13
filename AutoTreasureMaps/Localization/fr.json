@@ -575,7 +575,7 @@
   "humanizer.engageHelp": "Une fois le coffre ouvert et ses gardiens apparus, avant de rejoindre le combat. L'attente est écourtée si le personnage est attaqué avec la moitié de ses PV ou moins.",
   "market.group": "Tableau des ventes",
   "market.enabled": "Acheter des cartes au tableau des ventes",
-  "market.enabledHelp": "Quand votre inventaire ne contient plus de carte activée, la session se rend à un tableau des ventes, achète la carte la moins chère sous le prix plafond de son niveau, puis la déchiffre et la fait.",
+  "market.enabledHelp": "Quand votre inventaire ne contient plus de carte activée et qu'aucune carte du jour ne peut être récoltée, la session se rend à un tableau des ventes, achète la carte la moins chère sous le prix plafond de son niveau, puis la déchiffre et la fait.",
   "market.off": "Désactivé. Les sessions n'utilisent que les cartes déjà dans votre inventaire.",
   "market.budget": "Budget par session",
   "market.budgetHelp": "Le maximum de gils qu'une session dépense en cartes, taxe du marché comprise. Une fois dépensé, la session cesse d'acheter.",

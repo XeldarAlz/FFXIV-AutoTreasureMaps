@@ -575,7 +575,7 @@
   "humanizer.engageHelp": "Depois que o baú abre e os guardiões aparecem, antes de entrar na luta. A espera é interrompida se o personagem estiver sob ataque com metade dos PV ou menos.",
   "market.group": "Quadro do mercado",
   "market.enabled": "Comprar mapas no quadro do mercado",
-  "market.enabledHelp": "Quando seu inventário não tem nenhum mapa ativado, a sessão vai até um quadro do mercado, compra o mapa mais barato abaixo do preço máximo do nível e depois o decifra e o faz.",
+  "market.enabledHelp": "Quando seu inventário não tem nenhum mapa ativado e não é possível coletar o mapa diário, a sessão vai até um quadro do mercado, compra o mapa mais barato abaixo do preço máximo do nível e depois o decifra e o faz.",
   "market.off": "Desativado. As sessões usam apenas os mapas que já estão no seu inventário.",
   "market.budget": "Orçamento por sessão",
   "market.budgetHelp": "O máximo de gil que uma sessão gasta em mapas, imposto do mercado incluído. Quando acaba, a sessão para de comprar.",

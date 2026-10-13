@@ -6,7 +6,7 @@ internal static partial class L
     {
         public static readonly LocString Group = new("market.group", "Market board");
         public static readonly LocString Enabled = new("market.enabled", "Buy maps on the market board");
-        public static readonly LocString EnabledHelp = new("market.enabledHelp", "When your bags hold no enabled map, the run travels to a market board, buys the cheapest map under its tier's price cap, then deciphers and runs it.");
+        public static readonly LocString EnabledHelp = new("market.enabledHelp", "When your bags hold no enabled map and no daily map can be gathered, the run travels to a market board, buys the cheapest map under its tier's price cap, then deciphers and runs it.");
         public static readonly LocString Off = new("market.off", "Off. Runs use only the maps already in your bags.");
         public static readonly LocString Budget = new("market.budget", "Budget per run");
         public static readonly LocString BudgetHelp = new("market.budgetHelp", "The most gil one run spends on maps, market tax included. Once it is spent, the run stops buying.");
