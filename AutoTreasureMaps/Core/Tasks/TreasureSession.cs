@@ -50,6 +50,9 @@ public sealed class TreasureSession
     // Market tax included.
     public int GilSpentOnMaps { get; private set; }
 
+    // Daily maps gathered as a Miner or Botanist.
+    public int MapsGathered { get; private set; }
+
     // Maps in a row that ended with nothing dug up, out of reach or on an error; any other end starts it over.
     public int FailedInARow { get; private set; }
 
@@ -73,8 +76,8 @@ public sealed class TreasureSession
     // Set once the game refused a purchase for want of gil; the run buys nothing more.
     internal bool MarketStopped { get; private set; }
 
-    // A run that only bought a map still spent gil, so it is recorded.
-    public bool DidNothing => MapsRun == 0 && MapsBought == 0;
+    // A run that only bought or gathered a map still spent gil or the day's allowance, so it is recorded.
+    public bool DidNothing => MapsRun == 0 && MapsBought == 0 && MapsGathered == 0;
 
     public int MapsFailed => MapsTimedOut + MapsKnockedOut + MapsDigFailed + MapsUnreachable;
 
@@ -129,6 +132,8 @@ public sealed class TreasureSession
         EndRefusal = refusal;
         CompletedByStopCondition = RunEnds.MetStopCondition(end);
     }
+
+    internal void NoteMapGathered() => MapsGathered++;
 
     // A run stopped from outside keeps the end it had already decided on.
     internal void MarkStopped() => EndedBy ??= RunEnd.Stopped;

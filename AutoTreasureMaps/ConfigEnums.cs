@@ -34,3 +34,10 @@ public enum MarketBoardChoice
     Ishgard,
     Gridania,
 }
+
+public enum DailyMapGatherer
+{
+    Automatic,
+    Miner,
+    Botanist,
+}

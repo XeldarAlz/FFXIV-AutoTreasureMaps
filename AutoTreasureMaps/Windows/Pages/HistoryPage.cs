@@ -286,6 +286,7 @@ internal sealed class HistoryPage
         CountLine(Loc.T(MapOutcomes.Label(MapOutcome.DigFailed)), record.MapsDigFailed);
         CountLine(Loc.T(MapOutcomes.Label(MapOutcome.Unreachable)), record.MapsUnreachable);
         CountLine(Loc.T(MapOutcomes.Label(MapOutcome.Faulted)), record.MapsFaulted);
+        CountLine(Loc.T(L.Gather.MapsGathered), record.MapsGathered);
         CountLine(Loc.T(L.History.TilePortals), record.PortalsSeen);
         CountLine(Loc.T(L.History.Items), record.ItemsGained);
         if (record.MapsBought > 0)

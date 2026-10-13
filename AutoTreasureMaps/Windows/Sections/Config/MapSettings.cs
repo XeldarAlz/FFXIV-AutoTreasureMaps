@@ -48,6 +48,7 @@ internal static class MapSettings
     {
         DrawOrderGroup(configuration);
         DrawLootGroup(configuration);
+        DailyMapSettings.Draw(configuration);
         MarketSettings.Draw(configuration, catalog);
         DrawTiersIntro();
         for (var index = 0; index < expansions.Length; index++)

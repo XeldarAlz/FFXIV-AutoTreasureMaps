@@ -81,6 +81,7 @@ internal static class ReadyState
         TreasurePhase.Looting     => Loc.T(L.MapRun.PhaseLooting),
         TreasurePhase.Upkeep      => Loc.T(L.Progress.PhaseUpkeep),
         TreasurePhase.Finishing   => Loc.T(L.Run.PhaseFinishing),
+        TreasurePhase.Gathering   => Loc.T(L.Gather.PhaseGathering),
         _                         => Loc.T(L.Run.PhaseStandingBy),
     };
 }

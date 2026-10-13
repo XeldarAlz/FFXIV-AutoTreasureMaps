@@ -7,6 +7,7 @@ internal static class MapSupplyChain
     private static readonly IMapSupplyStep[] steps =
     [
         new BagSupplyStep(),
+        new GatherSupplyStep(),
         new MarketSupplyStep(),
     ];
 

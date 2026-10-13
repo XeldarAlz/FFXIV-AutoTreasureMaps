@@ -48,7 +48,7 @@ internal static class MapBagCard
         var buttonHeight = Layout.ActionPillHeight * scale;
         var sectionGap = SectionGap * scale;
         var padY = PadY * scale;
-        var size = new Vector2(width, padY + rowHeight * rowCount + sectionGap * 2f + buttonHeight + padY);
+        var size = new Vector2(width, padY + rowHeight * rowCount + sectionGap * 2f + buttonHeight + DailyMapLine.Height() + padY);
         var end = origin + size;
         Paint.Glass(drawList, origin, end, Styling.PanelRounding * scale, Styling.AccentNebula, 0.04f);
 
@@ -68,6 +68,7 @@ internal static class MapBagCard
         y += rowHeight * rowCount + sectionGap;
         Paint.Hairline(drawList, new Vector2(left, y), new Vector2(right, y));
         DrawFooter(plugin, issue, pickIssue, next, left, right, y + sectionGap, buttonHeight);
+        DailyMapLine.Draw(plugin, left, right, y + sectionGap + buttonHeight);
 
         ImGui.SetCursorScreenPos(origin);
         ImGui.Dummy(size);

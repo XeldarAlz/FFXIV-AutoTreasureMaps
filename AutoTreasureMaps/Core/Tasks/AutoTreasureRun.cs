@@ -55,6 +55,16 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
                 return;
             }
 
+            if (!await ReturnFromGatherer())
+            {
+                if (!CancelToken.IsCancellationRequested)
+                {
+                    Finish(RunEnd.SupplyFailed);
+                }
+
+                return;
+            }
+
             if (RunLimits.Reached(session, plugin.Configuration) is { } limit)
             {
                 Finish(limit);
@@ -293,6 +303,6 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
     private void LogFinish(RunEnd end)
     {
         var refusal = session.EndRefusal == MapRefusal.None ? string.Empty : $" ({session.EndRefusal})";
-        Diag($"Run: over, {end}{refusal}: {session.MapsRun} map(s) run, {session.MapsCompleted} looted, {session.MapsFailed} failed, {session.Gil} gil, {session.MapsBought} bought for {session.GilSpentOnMaps} gil, {session.PortalsSeen} portal(s), {session.Elapsed.TotalMinutes:F1} min.");
+        Diag($"Run: over, {end}{refusal}: {session.MapsRun} map(s) run, {session.MapsCompleted} looted, {session.MapsFailed} failed, {session.Gil} gil, {session.MapsBought} bought for {session.GilSpentOnMaps} gil, {session.MapsGathered} gathered, {session.PortalsSeen} portal(s), {session.Elapsed.TotalMinutes:F1} min.");
     }
 }
