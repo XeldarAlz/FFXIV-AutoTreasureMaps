@@ -17,11 +17,11 @@ public abstract partial class AutoCommon
     private bool combatPresetEnsured;
     private bool combatPresetRefusalLogged;
 
-    // Fights back with the preset until the character is out of combat. Every step that needs the character free of
-    // combat runs this first: a mob that has aggroed keeps attacking a character that stands still, so waiting never ends
-    // it. The preset's targeting only switches while the character has no target, and only to a mob on the enemy list, so
-    // a target that is dead or holds no enmity is dropped to let it take an attacker.
-    private protected async Task FightOffAttackers(string scope)
+    // Fights back with the preset until the character is out of combat or capMs runs out. Every step that needs the
+    // character free of combat runs this first: a mob that has aggroed keeps attacking a character that stands still, so
+    // waiting never ends it. The preset's targeting only switches while the character has no target, and only to a mob on
+    // the enemy list, so a target that is dead or holds no enmity is dropped to let it take an attacker.
+    private protected async Task FightOffAttackers(string scope, int capMs = AggroClearMs)
     {
         if (!Svc.Condition[ConditionFlag.InCombat] || IsKnockedOut())
         {
@@ -31,7 +31,7 @@ public abstract partial class AutoCommon
         EnsureCombatPreset();
         Status = "Fighting off what is still attacking";
         Diag($"{scope}: still in combat ({ConditionTag()}); fighting off whatever is attacking");
-        var deadline = Environment.TickCount64 + AggroClearMs;
+        var deadline = Environment.TickCount64 + capMs;
         ReleaseCombatMovement(scope);
         try
         {
@@ -42,13 +42,7 @@ public abstract partial class AutoCommon
                     return;
                 }
 
-                if (Svc.Condition[ConditionFlag.Mounted])
-                {
-                    BossModIPC.Instance.ClearActive();
-                    await SafeDismount($"{scope}-aggro-dismount");
-                }
-
-                AssertCombatPresetActive();
+                await KeepPresetFighting(scope);
                 if (Svc.Targets.Target is { } target && (target.IsDead || !EnmityList.Contains(target.EntityId)))
                 {
                     Svc.Targets.Target = null;
@@ -65,8 +59,20 @@ public abstract partial class AutoCommon
 
         if (Svc.Condition[ConditionFlag.InCombat])
         {
-            Diag($"{scope}: still in combat after {AggroClearMs / TimeUnits.MillisecondsPerSecond}s of fighting; carrying on");
+            Diag($"{scope}: still in combat after {capMs / TimeUnits.MillisecondsPerSecond}s of fighting; carrying on");
         }
+    }
+
+    // One tick's upkeep of a fight: a mounted character cannot attack, and the preset is re-applied in case it dropped.
+    private async Task KeepPresetFighting(string scope)
+    {
+        if (Svc.Condition[ConditionFlag.Mounted])
+        {
+            BossModIPC.Instance.ClearActive();
+            await SafeDismount($"{scope}-aggro-dismount");
+        }
+
+        AssertCombatPresetActive();
     }
 
     private void EnsureCombatPreset()

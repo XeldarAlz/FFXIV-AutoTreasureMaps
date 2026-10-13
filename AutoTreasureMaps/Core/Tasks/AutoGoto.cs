@@ -13,7 +13,7 @@ internal sealed class AutoGoto(uint territoryId, Vector3 destination, float arri
 {
     private const float ArriveWithinMeters = 3f;
     // Tight enough that the landing after it comes down on the spot's own floor and not on a ledge beside it.
-    private const float DigSpotArriveWithinMeters = 2f;
+    internal const float DigSpotArriveWithinMeters = 2f;
     private const string StopArgument = "stop";
     private const string LandingScope = "goto-land";
     private const string Usage = AtmConstants.LogPrefix + " Usage: /atm goto <territoryId> <x> <y> <z>, /atm goto spot, or /atm goto stop.";

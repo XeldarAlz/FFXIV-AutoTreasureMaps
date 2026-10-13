@@ -24,15 +24,19 @@ public abstract partial class AutoCommon
     private const int InteractResultTimeoutMs = 5_000;
     private const int InteractUiCheckFrames = 2;
 
-    private async Task<IGameObject?> ApproachObject(uint baseId, string scope)
+    private Task<IGameObject?> ApproachObject(uint baseId, string scope)
+        => ApproachObject(() => NpcInteraction.FindNearest(baseId), $"object {baseId}", scope);
+
+    // find is asked afresh each time, so an object that respawns or changes is never held past its frame.
+    private async Task<IGameObject?> ApproachObject(Func<IGameObject?> find, string name, string scope)
     {
-        if (!await WaitUntilTimed(() => NpcInteraction.FindNearest(baseId) is not null, InteractObjectWaitMs, $"{scope}-object"))
+        if (!await WaitUntilTimed(() => find() is not null, InteractObjectWaitMs, $"{scope}-object"))
         {
-            Diag($"{scope}: object {baseId} is not among the nearby objects");
+            Diag($"{scope}: {name} is not among the nearby objects");
             return null;
         }
 
-        if (NpcInteraction.FindNearest(baseId) is not { } target)
+        if (find() is not { } target)
         {
             return null;
         }
@@ -45,7 +49,7 @@ public abstract partial class AutoCommon
         var targetPosition = target.Position;
         var standPoint = NavmeshIPC.Instance.NearestPointReachable(targetPosition, InteractStandSearchMeters, InteractStandSearchMeters) ?? targetPosition;
         var approachScope = $"{scope}-approach";
-        Diag($"{approachScope}: {DistanceTo(targetPosition):F1}m from object {baseId}, out of interact range; stepping to {FormatPosition(standPoint)}");
+        Diag($"{approachScope}: {DistanceTo(targetPosition):F1}m from {name}, out of interact range; stepping to {FormatPosition(standPoint)}");
         var approach = new MoveOp(move => move.MoveInZone(
             standPoint,
             MovementConfig.InteractRange.WithTolerance(InteractApproachToleranceMeters),
@@ -61,7 +65,7 @@ public abstract partial class AutoCommon
             return target;
         }
 
-        Diag($"{approachScope}: still out of interact range, {DistanceTo(targetPosition):F1}m from object {baseId}");
+        Diag($"{approachScope}: still out of interact range, {DistanceTo(targetPosition):F1}m from {name}");
         return null;
     }
 
