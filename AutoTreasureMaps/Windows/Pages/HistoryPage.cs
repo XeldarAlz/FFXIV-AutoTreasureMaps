@@ -1,5 +1,7 @@
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Stats;
+using AutoTreasureMaps.Core.Tasks;
+using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -11,14 +13,17 @@ namespace AutoTreasureMaps.Windows.Pages;
 internal sealed class HistoryPage
 {
     private const int ChartRuns = 24;
-    private const int TileCount = 2;
+    private const int TileCount = 3;
     private const float PadX = 14f;
     private const float MetricWidth = 64f;
     private const float IconColumn = 18f;
     private const float ConfirmSlide = 12f;
     private const string NoValue = "-";
+    private const float BadgeGap = 6f;
 
     private bool confirmClear;
+    private CachedText runsText;
+    private CachedText perMapText;
 
     public void Draw(Plugin plugin)
     {
@@ -29,7 +34,7 @@ internal sealed class HistoryPage
             : Loc.Plural(L.History.Summary, history.Records.Count, Formatting.Elapsed(totals.Duration), totals.MapsPerHour.ToString("F1", Loc.Culture));
         PageHeader.Draw(Loc.T(L.History.Title), subtitle);
 
-        DrawLifetime(totals);
+        DrawLifetime(totals, history.Revision);
         Styling.VSpace(14f);
 
         if (history.Records.Count == 0)
@@ -63,15 +68,22 @@ internal sealed class HistoryPage
         ImGui.Dummy(new Vector2(ImGui.GetContentRegionAvail().X, size.Y + 8f * scale));
     }
 
-    private static void DrawLifetime(RunHistory.LifetimeTotals totals)
+    // The captions are rebuilt only when the history changes; the revision is their cache key.
+    private void DrawLifetime(RunHistory.LifetimeTotals totals, int revision)
     {
         var scale = ImGuiHelpers.GlobalScale;
         var gap = 8f * scale;
         var tileWidth = (ImGui.GetContentRegionAvail().X - gap * (TileCount - 1)) / TileCount;
+        var runs = totals.Runs > 0 ? runsText.Get(revision, static _ => Loc.Plural(L.History.TileRunsCount, Plugin.Instance.History.Lifetime.Runs)) : null;
+        var perMap = totals.MapsRun > 0
+            ? perMapText.Get(revision, static _ => Loc.T(L.History.TilePerMap, Plugin.Instance.History.Lifetime.GilPerMap.ToString("N0", Loc.Culture)))
+            : null;
 
-        StatTile.Draw(Loc.T(L.History.TileRuns), totals.Runs.ToString("N0", Loc.Culture), null, Styling.AccentGlow, tileWidth);
+        StatTile.Draw(Loc.T(L.History.TileMaps), totals.Maps.ToString("N0", Loc.Culture), runs, Styling.AccentBlue, tileWidth);
         ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileMaps), totals.Maps.ToString("N0", Loc.Culture), null, Styling.AccentBlue, tileWidth);
+        StatTile.Draw(Loc.T(L.History.TileGil), totals.Gil.ToString("N0", Loc.Culture), perMap, Styling.AccentAmber, tileWidth);
+        ImGui.SameLine(0, gap);
+        StatTile.Draw(Loc.T(L.History.TilePortals), totals.Portals.ToString("N0", Loc.Culture), null, Styling.AccentNebula, tileWidth);
     }
 
     private static void DrawEmptyState()
@@ -193,19 +205,36 @@ internal sealed class HistoryPage
 
         var top = midY - (whenSize.Y + 3f * scale + detailSize.Y) * 0.5f;
         TextDraw.At(when, new Vector2(textX, top), Styling.TextStrong);
+        if (record.EndedBy is { } ending)
+        {
+            Badge.DrawLeft(drawList, Loc.T(RunEnds.Label(ending)), EndColor(ending), textX + whenSize.X + BadgeGap * 2f * scale, top + whenSize.Y * 0.5f);
+        }
+
         using (Fonts.PushCaption())
         {
             TextDraw.At(detail, new Vector2(textX, top + whenSize.Y + 3f * scale), Styling.TextDim);
         }
 
         var metricWidth = MetricWidth * scale;
-        DrawMetric(end.X - padX - metricWidth, midY, metricWidth, record.MapsCompleted.ToString(Loc.Culture), Loc.T(L.History.TileMaps), Styling.AccentBlue);
+        var x = end.X - padX - metricWidth;
+        DrawMetric(x, midY, metricWidth, NumberText.Of(record.MapsCompleted), Loc.T(L.History.TileMaps), Styling.AccentBlue);
+        x -= metricWidth;
+        DrawMetric(x, midY, metricWidth, record.Gil > 0 ? record.Gil.ToString("N0", Loc.Culture) : NoValue, Loc.T(L.History.TileGil),
+            record.Gil > 0 ? Styling.AccentAmber : Styling.TextMuted);
 
         if (hit.Hovered)
         {
-            Tooltip.Show(RunTooltip(record));
+            DrawRunTooltip(record);
         }
     }
+
+    private static Vector4 EndColor(RunEnd ending) => ending switch
+    {
+        RunEnd.OutOfMaps or RunEnd.MapLimit or RunEnd.TimeLimit or RunEnd.SingleMap => Styling.AccentMint,
+        RunEnd.Stopped => Styling.TextDim,
+        RunEnd.Faulted => Styling.AccentRose,
+        _ => Styling.AccentAmber,
+    };
 
     // Returns where the row's text starts; the icon is centred in a fixed column so every row's text lines up.
     private static float DrawRunIcon(float x, float midY)
@@ -228,15 +257,50 @@ internal sealed class HistoryPage
         TextDraw.SmallCaps(label, new Vector2(centerX - labelSize.X * 0.5f, top + valueSize.Y + 2f * scale), Styling.TextMuted);
     }
 
-    private static string RunTooltip(RunRecord record)
+    // Composed only while the row is hovered.
+    private static void DrawRunTooltip(RunRecord record)
     {
-        var lines = record.EndedAtUtc.ToLocalTime().ToString("g", Loc.Culture);
+        using var tooltip = Tooltip.Begin();
+        Tooltip.Text(record.EndedAtUtc.ToLocalTime().ToString("g", Loc.Culture), Styling.TextStrong);
         if (record.MapsPerHour > 0)
         {
-            lines += "\n" + Loc.T(L.History.TooltipRate, record.MapsPerHour.ToString("F1", Loc.Culture));
+            Tooltip.Text(Loc.T(L.History.TooltipRate, record.MapsPerHour.ToString("F1", Loc.Culture)));
         }
 
-        return lines;
+        Tooltip.Text(Loc.T(L.Run.TooltipMapsRun, record.MapsRun));
+        CountLine(Loc.T(MapOutcomes.Label(MapOutcome.TimedOut)), record.MapsTimedOut);
+        CountLine(Loc.T(MapOutcomes.Label(MapOutcome.Died)), record.MapsKnockedOut);
+        CountLine(Loc.T(MapOutcomes.Label(MapOutcome.DigFailed)), record.MapsDigFailed);
+        CountLine(Loc.T(MapOutcomes.Label(MapOutcome.Unreachable)), record.MapsUnreachable);
+        CountLine(Loc.T(MapOutcomes.Label(MapOutcome.Faulted)), record.MapsFaulted);
+        CountLine(Loc.T(L.History.TilePortals), record.PortalsSeen);
+        CountLine(Loc.T(L.History.Items), record.ItemsGained);
+        if (record.NotableItems is { Count: > 0 } notable)
+        {
+            Tooltip.Text(Loc.T(L.Run.TooltipNotable));
+            foreach (var (itemId, quantity) in notable)
+            {
+                Tooltip.Text(Loc.T(L.Run.TooltipItem, NotableLoot.Name(itemId), quantity), Styling.AccentAmberSoft);
+            }
+        }
+
+        if (record.EndedBy is { } ending)
+        {
+            Tooltip.Text(Loc.T(L.Run.TooltipCount, Loc.T(L.History.EndedBy), Loc.T(RunEnds.Label(ending))));
+        }
+
+        if (record.Refusal != MapRefusal.None)
+        {
+            Tooltip.Text(Loc.T(MapOutcomes.Reason(record.Refusal)), Styling.AccentAmberSoft);
+        }
+    }
+
+    private static void CountLine(string label, int count)
+    {
+        if (count > 0)
+        {
+            Tooltip.Text(Loc.T(L.Run.TooltipCount, label, count));
+        }
     }
 
     private static string RelativeTime(DateTime utc)

@@ -20,6 +20,9 @@ internal sealed class RunHistory
 
     public LifetimeTotals Lifetime { get; private set; }
 
+    // Bumped on every change, so captions built from the history know when to rebuild.
+    public int Revision { get; private set; }
+
     private static string FilePath
         => Path.Combine(Plugin.PluginInterface.ConfigDirectory.FullName, FileName);
 
@@ -57,11 +60,22 @@ internal sealed class RunHistory
             if (records is not null)
             {
                 Records = records;
+                UpgradeOldRecords(records);
             }
         }
         catch (Exception exception)
         {
             RunLog.Warning(exception, "RunHistory load failed; starting empty");
+        }
+    }
+
+    // A record from before maps run were counted only knows the maps it looted, which it certainly ran.
+    private static void UpgradeOldRecords(List<RunRecord> records)
+    {
+        for (var index = 0; index < records.Count; index++)
+        {
+            var record = records[index];
+            record.MapsRun = Math.Max(record.MapsRun, record.MapsCompleted);
         }
     }
 
@@ -72,10 +86,14 @@ internal sealed class RunHistory
         {
             var record = Records[index];
             totals.Maps += record.MapsCompleted;
+            totals.MapsRun += record.MapsRun;
+            totals.Gil += record.Gil;
+            totals.Portals += record.PortalsSeen;
             totals.Seconds += record.DurationSeconds;
         }
 
         Lifetime = totals;
+        Revision++;
     }
 
     private void Save()
@@ -100,9 +118,13 @@ internal sealed class RunHistory
     {
         public int Runs;
         public int Maps;
+        public int MapsRun;
+        public long Gil;
+        public int Portals;
         public double Seconds;
 
         public readonly double MapsPerHour => Seconds > 0 ? Maps / (Seconds / 3600.0) : 0;
+        public readonly long GilPerMap => MapsRun > 0 ? Gil / MapsRun : 0;
         public readonly TimeSpan Duration => TimeSpan.FromSeconds(Seconds);
     }
 }
