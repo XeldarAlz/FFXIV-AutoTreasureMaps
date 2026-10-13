@@ -78,6 +78,12 @@ internal sealed class GatherMapTask(bool forRun) : MapSupplyTask
             MapAllowance.Request("after a gather attempt");
         }
 
+        // A map gathered before the switch back failed still counts.
+        if (answer.MapItemId != 0)
+        {
+            plugin.Controller.SessionSnapshot?.NoteMapGathered();
+        }
+
         switch (answer.Outcome)
         {
             case GatherOutcome.Cancelled:
@@ -89,7 +95,6 @@ internal sealed class GatherMapTask(bool forRun) : MapSupplyTask
                 return Failed(answer.Reason);
         }
 
-        plugin.Controller.SessionSnapshot?.NoteMapGathered();
         var mapName = plugin.Catalog.TryGetByTimewornItem(answer.MapItemId, out var tier) ? tier.Name : answer.MapItemId.ToString(System.Globalization.CultureInfo.InvariantCulture);
         Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Gather.ChatGathered, mapName)}");
         return forRun ? await DecipherGathered() : MapSupplyAnswer.Supplied;
