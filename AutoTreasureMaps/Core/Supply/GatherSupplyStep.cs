@@ -1,4 +1,6 @@
+using AutoTreasureMaps.Core.Game.Ops;
 using AutoTreasureMaps.Core.Gather;
+using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Tasks;
 
 namespace AutoTreasureMaps.Core.Supply;
@@ -16,10 +18,16 @@ internal sealed class GatherSupplyStep : IMapSupplyStep
 
     public int TimeoutMs => TaskTimeoutMs;
 
+    // The run deciphers the gathered map at once, so without Decipher unlocked the trip would be wasted.
     public MapSupplyCheck Check(Plugin plugin)
     {
         var refusal = DailyMapPlanner.CheckForRun(plugin, out _, out var reading);
-        return refusal == DailyMapRefusal.None ? MapSupplyCheck.Ready(OneMap) : MapSupplyCheck.Unable(DailyMapPlanner.Reason(refusal, reading));
+        if (refusal != DailyMapRefusal.None)
+        {
+            return MapSupplyCheck.Unable(DailyMapPlanner.Reason(refusal, reading));
+        }
+
+        return DecipherOps.Unlocked() ? MapSupplyCheck.Ready(OneMap) : MapSupplyCheck.Unable(L.Decipher.NotUnlocked);
     }
 
     public MapSupplyTask CreateTask() => new GatherMapTask(forRun: true);
