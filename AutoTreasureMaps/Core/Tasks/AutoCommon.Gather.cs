@@ -50,6 +50,8 @@ public abstract partial class AutoCommon
     private const int GatherActionStartWaitMs = 2_500;
     private const int GatherActionEndWaitMs = 8_000;
     private const int GatherResultWaitMs = 10_000;
+    // A gather misses when the slot's chance is under 100%, and the map then stays in the window for another try.
+    private const int MaxMapAttempts = 3;
     private const int GatherCloseWaitMs = 3_000;
     // Room for every gather a node's integrity allows, with its bonuses.
     private const int MaxNodeGathers = 12;
@@ -363,34 +365,54 @@ public abstract partial class AutoCommon
     private async Task<GatherAnswer> GatherMap(int slot, uint mapItemId, string scope)
     {
         Status = "Gathering the map";
-        Diag($"{scope}: the node shows map {mapItemId} in slot {slot}; gathering it");
-        var since = TreasureMessageWatcher.Now;
-        GatherOps.GatherSlot(slot);
         var answer = GatherAnswer.Failed(L.Gather.ReasonNotConfirmed);
-        var deadline = Environment.TickCount64 + GatherResultWaitMs;
-        while (Environment.TickCount64 < deadline && !CancelToken.IsCancellationRequested)
+        for (var attempt = 1; attempt <= MaxMapAttempts; attempt++)
         {
-            if (GatherResultSince(mapItemId, since) is { } result)
+            Diag($"{scope}: the node shows map {mapItemId} in slot {slot}; gathering it (try {attempt}/{MaxMapAttempts})");
+            var since = TreasureMessageWatcher.Now;
+            GatherOps.GatherSlot(slot);
+            var result = await WaitForGatherResult(mapItemId, since);
+            if (CancelToken.IsCancellationRequested)
             {
-                answer = result;
+                GatherOps.Close();
+                return GatherAnswer.Cancelled;
+            }
+
+            await WaitUntilTimed(() => !GatherOps.ActionUnderWay(), GatherActionEndWaitMs, $"{scope}-map-end", 1);
+            if (result is { } settled)
+            {
+                answer = settled;
                 break;
             }
 
-            await NextFrame(GatherPollFrames);
-        }
-
-        if (CancelToken.IsCancellationRequested)
-        {
-            GatherOps.Close();
-            return GatherAnswer.Cancelled;
+            await WaitUntilTimed(() => GatherOps.WindowOpen() || !GatherOps.Gathering(), GatherCloseWaitMs, $"{scope}-map-window", 1);
+            if (GatherOps.ItemAt(slot) != mapItemId)
+            {
+                break;
+            }
         }
 
         Diag(answer.Outcome == GatherOutcome.Gathered
             ? $"{scope}: map {mapItemId} gathered"
             : $"{scope}: the map was not gathered ({answer.Reason.Key})");
-        await WaitUntilTimed(() => !GatherOps.ActionUnderWay(), GatherActionEndWaitMs, $"{scope}-map-end", 1);
         await CloseGatherWindow(scope);
         return answer;
+    }
+
+    private async Task<GatherAnswer?> WaitForGatherResult(uint mapItemId, long since)
+    {
+        var deadline = Environment.TickCount64 + GatherResultWaitMs;
+        while (Environment.TickCount64 < deadline && !CancelToken.IsCancellationRequested)
+        {
+            if (GatherResultSince(mapItemId, since) is { } result)
+            {
+                return result;
+            }
+
+            await NextFrame(GatherPollFrames);
+        }
+
+        return null;
     }
 
     private static GatherAnswer? GatherResultSince(uint mapItemId, long since)

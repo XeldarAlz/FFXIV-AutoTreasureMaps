@@ -113,6 +113,9 @@ internal static unsafe class GatherOps
         return false;
     }
 
+    public static uint ItemAt(int slot)
+        => slot >= 0 && slot < SlotCount && TryGetWindow(out var addon) ? addon->ItemIds[slot] : 0;
+
     // The slot showing any of the given maps; the map takes whichever slot is free, so every slot is read.
     public static int FindSlot(ImmutableArray<uint> mapItemIds, out uint itemId)
     {
