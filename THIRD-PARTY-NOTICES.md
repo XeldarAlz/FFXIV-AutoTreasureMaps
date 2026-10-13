@@ -1,6 +1,13 @@
 # Third-party notices
 
-Auto Treasure Maps ships the third-party data listed here. Each entry names its source, the pinned commit it was taken from, what it is used for, what was changed, and its license.
+Auto Treasure Maps ships the third-party data and assets listed here. Each entry names its source, what it is used for and its license; data entries also name the pinned commit they were taken from and what was changed.
+
+## Noto Sans
+
+- **Source:** Noto Sans Medium by the Noto Project Authors, [notofonts/latin-greek-cyrillic](https://github.com/notofonts/latin-greek-cyrillic).
+- **License:** SIL Open Font License 1.1, shipped next to the font in full as `AutoTreasureMaps/Fonts/OFL-NotoSans.txt`.
+- **What is used:** the primary font for Latin letters, digits and punctuation in the plugin's windows.
+- **Where:** `AutoTreasureMaps/Fonts/NotoSans-Medium-Latin.ttf`.
 
 ## GatherBuddy Reborn
 
@@ -8,7 +15,7 @@ Auto Treasure Maps ships the third-party data listed here. Each entry names its 
 - **Commit:** `a204f2f45cb98302dbe938921255c3a6d617c775` (2026-09-20).
 - **Copyright:** Ottermandias and the GatherBuddy Reborn contributors.
 - **License:** Apache License 2.0, reproduced in full below. The upstream repository has no NOTICE file.
-- **What is used:** the gathering node positions in `GatherBuddy/CustomInfo/world_locations.json`, for the 22 gathering areas the daily map gather uses. Which areas can yield a timeworn map follows the hand-made list in `GatherBuddy.GameData/Data/HiddenMaps.cs`, checked against the game's own data and the community wiki.
+- **What is used:** the gathering node positions in `GatherBuddy/CustomInfo/world_locations.json`, for the 22 gathering areas of the daily map table. Which areas can yield a timeworn map follows the hand-made list in `GatherBuddy.GameData/Data/HiddenMaps.cs`, checked against the game's own data and the community wiki.
 - **Where:** `AutoTreasureMaps/Core/Gather/MapGatherTable.g.cs`.
 - **Changes:** only the positions of those 22 areas are kept, rounded to 0.1 m and written out as C# data next to ids, levels, territories and area centres read from the game's sheets. No GatherBuddy Reborn code is included.
 
