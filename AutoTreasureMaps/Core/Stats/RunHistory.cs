@@ -87,7 +87,7 @@ internal sealed class RunHistory
             var record = Records[index];
             totals.Maps += record.MapsCompleted;
             totals.MapsRun += record.MapsRun;
-            totals.Gil += record.Gil;
+            totals.Gil += record.NetGil;
             totals.Portals += record.PortalsSeen;
             totals.Seconds += record.DurationSeconds;
         }
@@ -119,6 +119,8 @@ internal sealed class RunHistory
         public int Runs;
         public int Maps;
         public int MapsRun;
+
+        // Looted less spent on maps.
         public long Gil;
         public int Portals;
         public double Seconds;

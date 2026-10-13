@@ -219,14 +219,21 @@ internal sealed class HistoryPage
         var x = end.X - padX - metricWidth;
         DrawMetric(x, midY, metricWidth, NumberText.Of(record.MapsCompleted), Loc.T(L.History.TileMaps), Styling.AccentBlue);
         x -= metricWidth;
-        DrawMetric(x, midY, metricWidth, record.Gil > 0 ? record.Gil.ToString("N0", Loc.Culture) : NoValue, Loc.T(L.History.TileGil),
-            record.Gil > 0 ? Styling.AccentAmber : Styling.TextMuted);
+        var netGil = record.NetGil;
+        DrawMetric(x, midY, metricWidth, netGil != 0 ? netGil.ToString("N0", Loc.Culture) : NoValue, Loc.T(L.History.TileGil), GilColor(netGil));
 
         if (hit.Hovered)
         {
             DrawRunTooltip(record);
         }
     }
+
+    private static Vector4 GilColor(int netGil) => netGil switch
+    {
+        > 0 => Styling.AccentAmber,
+        < 0 => Styling.AccentRose,
+        _ => Styling.TextMuted,
+    };
 
     private static Vector4 EndColor(RunEnd ending) => ending switch
     {
@@ -275,6 +282,13 @@ internal sealed class HistoryPage
         CountLine(Loc.T(MapOutcomes.Label(MapOutcome.Faulted)), record.MapsFaulted);
         CountLine(Loc.T(L.History.TilePortals), record.PortalsSeen);
         CountLine(Loc.T(L.History.Items), record.ItemsGained);
+        if (record.MapsBought > 0)
+        {
+            Tooltip.Text(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipLooted), record.Gil.ToString("N0", Loc.Culture)));
+            Tooltip.Text(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipSpent), record.GilSpentOnMaps.ToString("N0", Loc.Culture)));
+            CountLine(Loc.T(L.Market.TooltipBought), record.MapsBought);
+        }
+
         if (record.NotableItems is { Count: > 0 } notable)
         {
             Tooltip.Text(Loc.T(L.Run.TooltipNotable));

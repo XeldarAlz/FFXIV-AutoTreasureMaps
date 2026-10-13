@@ -120,13 +120,15 @@ internal sealed partial class TreasureController
                 PortalsSeen = ending.PortalsSeen,
                 Gil = ending.Gil,
                 ItemsGained = ending.ItemsGained,
+                MapsBought = ending.MapsBought,
+                GilSpentOnMaps = ending.GilSpentOnMaps,
                 NotableItems = ending.NotableItems.Count == 0 ? null : new Dictionary<uint, int>(ending.NotableItems),
                 EndedBy = ending.EndedBy ?? (ending.EndedWithFault ? RunEnd.Faulted : RunEnd.Stopped),
                 Refusal = ending.EndRefusal,
                 JobAbbreviation = ending.JobAbbreviation,
             };
             Plugin.Instance.History.Append(record);
-            Diag($"Run recorded to history: {record.MapsRun} maps run, {record.MapsCompleted} looted, {record.Gil} gil, ended {record.EndedBy}, over {record.Duration} as {record.JobAbbreviation}.");
+            Diag($"Run recorded to history: {record.MapsRun} maps run, {record.MapsCompleted} looted, {record.Gil} gil, {record.MapsBought} bought for {record.GilSpentOnMaps} gil, ended {record.EndedBy}, over {record.Duration} as {record.JobAbbreviation}.");
         }
         catch (Exception exception)
         {

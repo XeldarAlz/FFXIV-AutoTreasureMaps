@@ -230,11 +230,12 @@ internal static class RunningPanel
         ImGui.SameLine(0, gap);
         var items = session?.ItemsGained ?? 0;
         var itemsSub = items > 0 ? itemsText.Get(items, static key => Loc.Plural(L.MapRun.Items, (int)key)) : null;
-        var gil = gilText.Get(session?.Gil ?? 0, static key => key.ToString("N0", Loc.Culture));
+        var netGil = session is null ? 0 : session.Gil - session.GilSpentOnMaps;
+        var gil = gilText.Get(netGil, static key => key.ToString("N0", Loc.Culture));
         StatTile.Draw(Loc.T(L.Run.TileGil), gil, itemsSub, Styling.AccentAmber, tileWidth);
-        if (session is { NotableItems.Count: > 0 } && ImGui.IsItemHovered())
+        if (session is not null && (session.NotableItems.Count > 0 || session.MapsBought > 0) && ImGui.IsItemHovered())
         {
-            Tooltip.Show(NotableTooltip(session));
+            Tooltip.Show(GilTooltip(session));
         }
 
         ImGui.SameLine(0, gap);
@@ -276,9 +277,28 @@ internal static class RunningPanel
         }
     }
 
-    private static string NotableTooltip(TreasureSession session)
+    // The tile shows the gil looted less the gil spent on maps; the tooltip splits the two.
+    private static string GilTooltip(TreasureSession session)
     {
-        var lines = new StringBuilder(Loc.T(L.Run.TooltipNotable));
+        var lines = new StringBuilder();
+        if (session.MapsBought > 0)
+        {
+            lines.Append(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipLooted), session.Gil.ToString("N0", Loc.Culture)));
+            lines.Append('\n').Append(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipSpent), session.GilSpentOnMaps.ToString("N0", Loc.Culture)));
+            lines.Append('\n').Append(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipBought), session.MapsBought));
+        }
+
+        if (session.NotableItems.Count == 0)
+        {
+            return lines.ToString();
+        }
+
+        if (lines.Length > 0)
+        {
+            lines.Append('\n');
+        }
+
+        lines.Append(Loc.T(L.Run.TooltipNotable));
         foreach (var (itemId, quantity) in session.NotableItems)
         {
             lines.Append('\n').Append(Loc.T(L.Run.TooltipItem, NotableLoot.Name(itemId), quantity));

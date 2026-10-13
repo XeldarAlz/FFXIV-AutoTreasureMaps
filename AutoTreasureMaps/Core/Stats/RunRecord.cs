@@ -27,6 +27,10 @@ internal sealed class RunRecord
     public int Gil { get; set; }
     public int ItemsGained { get; set; }
     public Dictionary<uint, int>? NotableItems { get; set; }
+    public int MapsBought { get; set; }
+
+    // Market tax included.
+    public int GilSpentOnMaps { get; set; }
 
     [JsonConverter(typeof(StringEnumConverter))]
     public RunEnd? EndedBy { get; set; }
@@ -37,5 +41,6 @@ internal sealed class RunRecord
     public string JobAbbreviation { get; set; } = "";
 
     public TimeSpan Duration => TimeSpan.FromSeconds(DurationSeconds);
+    public int NetGil => Gil - GilSpentOnMaps;
     public double MapsPerHour => DurationSeconds > 0 ? MapsCompleted / (DurationSeconds / 3600.0) : 0;
 }

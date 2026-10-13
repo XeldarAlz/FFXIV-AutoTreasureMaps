@@ -8,6 +8,7 @@ namespace AutoTreasureMaps.Core.Tasks;
 // since every resume builds the run task afresh.
 public sealed class TreasureSession
 {
+    private readonly HashSet<byte> marketSkippedRanks = [];
     private long pausedMs;
     private long pauseStartedAtMs;
     private DateTime? endedAt;
@@ -44,6 +45,11 @@ public sealed class TreasureSession
 
     public int ItemsGained { get; private set; }
 
+    public int MapsBought { get; private set; }
+
+    // Market tax included.
+    public int GilSpentOnMaps { get; private set; }
+
     // Maps in a row that ended with nothing dug up, out of reach or on an error; any other end starts it over.
     public int FailedInARow { get; private set; }
 
@@ -64,7 +70,11 @@ public sealed class TreasureSession
 
     internal MapRefusal EndRefusal { get; private set; }
 
-    public bool DidNothing => MapsRun == 0;
+    // Set once the game refused a purchase for want of gil; the run buys nothing more.
+    internal bool MarketStopped { get; private set; }
+
+    // A run that only bought a map still spent gil, so it is recorded.
+    public bool DidNothing => MapsRun == 0 && MapsBought == 0;
 
     public int MapsFailed => MapsTimedOut + MapsKnockedOut + MapsDigFailed + MapsUnreachable;
 
@@ -99,6 +109,19 @@ public sealed class TreasureSession
         NoteNotableItems(result);
         CountOutcome(result.Outcome);
     }
+
+    internal void RecordPurchase(int gil)
+    {
+        MapsBought++;
+        GilSpentOnMaps += gil;
+    }
+
+    internal void StopMarket() => MarketStopped = true;
+
+    // A tier the game says is already held somewhere the bags do not show is left for the rest of the run.
+    internal void SkipMarketTier(byte rank) => marketSkippedRanks.Add(rank);
+
+    internal bool MarketSkips(byte rank) => marketSkippedRanks.Contains(rank);
 
     internal void Finish(RunEnd end, MapRefusal refusal = MapRefusal.None)
     {
