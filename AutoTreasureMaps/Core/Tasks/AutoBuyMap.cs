@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.External;
 using AutoTreasureMaps.Core.Game.Ops;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Market;
@@ -77,6 +78,12 @@ internal sealed class AutoBuyMap(byte rank) : AutoCommon
         if (clib.Services.Svc.Automation.CurrentTask is not null)
         {
             return L.Decipher.TaskRunning;
+        }
+
+        // The trip to the board needs the movement helpers, and its teleport costs gil before a missing one shows.
+        if (!ExternalPlugins.AllRequiredInstalled())
+        {
+            return L.Treasure.DetailSetupNeeded;
         }
 
         // A map bought without Decipher unlocked could never be run.
