@@ -265,6 +265,11 @@ internal static class RunningPanel
         AppendCount(lines, MapOutcome.DigFailed, session.MapsDigFailed);
         AppendCount(lines, MapOutcome.Unreachable, session.MapsUnreachable);
         AppendCount(lines, MapOutcome.Faulted, session.MapsFaulted);
+        if (session.MapsGathered > 0)
+        {
+            lines.Append('\n').Append(Loc.T(L.Run.TooltipCount, Loc.T(L.Gather.MapsGathered), session.MapsGathered));
+        }
+
         return lines.ToString();
     }
 
