@@ -39,6 +39,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
     private readonly HashSet<ulong> refusedRetainers = [];
     private readonly HashSet<ulong> passedOver = [];
     private MarketHooks? hooks;
+    private SentPurchase? sent;
     private int boardReopens;
     private int purchases;
     private LocString rereadReason = L.Market.FailThrottled;
@@ -73,6 +74,9 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         Done,
     }
 
+    // A purchase sent and not yet settled. Sequence is the purchase answer count noted just before it went out.
+    private readonly record struct SentPurchase(TreasureTier Tier, MarketListing Listing, uint GilBefore, int HeldBefore, int Sequence);
+
     private MarketHooks Answers => hooks ?? throw new InvalidOperationException("The market board's answers are not hooked.");
 
     protected override async Task<MapSupplyAnswer> Supply()
@@ -105,6 +109,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         }
         finally
         {
+            SettleCutOff();
             hooks = null;
         }
     }
@@ -220,8 +225,7 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
                     rereadReason = L.Market.FailListingsChanged;
                     return (TierStep.Reread, default);
                 default:
-                    rereadReason = L.Market.FailNoAnswer;
-                    return (TierStep.Reread, default);
+                    return (TierStep.Done, Fail(L.Market.FailNoAnswer));
             }
         }
 
@@ -360,58 +364,121 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         var heldBefore = MapsHeld(catalog, tier);
         var sequence = Answers.Purchase.Sequence;
         Diag($"Market: buying {tier.Name}, listing {listing.ListingId:X} of retainer {listing.RetainerId:X} at {listing.UnitPrice} gil plus {listing.TotalTax} tax, with {gilBefore} gil and {heldBefore} held.");
+        sent = new SentPurchase(tier, listing, gilBefore, heldBefore, sequence);
         if (!MarketBoardOps.Purchase(listing, itemId))
         {
-            Warn("Market: the game did not send the purchase.");
-            return Attempt.Stale;
+            Warn("Market: the game did not take the purchase; whether it went out is left to its answer and the bags.");
+            return await SettleUnanswered(catalog);
         }
 
         if (!await WaitUntilTimed(() => Answers.Purchase.Sequence != sequence, PurchaseAnswerTimeoutMs, "market purchase answer", PollFrames))
         {
-            return await SettleUnanswered(catalog, tier, listing, gilBefore, heldBefore);
+            return await SettleUnanswered(catalog);
         }
 
+        return await TakeAnswer(catalog);
+    }
+
+    private async Task<Attempt> TakeAnswer(TreasureCatalog catalog)
+    {
+        var purchase = sent.GetValueOrDefault();
         var answer = Answers.Purchase;
         var result = MarketReplies.Classify(answer.MessageId);
         Diag($"Market: the game answered the purchase with message {answer.MessageId} for item {answer.ItemId}, read as {result}.");
         if (result != PurchaseResult.Bought)
         {
+            sent = null;
             return ToAttempt(result);
         }
 
-        await WaitUntilTimed(() => MapsHeld(catalog, tier) > heldBefore && MarketBoardOps.Gil() < gilBefore, PurchaseLandTimeoutMs, "market purchase landed", PollFrames);
-        if (MapsHeld(catalog, tier) <= heldBefore)
+        await WaitUntilTimed(() => MapsHeld(catalog, purchase.Tier) > purchase.HeldBefore && MarketBoardOps.Gil() < purchase.GilBefore,
+            PurchaseLandTimeoutMs, "market purchase landed", PollFrames);
+        // The game's word is what charges the gil, whether or not the map shows in the bags yet.
+        RecordPurchase();
+        if (MapsHeld(catalog, purchase.Tier) > purchase.HeldBefore)
         {
-            Warn($"Market: the game accepted the purchase of {tier.Name}, but no map reached the bags.");
-            return Attempt.NotLanded;
-        }
-
-        RecordPurchase(tier, listing, gilBefore);
-        return Attempt.Bought;
-    }
-
-    // A purchase is never sent again blind: the bags tell whether the unanswered one went through.
-    private async Task<Attempt> SettleUnanswered(TreasureCatalog catalog, TreasureTier tier, MarketListing listing, uint gilBefore, int heldBefore)
-    {
-        Diag("Market: the purchase got no answer; checking the bags.");
-        await DelayMs(UnansweredSettleMs);
-        if (MapsHeld(catalog, tier) > heldBefore)
-        {
-            RecordPurchase(tier, listing, gilBefore);
             return Attempt.Bought;
         }
 
-        return CancelToken.IsCancellationRequested ? Attempt.Cancelled : Attempt.Unanswered;
+        if (CancelToken.IsCancellationRequested)
+        {
+            return Attempt.Cancelled;
+        }
+
+        Warn($"Market: the game accepted the purchase of {purchase.Tier.Name}, but no map reached the bags.");
+        return Attempt.NotLanded;
     }
 
-    private void RecordPurchase(TreasureTier tier, in MarketListing listing, uint gilBefore)
+    // A purchase is never sent again blind: a late answer or the bags tell whether the unanswered one went through, and
+    // with neither the visit ends, so a late success cannot meet a second purchase.
+    private async Task<Attempt> SettleUnanswered(TreasureCatalog catalog)
     {
-        var dropped = (long)gilBefore - MarketBoardOps.Gil();
+        var purchase = sent.GetValueOrDefault();
+        Diag("Market: the purchase got no answer yet; watching for one and checking the bags.");
+        await WaitUntilTimed(() => Answers.Purchase.Sequence != purchase.Sequence || MapsHeld(catalog, purchase.Tier) > purchase.HeldBefore,
+            UnansweredSettleMs, "market purchase settled", PollFrames);
+        if (Answers.Purchase.Sequence != purchase.Sequence)
+        {
+            return await TakeAnswer(catalog);
+        }
+
+        if (MapsHeld(catalog, purchase.Tier) > purchase.HeldBefore)
+        {
+            RecordPurchase();
+            return Attempt.Bought;
+        }
+
+        if (CancelToken.IsCancellationRequested)
+        {
+            return Attempt.Cancelled;
+        }
+
+        sent = null;
+        Warn("Market: the purchase got no answer and no map reached the bags; this visit sends no other.");
+        return Attempt.Unanswered;
+    }
+
+    private void RecordPurchase()
+    {
+        if (sent is not { } purchase)
+        {
+            return;
+        }
+
+        sent = null;
+        var spent = Charge(purchase);
+        Diag($"Market: bought {purchase.Tier.Name} for {spent} gil (listed at {purchase.Listing.Total} with tax).");
+        Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Market.ChatBought, purchase.Tier.Name, spent.ToString("N0", Loc.Culture))}");
+    }
+
+    // A stop, a pause or an error can cut a purchase off between its send and the end of its checks. Unless the game is
+    // known to have refused it, its gil is charged, so a resumed run cannot spend past its budget.
+    private void SettleCutOff()
+    {
+        if (sent is not { } purchase || hooks is null)
+        {
+            return;
+        }
+
+        sent = null;
+        var answer = hooks.Purchase;
+        var answered = answer.Sequence != purchase.Sequence;
+        if (answered && MarketReplies.Classify(answer.MessageId) != PurchaseResult.Bought)
+        {
+            return;
+        }
+
+        var spent = Charge(purchase);
+        Diag($"Market: the visit was cut off with the purchase of {purchase.Tier.Name} {(answered ? "accepted" : "unanswered")}; {spent} gil charged to the run.");
+    }
+
+    private int Charge(in SentPurchase purchase)
+    {
+        var dropped = (long)purchase.GilBefore - MarketBoardOps.Gil();
         // Other gil can move in the same moment, so the drop is held to the listed total; no drop seen yet charges the total.
-        var spent = (int)(dropped > 0 ? Math.Min(dropped, listing.Total) : listing.Total);
+        var spent = (int)(dropped > 0 ? Math.Min(dropped, purchase.Listing.Total) : purchase.Listing.Total);
         session?.RecordPurchase(spent);
-        Diag($"Market: bought {tier.Name} for {spent} gil (listed at {listing.Total} with tax).");
-        Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Market.ChatBought, tier.Name, spent.ToString("N0", Loc.Culture))}");
+        return spent;
     }
 
     private MapSupplyAnswer OutOfGil()
