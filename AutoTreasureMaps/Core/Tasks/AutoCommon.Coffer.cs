@@ -19,11 +19,16 @@ public abstract partial class AutoCommon
     private const int HuntFightCapMs = 300_000;
     private const int LootAppearWaitMs = 5_000;
     private const int LootRollResendMs = 3_000;
+    // A roll the game has not taken is sent once more, then left to the player, so a refused roll is not repeated.
+    private const int MaxRollRounds = 2;
     private const int LootSettleQuietMs = 2_000;
     private const int LootSettleCapMs = 15_000;
     private const int LootPollFrames = 10;
     private const int MaxOtherChests = 16;
     private const string NeedGreedAddon = "NeedGreed";
+
+    private readonly uint[] chestsBeforeUnlock = new uint[MaxOtherChests];
+    private int chestsBeforeUnlockCount;
 
     private enum CofferStep : byte { Opened, NotFound, Unreachable, PromptMismatch, Cancelled }
 
@@ -224,6 +229,8 @@ public abstract partial class AutoCommon
                 continue;
             }
 
+            // The coffer's loot can land in the same frame as its unlock message, so other chests are noted before the lock opens.
+            chestsBeforeUnlockCount = LootRolls.PendingChests(chestsBeforeUnlock);
             var since = TreasureMessageWatcher.Now;
             await InteractWithObject(target, () => Messages.TryGetLatest(UnlockReplies, since, out _) || NpcInteraction.SelectYesnoOpen(), scope);
             AnswerUnlockPrompt(scope);
@@ -270,12 +277,12 @@ public abstract partial class AutoCommon
     }
 
     // Rolls the coffer's rolled items by the Loot setting, then waits until the bags stop changing, so the gains are
-    // measured once everything has arrived. Items of a chest that was already waiting before are left alone.
+    // measured once everything has arrived. Items of a chest that was already waiting before the unlock are left alone.
     private async Task LootCoffer(MapInProgress map)
     {
         Status = "Looting the coffer";
-        var otherChests = new uint[MaxOtherChests];
-        var otherCount = LootRolls.PendingChests(otherChests);
+        var otherChests = chestsBeforeUnlock;
+        var otherCount = chestsBeforeUnlockCount;
         var chestEntityId = map.CofferEntityId;
         Func<uint, bool> fromCoffer = chest => chest == chestEntityId || Array.IndexOf(otherChests, chest, 0, otherCount) < 0;
         var choice = Plugin.Instance.Configuration.LootRoll;
@@ -294,6 +301,7 @@ public abstract partial class AutoCommon
         }
 
         var nextRollAt = 0L;
+        var rollRounds = 0;
         var lastFingerprint = BagSnapshot.Fingerprint();
         var quietSince = Environment.TickCount64;
         var deadline = Environment.TickCount64 + LootSettleCapMs;
@@ -302,9 +310,10 @@ public abstract partial class AutoCommon
             var now = Environment.TickCount64;
             ReadHuntClock();
             pending = LootRolls.Pending(fromCoffer);
-            if (pending > 0 && choice != LootRoll.Manual && now >= nextRollAt)
+            if (pending > 0 && choice != LootRoll.Manual && rollRounds < MaxRollRounds && now >= nextRollAt)
             {
                 LootRolls.Roll(choice, fromCoffer);
+                rollRounds++;
                 nextRollAt = now + LootRollResendMs;
             }
 
@@ -315,7 +324,7 @@ public abstract partial class AutoCommon
                 quietSince = now;
             }
 
-            var rollsDone = pending == 0 || choice == LootRoll.Manual;
+            var rollsDone = pending == 0 || choice == LootRoll.Manual || (rollRounds >= MaxRollRounds && now >= nextRollAt);
             if (rollsDone && now - quietSince >= LootSettleQuietMs)
             {
                 break;
