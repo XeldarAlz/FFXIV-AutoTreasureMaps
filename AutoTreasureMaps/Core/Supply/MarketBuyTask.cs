@@ -141,6 +141,12 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
         purchases = 0;
         for (var request = 1; request <= RequestAttempts; request++)
         {
+            // Listings read once the tier's purchase tries are spent could not be bought from, so they are not asked for.
+            if (purchases >= PurchaseAttempts)
+            {
+                return Fail(rereadReason);
+            }
+
             if (request > 1)
             {
                 // Each retry waits longer: the spacing once, then twice.
@@ -234,16 +240,17 @@ internal sealed class MarketBuyTask(TreasureSession? session, byte onlyRank) : M
 
     private async Task<(ListingsRead Read, int Count)> ReadListings(TreasureTier tier)
     {
-        if (!await EnsureBoardOpen())
-        {
-            return (CancelToken.IsCancellationRequested ? ListingsRead.Retry : ListingsRead.BoardLost, 0);
-        }
-
         Status = $"Reading the listings of {tier.Name}";
         var waitMs = MarketRequestGate.WaitMs();
         if (waitMs > 0)
         {
             await DelayMs(waitMs);
+        }
+
+        // Checked after the spacing wait, so a board closed during it is opened again before the request goes out.
+        if (!await EnsureBoardOpen())
+        {
+            return (CancelToken.IsCancellationRequested ? ListingsRead.Retry : ListingsRead.BoardLost, 0);
         }
 
         if (CancelToken.IsCancellationRequested)
