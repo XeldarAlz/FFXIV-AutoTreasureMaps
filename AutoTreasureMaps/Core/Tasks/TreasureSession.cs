@@ -1,6 +1,8 @@
+using AutoTreasureMaps.Core.Dungeon;
 using AutoTreasureMaps.Core.Travel;
 using AutoTreasureMaps.Core.Treasure;
 using ECommons.DalamudServices;
+using System.Collections.Immutable;
 using System.Threading;
 
 namespace AutoTreasureMaps.Core.Tasks;
@@ -46,6 +48,11 @@ public sealed class TreasureSession
 
     public int PortalsSeen { get; private set; }
 
+    // Treasure dungeons carried to an end, and those of them cleared to the last round.
+    public int DungeonsRun { get; private set; }
+
+    public int DungeonsCleared { get; private set; }
+
     public int Gil { get; private set; }
 
     public int ItemsGained { get; private set; }
@@ -71,6 +78,9 @@ public sealed class TreasureSession
     // The map under way, or null between maps; a pause or a fault restart resumes its hunt from here.
     internal MapInProgress? ActiveMap;
 
+    // The treasure dungeon under way, or null outside one; a pause or a fault restart resumes it from here.
+    internal DungeonInProgress? ActiveDungeon;
+
     internal Dictionary<uint, int> NotableItems { get; } = [];
 
     // Null while the run goes on, and for a run stopped from outside before it decided.
@@ -89,7 +99,7 @@ public sealed class TreasureSession
     internal bool SpareChecked { get; private set; }
 
     // A run that only bought or gathered a map still spent gil or the day's allowance, so it is recorded.
-    public bool DidNothing => MapsRun == 0 && MapsBought == 0 && MapsGathered == 0;
+    public bool DidNothing => MapsRun == 0 && MapsBought == 0 && MapsGathered == 0 && DungeonsRun == 0;
 
     public int MapsFailed => MapsTimedOut + MapsKnockedOut + MapsDigFailed + MapsUnreachable;
 
@@ -121,8 +131,27 @@ public sealed class TreasureSession
             PortalsSeen++;
         }
 
-        NoteNotableItems(result);
+        NoteNotableItems(result.Items);
         CountOutcome(result.Outcome);
+    }
+
+    // A dungeon's gains count once it has ended, like a map's.
+    internal void RecordDungeon(in DungeonResult result)
+    {
+        if (!DungeonOutcomes.Final(result.Outcome))
+        {
+            return;
+        }
+
+        DungeonsRun++;
+        if (result.Outcome == DungeonOutcome.Cleared)
+        {
+            DungeonsCleared++;
+        }
+
+        Gil += result.Gil;
+        ItemsGained += result.ItemCount;
+        NoteNotableItems(result.Items);
     }
 
     internal void RecordPurchase(int gil)
@@ -237,14 +266,14 @@ public sealed class TreasureSession
         }
     }
 
-    private void NoteNotableItems(in MapResult result)
+    private void NoteNotableItems(ImmutableArray<ItemGain> gains)
     {
-        if (result.Items.IsDefaultOrEmpty)
+        if (gains.IsDefaultOrEmpty)
         {
             return;
         }
 
-        var items = result.Items.AsSpan();
+        var items = gains.AsSpan();
         for (var index = 0; index < items.Length; index++)
         {
             var item = items[index];

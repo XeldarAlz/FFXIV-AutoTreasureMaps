@@ -85,6 +85,23 @@ internal sealed partial class TreasureController
         BeginRun(new TreasureSession(), owningSession => new AutoMapRun(owningSession, progress), "the held map");
     }
 
+    // The treasure dungeon the character stands in, under the same pause, stop and fault handling as any run.
+    public void StartDungeon()
+    {
+        if (Running)
+        {
+            Diag("Dungeon run ignored: a run is already going.");
+            return;
+        }
+
+        if (!RequiredPluginsReady() || !AutoDungeonRun.CanStart())
+        {
+            return;
+        }
+
+        BeginRun(new TreasureSession(), owningSession => new AutoDungeonRun(owningSession, progress), "the treasure dungeon");
+    }
+
     // travelBack is set when the player stops the run, so a run that bought on another world goes back to its own; an
     // unload or a GM alert leaves the character where it stands.
     public void Stop(bool travelBack = false)
