@@ -5,11 +5,11 @@ using Dalamud.Game.ClientState.Conditions;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
-using System.Collections.Immutable;
+using System.Globalization;
 
 namespace AutoTreasureMaps.Core.Cleanup;
 
-internal readonly record struct PendingLoot(uint ItemId, int Quantity);
+internal readonly record struct PendingLoot(uint ItemId, int Quantity, bool HighQuality);
 
 // The loot coffers and treasure dungeons gave that is not kept, and the pass that discards it from the four bags. Kept
 // means whitelisted, a timeworn map, rare loot the player did not pick to discard, an item the game will not let go
@@ -21,7 +21,9 @@ internal readonly record struct PendingLoot(uint ItemId, int Quantity);
 // run: it is cleared when the run stops or ends and on logout, and a pass refuses to run for another character. A
 // pass discards one slot at a time, a human-like moment apart, takes each discarded slot off the noted quantity, and
 // empties the list once no listed item is left in the bags. An item looted in a larger quantity than the cleanup
-// limit is kept instead. Framework thread only.
+// limit is kept instead. Normal and high quality are told apart throughout, as they never share a slot: loot of
+// one quality is listed, counted against the limit and discarded whatever the bags hold of the other. Framework
+// thread only.
 internal static unsafe class LootCleanup
 {
     private const int DiscardDelayMinMs = 700;
@@ -46,6 +48,7 @@ internal static unsafe class LootCleanup
     private static InventoryType lastContainer;
     private static ushort lastSlot;
     private static uint lastItemId;
+    private static bool lastHighQuality;
     private static int lastAttempts;
     // The slot discarded last and its quantity, taken off the noted quantity once the slot has emptied.
     private static int lastQuantity;
@@ -65,12 +68,12 @@ internal static unsafe class LootCleanup
 
     public static bool HasShown => pending.Count > 0 || preview.Count > 0;
 
-    // One call per finished map or dungeon, with what it gave and the bags as they were before its coffer opened. Without
-    // that snapshot nothing is listed, since the loot could not be told from what the player already had.
-    public static void Note(ImmutableArray<ItemGain> gains, Dictionary<uint, int>? bagsBefore)
+    // One call per finished map or dungeon, once its loot has settled, with the bags as they were before its coffer
+    // opened. Without that snapshot nothing is listed, since the loot could not be told from what the player already had.
+    public static void Note(Dictionary<uint, int>? bagsBefore)
     {
         DropPreview();
-        if (!Plugin.Instance.Configuration.AutoDiscard || gains.IsDefaultOrEmpty || bagsBefore is null)
+        if (!Plugin.Instance.Configuration.AutoDiscard || bagsBefore is null)
         {
             return;
         }
@@ -86,20 +89,19 @@ internal static unsafe class LootCleanup
         ownerContentId = contentId;
 
         var limit = Plugin.Instance.Configuration.AutoDiscardMaxQuantity;
-        var items = gains.AsSpan();
-        for (var index = 0; index < items.Length; index++)
+        foreach (var (key, quantity) in BagSnapshot.KeyedGains(bagsBefore, BagSnapshot.Capture()))
         {
-            var gain = items[index];
+            var gain = new PendingLoot(BagSnapshot.ItemIdOf(key), quantity, BagSnapshot.IsHighQualityKey(key));
             if (!Listable(gain, bagsBefore, log: true))
             {
                 continue;
             }
 
-            var at = IndexOf(gain.ItemId);
+            var at = IndexOf(gain.ItemId, gain.HighQuality);
             var total = (at < 0 ? 0 : pending[at].Quantity) + gain.Quantity;
             if (OverLimit(total, limit))
             {
-                RunLog.Debug($"Cleanup: keeping item {gain.ItemId}; {total} looted is over the limit of {limit}");
+                RunLog.Debug($"Cleanup: keeping item {Describe(gain.ItemId, gain.HighQuality)}; {total} looted is over the limit of {limit}");
                 if (at >= 0)
                 {
                     pending.RemoveAt(at);
@@ -111,32 +113,31 @@ internal static unsafe class LootCleanup
 
             if (at < 0)
             {
-                pending.Add(new PendingLoot(gain.ItemId, total));
+                pending.Add(gain with { Quantity = total });
             }
             else
             {
-                pending[at] = new PendingLoot(gain.ItemId, total);
+                pending[at] = gain with { Quantity = total };
             }
 
             Revision++;
         }
     }
 
-    // Called while a treasure dungeon goes on, with everything it has given so far, so its loot shows before it ends.
-    public static void ShowPreview(ImmutableArray<ItemGain> gains, Dictionary<uint, int> bagsBefore)
+    // Called while a treasure dungeon goes on, so everything it has given so far shows before it ends.
+    public static void ShowPreview(Dictionary<uint, int> bagsBefore)
     {
         preview.Clear();
-        if (Plugin.Instance.Configuration.AutoDiscard && !gains.IsDefaultOrEmpty)
+        if (Plugin.Instance.Configuration.AutoDiscard)
         {
             var limit = Plugin.Instance.Configuration.AutoDiscardMaxQuantity;
-            var items = gains.AsSpan();
-            for (var index = 0; index < items.Length; index++)
+            foreach (var (key, quantity) in BagSnapshot.KeyedGains(bagsBefore, BagSnapshot.Capture()))
             {
-                var gain = items[index];
-                var at = IndexOf(gain.ItemId);
+                var gain = new PendingLoot(BagSnapshot.ItemIdOf(key), quantity, BagSnapshot.IsHighQualityKey(key));
+                var at = IndexOf(gain.ItemId, gain.HighQuality);
                 if (Listable(gain, bagsBefore, log: false) && !OverLimit((at < 0 ? 0 : pending[at].Quantity) + gain.Quantity, limit))
                 {
-                    preview.Add(new PendingLoot(gain.ItemId, gain.Quantity));
+                    preview.Add(gain);
                 }
             }
         }
@@ -166,19 +167,21 @@ internal static unsafe class LootCleanup
         }
     }
 
-    // Every copy in the bags must be loot: an item the bags held before the coffer is listed only if it is already.
-    private static bool Listable(in ItemGain gain, Dictionary<uint, int> bagsBefore, bool log)
+    // Every copy of that quality in the bags must be loot: one the bags held before the coffer is listed only if it is
+    // already. Copies of the other quality do not count, as the game keeps them in slots of their own.
+    private static bool Listable(in PendingLoot gain, Dictionary<uint, int> bagsBefore, bool log)
     {
-        if (gain.Quantity <= 0 || IsKept(gain.ItemId) || !InBags(gain.ItemId))
+        if (gain.Quantity <= 0 || IsKept(gain.ItemId) || CountInBags(gain.ItemId, gain.HighQuality) == 0)
         {
             return false;
         }
 
-        if (IndexOf(gain.ItemId) < 0 && bagsBefore.GetValueOrDefault(gain.ItemId) > 0)
+        var held = bagsBefore.GetValueOrDefault(BagSnapshot.Key(gain.ItemId, gain.HighQuality));
+        if (IndexOf(gain.ItemId, gain.HighQuality) < 0 && held > 0)
         {
             if (log)
             {
-                RunLog.Debug($"Cleanup: not listing item {gain.ItemId}; the bags held {bagsBefore[gain.ItemId]} before the coffer");
+                RunLog.Debug($"Cleanup: not listing item {Describe(gain.ItemId, gain.HighQuality)}; the bags held {held} before the coffer");
             }
 
             return false;
@@ -257,10 +260,8 @@ internal static unsafe class LootCleanup
     // An item kept from now on leaves the list and the preview.
     private static void Unlist(uint itemId)
     {
-        var at = IndexOf(itemId);
-        if (at >= 0)
+        if (pending.RemoveAll(item => item.ItemId == itemId) > 0)
         {
-            pending.RemoveAt(at);
             Revision++;
         }
 
@@ -355,8 +356,8 @@ internal static unsafe class LootCleanup
             return;
         }
 
-        var found = TryFindNextSlot(out var container, out var slot, out var itemId);
-        if (!found || container != lastContainer || slot != lastSlot || itemId != lastItemId)
+        var found = TryFindNextSlot(out var container, out var slot, out var itemId, out var highQuality);
+        if (!found || container != lastContainer || slot != lastSlot || itemId != lastItemId || highQuality != lastHighQuality)
         {
             ConsumeLastSlot();
         }
@@ -367,16 +368,16 @@ internal static unsafe class LootCleanup
             return;
         }
 
-        if (!AllLoot(itemId))
+        if (!AllLoot(itemId, highQuality))
         {
             return;
         }
 
-        if (container == lastContainer && slot == lastSlot && itemId == lastItemId)
+        if (container == lastContainer && slot == lastSlot && itemId == lastItemId && highQuality == lastHighQuality)
         {
             if (++lastAttempts > MaxAttemptsPerSlot)
             {
-                GiveUp(itemId);
+                GiveUp(itemId, highQuality);
                 return;
             }
         }
@@ -393,6 +394,7 @@ internal static unsafe class LootCleanup
             lastContainer = container;
             lastSlot = slot;
             lastItemId = itemId;
+            lastHighQuality = highQuality;
             lastAttempts = 1;
             lastQuantity = SlotQuantity(container, slot);
             discardedThisPass++;
@@ -400,7 +402,7 @@ internal static unsafe class LootCleanup
 
         var inventory = InventoryManager.Instance();
         var result = inventory is null ? -1 : inventory->DiscardItem(container, slot);
-        RunLog.Info($"Cleanup: discarding {NotableLoot.Name(itemId)} x{lastQuantity} (item {itemId}) from {container} slot {slot}, attempt {lastAttempts}, result {result}.");
+        RunLog.Info($"Cleanup: discarding {NotableLoot.Name(itemId)} x{lastQuantity} (item {Describe(itemId, highQuality)}) from {container} slot {slot}, attempt {lastAttempts}, result {result}.");
         nextActionAtMs = now + Random.Shared.Next(DiscardDelayMinMs, DiscardDelayMaxMs + 1);
     }
 
@@ -412,7 +414,7 @@ internal static unsafe class LootCleanup
             return;
         }
 
-        var at = IndexOf(lastItemId);
+        var at = IndexOf(lastItemId, lastHighQuality);
         if (at >= 0)
         {
             var left = pending[at].Quantity - lastQuantity;
@@ -468,9 +470,9 @@ internal static unsafe class LootCleanup
         }
     }
 
-    private static void GiveUp(uint itemId)
+    private static void GiveUp(uint itemId, bool highQuality)
     {
-        var at = IndexOf(itemId);
+        var at = IndexOf(itemId, highQuality);
         if (at >= 0)
         {
             pending.RemoveAt(at);
@@ -479,17 +481,17 @@ internal static unsafe class LootCleanup
 
         lastItemId = 0;
         var name = NotableLoot.Name(itemId);
-        RunLog.Warning($"Cleanup: item {itemId} ({name}) stayed in its slot after {MaxAttemptsPerSlot} discards; taken off the list");
+        RunLog.Warning($"Cleanup: item {Describe(itemId, highQuality)} ({name}) stayed in its slot after {MaxAttemptsPerSlot} discards; taken off the list");
         Svc.Chat.PrintError($"{AtmConstants.LogPrefix} {Loc.T(L.Cleanup.ChatGaveUp, name)}");
     }
 
-    // More of the item in the bags than was looted means some came another way since; the item is dropped from the list
-    // rather than discarded, as a slot cannot be split.
-    private static bool AllLoot(uint itemId)
+    // More of the item in the bags than was looted, in the same quality, means some came another way since; the item is
+    // dropped from the list rather than discarded, as a slot cannot be split.
+    private static bool AllLoot(uint itemId, bool highQuality)
     {
-        var at = IndexOf(itemId);
+        var at = IndexOf(itemId, highQuality);
         var looted = at < 0 ? 0 : pending[at].Quantity;
-        var held = CountInBags(itemId);
+        var held = CountInBags(itemId, highQuality);
         if (held <= looted)
         {
             return true;
@@ -501,16 +503,17 @@ internal static unsafe class LootCleanup
             Revision++;
         }
 
-        RunLog.Debug($"Cleanup: not discarding item {itemId}; the bags hold {held} but only {looted} were looted");
+        RunLog.Debug($"Cleanup: not discarding item {Describe(itemId, highQuality)}; the bags hold {held} but only {looted} were looted");
         return false;
     }
 
     // The first bag slot holding a listed item that is not kept; the whitelist may have changed since it was listed.
-    private static bool TryFindNextSlot(out InventoryType container, out ushort slot, out uint itemId)
+    private static bool TryFindNextSlot(out InventoryType container, out ushort slot, out uint itemId, out bool highQuality)
     {
         container = default;
         slot = 0;
         itemId = 0;
+        highQuality = false;
         var inventory = InventoryManager.Instance();
         if (inventory is null)
         {
@@ -528,7 +531,7 @@ internal static unsafe class LootCleanup
             for (var slotIndex = 0; slotIndex < bag->Size; slotIndex++)
             {
                 var item = bag->GetInventorySlot(slotIndex);
-                if (item is null || item->ItemId == 0 || IndexOf(item->ItemId) < 0 || IsKept(item->ItemId))
+                if (item is null || item->ItemId == 0 || IndexOf(item->ItemId, item->IsHighQuality()) < 0 || IsKept(item->ItemId))
                 {
                     continue;
                 }
@@ -536,6 +539,7 @@ internal static unsafe class LootCleanup
                 container = Bags[bagIndex];
                 slot = (ushort)slotIndex;
                 itemId = item->ItemId;
+                highQuality = item->IsHighQuality();
                 return true;
             }
         }
@@ -543,9 +547,7 @@ internal static unsafe class LootCleanup
         return false;
     }
 
-    private static bool InBags(uint itemId) => CountInBags(itemId) > 0;
-
-    private static int CountInBags(uint itemId)
+    private static int CountInBags(uint itemId, bool highQuality)
     {
         var inventory = InventoryManager.Instance();
         if (inventory is null)
@@ -565,7 +567,7 @@ internal static unsafe class LootCleanup
             for (var slotIndex = 0; slotIndex < bag->Size; slotIndex++)
             {
                 var item = bag->GetInventorySlot(slotIndex);
-                if (item is not null && item->ItemId == itemId)
+                if (item is not null && item->ItemId == itemId && item->IsHighQuality() == highQuality)
                 {
                     count += (int)item->Quantity;
                 }
@@ -585,11 +587,14 @@ internal static unsafe class LootCleanup
         && !Svc.Condition[ConditionFlag.OccupiedInEvent]
         && !Svc.Condition[ConditionFlag.OccupiedInQuestEvent];
 
-    private static int IndexOf(uint itemId)
+    private static string Describe(uint itemId, bool highQuality)
+        => highQuality ? $"{itemId} (HQ)" : itemId.ToString(CultureInfo.InvariantCulture);
+
+    private static int IndexOf(uint itemId, bool highQuality)
     {
         for (var index = 0; index < pending.Count; index++)
         {
-            if (pending[index].ItemId == itemId)
+            if (pending[index].ItemId == itemId && pending[index].HighQuality == highQuality)
             {
                 return index;
             }
