@@ -148,7 +148,7 @@ internal static class MarketSettings
             }
 
             rowTier = tier;
-            SettingsRow.Draw(tier.Name, help, Stepper.DefaultWidth, drawCapControl);
+            SettingsRow.Draw(tier.Name, help, Stepper.DefaultWidth, drawCapControl, itemId: tier.TimewornItemId);
         }
 
         rowConfiguration = null;
