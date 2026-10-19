@@ -119,6 +119,7 @@ public abstract partial class AutoCommon
         var advanceFailures = 0;
         var notReadyAdvances = 0;
         var lastStep = DungeonStep.Idle;
+        var lootFingerprint = 0L;
         while (true)
         {
             if (CancelToken.IsCancellationRequested)
@@ -136,6 +137,8 @@ public abstract partial class AutoCommon
             {
                 return HowItEnded(dungeon);
             }
+
+            lootFingerprint = PreviewDungeonLoot(dungeon, lootFingerprint);
 
             if (PartyPresence.InParty())
             {
@@ -237,6 +240,25 @@ public abstract partial class AutoCommon
                     break;
             }
         }
+    }
+
+    // The loot so far shows in the cleanup list while the dungeon goes on; the bags are compared only when they changed.
+    private static long PreviewDungeonLoot(DungeonInProgress dungeon, long seen)
+    {
+        if (dungeon.BagsBefore is not { } before || !Plugin.Instance.Configuration.AutoDiscard)
+        {
+            return seen;
+        }
+
+        var fingerprint = BagSnapshot.Fingerprint();
+        if (fingerprint == seen)
+        {
+            return seen;
+        }
+
+        var (_, items) = BagSnapshot.Gains(before, BagSnapshot.Capture());
+        LootCleanup.ShowPreview(items, before);
+        return fingerprint;
     }
 
     // In order of what must come first: a dialog that waits on an answer, then anything that attacks, then the loot,
