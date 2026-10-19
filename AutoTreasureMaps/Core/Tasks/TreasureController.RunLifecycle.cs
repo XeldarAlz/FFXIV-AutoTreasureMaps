@@ -166,6 +166,7 @@ internal sealed partial class TreasureController
                 DungeonsCleared = ending.DungeonsCleared,
                 Gil = ending.Gil,
                 ItemsGained = ending.ItemsGained,
+                Tomestones = ending.Tomestones,
                 MapsBought = ending.MapsBought,
                 GilSpentOnMaps = ending.GilSpentOnMaps,
                 MapsGathered = ending.MapsGathered,
