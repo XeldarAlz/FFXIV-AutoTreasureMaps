@@ -12,15 +12,16 @@ namespace AutoTreasureMaps.Core.Cleanup;
 internal readonly record struct PendingLoot(uint ItemId, int Quantity);
 
 // The loot coffers and treasure dungeons gave that is not kept, and the pass that discards it from the four bags. Kept
-// means whitelisted, a timeworn map, any map's rare loot, an item the game will not let go of, or (unless turned
-// off) an item of notable rarity, a unique item, equipment or an item that unlocks something. Only loot that landed in
-// the bags is listed, so gil, crystals and currency never are. The game discards whole slots, so an item is listed only
-// when the bags held none of it before the coffer opened (or it is listed already): every copy in the bags is then loot.
-// A map or dungeon that was paused after its coffer opened is not listed at all, since what the player did meanwhile
-// would read as loot. The list belongs to one character and one run: it is cleared when the run stops or ends and on
-// logout, and a pass refuses to run for another character. A pass discards one slot at a time, a human-like moment
-// apart, takes each discarded slot off the noted quantity, and empties the list once no listed item is left in the
-// bags. An item looted in a larger quantity than the cleanup limit is kept instead. Framework thread only.
+// means whitelisted, a timeworn map, rare loot the player did not pick to discard, an item the game will not let go
+// of, or (unless turned off) any other item of notable rarity, a unique item, equipment or an item that unlocks
+// something. Only loot that landed in the bags is listed, so gil, crystals and currency never are. The game discards
+// whole slots, so an item is listed only when the bags held none of it before the coffer opened (or it is listed
+// already): every copy in the bags is then loot. A map or dungeon that was paused after its coffer opened is not
+// listed at all, since what the player did meanwhile would read as loot. The list belongs to one character and one
+// run: it is cleared when the run stops or ends and on logout, and a pass refuses to run for another character. A
+// pass discards one slot at a time, a human-like moment apart, takes each discarded slot off the noted quantity, and
+// empties the list once no listed item is left in the bags. An item looted in a larger quantity than the cleanup
+// limit is kept instead. Framework thread only.
 internal static unsafe class LootCleanup
 {
     private const int DiscardDelayMinMs = 700;
@@ -190,15 +191,20 @@ internal static unsafe class LootCleanup
     private static bool OverLimit(int quantity, int limit) => limit > 0 && quantity > limit;
 
     public static bool IsKept(uint itemId)
-        => IsAlwaysKept(itemId) || OnWhitelist(itemId);
+        => IsAlwaysKept(itemId) || KeepsRare(itemId) || KeptAsNotable(itemId) || OnWhitelist(itemId);
 
-    // Kept whatever the whitelist says: a map, any map's rare loot, an item the game refuses to discard, and with
-    // the setting on (the default) anything that may be worth more than a material.
+    // Kept whatever the whitelist says: a map, or an item the game refuses to discard.
     public static bool IsAlwaysKept(uint itemId)
-        => RareLoot.IsRare(itemId)
-        || Plugin.Instance.Catalog.TryGetByTimewornItem(itemId, out _)
-        || Svc.Data.GetExcelSheet<Item>().GetRowOrDefault(itemId) is not { IsIndisposable: false } item
-        || (Plugin.Instance.Configuration.AutoDiscardKeepNotable && KeptByKind(item));
+        => Plugin.Instance.Catalog.TryGetByTimewornItem(itemId, out _)
+        || Svc.Data.GetExcelSheet<Item>().GetRowOrDefault(itemId) is not { IsIndisposable: false };
+
+    // With the setting on (the default), anything that may be worth more than a material. A listed rare item follows
+    // the player's pick instead, so one picked to discard is not kept back here.
+    private static bool KeptAsNotable(uint itemId)
+        => Plugin.Instance.Configuration.AutoDiscardKeepNotable
+        && !RareLoot.IsRare(itemId)
+        && Svc.Data.GetExcelSheet<Item>().GetRowOrDefault(itemId) is { } item
+        && KeptByKind(item);
 
     // Notable rarity, unique, equipment, or an item with a use other than a meal or a medicine (a minion, a mount, an
     // orchestrion roll, a card, a hairstyle and the like unlock something).
@@ -210,6 +216,31 @@ internal static unsafe class LootCleanup
 
     public static bool OnWhitelist(uint itemId) => Plugin.Instance.Configuration.AutoDiscardKeep.Contains(itemId);
 
+    // Rare loot is kept unless the player picked it to be discarded.
+    public static bool KeepsRare(uint itemId)
+        => RareLoot.IsRare(itemId) && !Plugin.Instance.Configuration.AutoDiscardRare.Contains(itemId);
+
+    public static void SetRareKept(uint itemId, bool keep)
+    {
+        var configuration = Plugin.Instance.Configuration;
+        if (!keep)
+        {
+            if (!configuration.AutoDiscardRare.Contains(itemId))
+            {
+                configuration.AutoDiscardRare.Add(itemId);
+                configuration.SaveDebounced();
+            }
+
+            return;
+        }
+
+        if (configuration.AutoDiscardRare.Remove(itemId))
+        {
+            configuration.SaveDebounced();
+            Unlist(itemId);
+        }
+    }
+
     public static void AddToWhitelist(uint itemId)
     {
         var configuration = Plugin.Instance.Configuration;
@@ -220,6 +251,12 @@ internal static unsafe class LootCleanup
 
         configuration.AutoDiscardKeep.Add(itemId);
         configuration.SaveDebounced();
+        Unlist(itemId);
+    }
+
+    // An item kept from now on leaves the list and the preview.
+    private static void Unlist(uint itemId)
+    {
         var at = IndexOf(itemId);
         if (at >= 0)
         {

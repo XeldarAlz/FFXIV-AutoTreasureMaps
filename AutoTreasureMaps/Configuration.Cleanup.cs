@@ -12,4 +12,7 @@ public sealed partial class Configuration
 
     // Item ids the loot cleanup never discards, on top of the maps and each map's rare loot it always keeps.
     public List<uint> AutoDiscardKeep { get; set; } = [];
+
+    // Rare loot item ids the player picked to discard; every other rare item is kept.
+    public List<uint> AutoDiscardRare { get; set; } = [];
 }
