@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core;
+using AutoTreasureMaps.Core.Cleanup;
 using AutoTreasureMaps.Core.Debug;
 using AutoTreasureMaps.Core.Dungeon;
 using AutoTreasureMaps.Core.Gather;
@@ -55,6 +56,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly GmAlertWatcher gmAlertWatcher;
     private readonly PartyInviteWatcher partyInviteWatcher;
     private readonly TankbusterWatcher tankbusterWatcher;
+    private readonly CleanupContextMenu cleanupContextMenu;
     private readonly AppWindow appWindow;
     private readonly CommandInfo primaryCommand;
     private readonly CommandInfo aliasCommand;
@@ -81,6 +83,7 @@ public sealed class Plugin : IDalamudPlugin
         gmAlertWatcher = new GmAlertWatcher();
         partyInviteWatcher = new PartyInviteWatcher();
         tankbusterWatcher = new TankbusterWatcher();
+        cleanupContextMenu = new CleanupContextMenu();
 
         InitializeLocalization();
         Fonts.Initialize(PluginInterface.UiBuilder, PluginDirectory);
@@ -132,6 +135,7 @@ public sealed class Plugin : IDalamudPlugin
         gmAlertWatcher.Dispose();
         partyInviteWatcher.Dispose();
         tankbusterWatcher.Dispose();
+        cleanupContextMenu.Dispose();
         Messages.Dispose();
 
         CLibMain.Dispose();
@@ -266,6 +270,8 @@ public sealed class Plugin : IDalamudPlugin
         Controller.Tick();
         MapAllowance.Tick(Configuration);
         GatherGearsetReturn.Tick();
+        LootPrices.Tick();
+        LootCleanup.Tick();
     }
 
     private static string CommandHelp() => string.Join(" ", Loc.T(L.Plugin.CommandHelp), Loc.T(L.Gather.CommandHelp), Loc.T(L.Dungeon.CommandHelp));
