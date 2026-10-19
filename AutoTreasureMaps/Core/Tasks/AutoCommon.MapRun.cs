@@ -56,13 +56,14 @@ public abstract partial class AutoCommon
             session.PendingPortal = new PortalLead(ended.CofferOpened ? ended.CofferPosition : ended.Spot.Position, ended.PortalsBefore);
         }
 
+        var bagsBefore = session.ActiveMap?.BagsBefore;
         if (MapOutcomes.Final(result.Outcome))
         {
             session.ActiveMap = null;
         }
 
         session.RecordMap(result);
-        LootCleanup.Note(result.Items);
+        LootCleanup.Note(result.Items, bagsBefore);
         progress.FinishMap(result);
         Diag($"Map: {(result.HasTier ? result.Tier.Name : "no map")} ended {result.Outcome}{(result.Refusal == MapRefusal.None ? string.Empty : $" ({result.Refusal})")}, {result.Gil} gil, {result.ItemCount} items in {result.Items.Length} stacks, portal {(result.PortalSeen ? "seen" : "not seen")}, {result.Duration.TotalSeconds:F0}s.");
         Announce(result);
