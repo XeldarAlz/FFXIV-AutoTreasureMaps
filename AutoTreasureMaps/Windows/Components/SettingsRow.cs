@@ -10,6 +10,7 @@ internal static class SettingsRow
 {
     private const float RowHeight = 40f;
     private const float HelpIconGap = 7f;
+    private const float BadgeGap = 6f;
     private const float CaptionPullUp = 7f;
     private const float CaptionBottomGap = 10f;
     private const float BlockBottomGap = 6f;
@@ -23,13 +24,20 @@ internal static class SettingsRow
         public float Width => RightEdge - Origin.X;
     }
 
-    public static void Draw(string label, string? help, float controlWidth, Action drawControl, float controlHeight = 0f)
+    public static void Draw(string label, string? help, float controlWidth, Action drawControl, float controlHeight = 0f, uint itemId = 0, string? badge = null)
     {
         var area = BeginRow();
 
         DrawTopDivider(area);
-        var labelHovered = DrawLabel(area, label);
-        var iconHovered = DrawHelpIcon(area, label, help);
+        var labelX = DrawBadge(area, badge);
+        var labelHovered = DrawLabel(area, labelX, label);
+        var iconHovered = DrawHelpIcon(area, labelX, label, help);
+
+        if (labelHovered && itemId != 0)
+        {
+            ItemTooltip.Hover(itemId);
+            labelHovered = false;
+        }
 
         if (!string.IsNullOrEmpty(help) && (labelHovered || iconHovered))
         {
@@ -102,10 +110,21 @@ internal static class SettingsRow
         SettingsGroup.RowDrawnInGroup = true;
     }
 
-    private static bool DrawLabel(RowArea area, string label)
+    private static float DrawBadge(RowArea area, string? badge)
+    {
+        if (badge is null)
+        {
+            return area.Origin.X;
+        }
+
+        var width = Badge.DrawLeft(ImGui.GetWindowDrawList(), badge, Styling.AccentNebula, area.Origin.X, area.MiddleY);
+        return area.Origin.X + width + BadgeGap * ImGuiHelpers.GlobalScale;
+    }
+
+    private static bool DrawLabel(RowArea area, float labelX, string label)
     {
         var labelSize = ImGui.CalcTextSize(label);
-        ImGui.SetCursorScreenPos(new Vector2(area.Origin.X, area.MiddleY - labelSize.Y * 0.5f));
+        ImGui.SetCursorScreenPos(new Vector2(labelX, area.MiddleY - labelSize.Y * 0.5f));
         using (ImRaii.PushColor(ImGuiCol.Text, area.Hovered ? Styling.TextStrong : Styling.TextSecondary))
         {
             ImGui.TextUnformatted(label);
@@ -114,7 +133,7 @@ internal static class SettingsRow
         return ImGui.IsItemHovered();
     }
 
-    private static bool DrawHelpIcon(RowArea area, string label, string? help)
+    private static bool DrawHelpIcon(RowArea area, float labelX, string label, string? help)
     {
         if (string.IsNullOrEmpty(help) || !area.Hovered)
         {
@@ -127,7 +146,7 @@ internal static class SettingsRow
         {
             var iconSize = ImGui.CalcTextSize(iconString);
             ImGui.SetCursorScreenPos(new Vector2(
-                area.Origin.X + labelWidth + HelpIconGap * ImGuiHelpers.GlobalScale,
+                labelX + labelWidth + HelpIconGap * ImGuiHelpers.GlobalScale,
                 area.MiddleY - iconSize.Y * 0.5f));
             using (ImRaii.PushColor(ImGuiCol.Text, Styling.WithAlpha(Styling.TextMuted, 0.9f)))
             {

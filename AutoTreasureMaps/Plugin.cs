@@ -279,7 +279,7 @@ public sealed class Plugin : IDalamudPlugin
         LootCleanup.Tick();
     }
 
-    private static string CommandHelp() => string.Join(" ", Loc.T(L.Plugin.CommandHelp), Loc.T(L.Gather.CommandHelp), Loc.T(L.Dungeon.CommandHelp));
+    private static string CommandHelp() => string.Join("\n", Loc.T(L.Plugin.CommandHelp), Loc.T(L.Gather.CommandHelp), Loc.T(L.Dungeon.CommandHelp));
 
     private void HandleGoto(string arguments)
     {
