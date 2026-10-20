@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.Game.Player;
+using AutoTreasureMaps.Core.Localization;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons;
 using ECommons.DalamudServices;
@@ -295,7 +296,7 @@ internal static unsafe class RepairOps
     }
 
     private static string NpcName(uint dataId)
-        => Svc.Data.GetExcelSheet<ENpcResident>().GetRowOrDefault(dataId)?.Singular.ExtractText() ?? string.Empty;
+        => GameGlyphs.Cover(Svc.Data.GetExcelSheet<ENpcResident>().GetRowOrDefault(dataId)?.Singular.ExtractText() ?? string.Empty);
 
     private static bool HasDarkMatterOrBetter(uint requiredDarkMatterId, InventoryManager* inventory)
     {
