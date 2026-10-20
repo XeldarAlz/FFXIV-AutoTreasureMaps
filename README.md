@@ -27,7 +27,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 - **Decipher and dig**: reads each timeworn map you carry, works out where it points, and digs at the spot.
 - **Travel**: teleports to the nearest aetheryte, then flies, rides or walks to the dig spot, and lands where it can dig.
 - **Hands-off combat**: fights off every wave that guards a coffer with a bundled combat preset, then opens the coffer. As a tank, it can also use your short mitigation in the last seconds of an enemy cast aimed at you, and a bigger cooldown for a boss's tankbuster when the short one is down (off by default).
-- **Treasure dungeons** (solo, off by default): walks into the portal a coffer leaves and clears the dungeon behind it: coffers, guards, and the gates or slot draws, then goes on with the next map. Cenote Ja Ja Gural (G17) and Vault Oneiron (G18) are supported; any other dungeon, and any you enter by hand, is left to you. Pick the gate, how to answer the Gambler's Lure and which enemies go first under Settings, Dungeons.
+- **Treasure dungeons** (solo, off by default): walks into the portal a coffer leaves and clears the dungeon behind it: coffers, guards, the gates or slot draws and the bonus round, then goes on with the next map. Cenote Ja Ja Gural (G17) and Vault Oneiron (G18) are supported; any other dungeon, and any you enter by hand, is left to you. Pick the gate, how to answer the Gambler's Lure and which enemies go first under Settings, Dungeons.
 - **Map choice**: pick which map tiers to run and whether the highest or the lowest goes first.
 - **Loot rolls**: answers the Need or Greed window for the coffer's items the way you choose, or leaves it to you.
 - **Daily map**: once a day, gathers the free timeworn map as a Miner or Botanist when the run has no map left, then switches back to your gearset (off by default). A Miner skips Gargantuaskin, whose only Miner nodes hold nothing but collectables.
@@ -35,7 +35,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 - **Recovery**: gets back up after a death; re-paths, jumps, or teleports out when it gets stuck.
 - **After-run action**: stay logged in, return to the inn, log out, or close the game once the last map is done.
 - **Auto-repair**: Dark Matter first, then your Grand Company mender or a repair NPC you pick.
-- **Auto-consume**: keeps food and medicine buffs up between maps, HQ first.
+- **Auto-consume**: keeps food and medicine buffs up between maps, at the start of each map and between treasure dungeon rounds, HQ first.
 - **Loot cleanup** (off by default): notes what each coffer and treasure dungeon gives and discards whatever is not kept, between maps, before walking into a portal, and when a run finishes. Only an item your bags held none of before the coffer opened can go, never more copies than the coffer gave, and nothing from a map you paused the run in after its coffer opened. The noted list is forgotten when the run stops or ends and when you log out. Maps, each map's high-value loot, anything you whitelist (right-click an item in your inventory) and, unless you turn it off, anything notable (green rarity and above, unique items, equipment, minions, mounts, orchestrion rolls and other unlocks) are always kept.
 - **Humanizer**: waits a random moment before each teleport, dig, coffer and fight, and takes city breaks between maps, so long sessions look less mechanical.
 - **Pause & resume**: park a run without losing your place, and auto-pause while you're in a duty.

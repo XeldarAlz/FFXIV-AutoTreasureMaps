@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "NPC de reparo personalizado definido: {0} ({1}).",
   "safety.consumables.group": "Consumíveis",
   "safety.consumables.autoConsume": "Consumir comida e remédio automaticamente",
-  "safety.consumables.autoConsumeHelp": "Usa comida e remédio entre mapas para manter os efeitos; só Bem Alimentado já é +3% de exp de graça. Os itens são consumidos apenas fora de combate e renovados antes do efeito acabar.",
+  "safety.consumables.autoConsumeHelp": "Usa comida e remédio entre mapas, no início de cada mapa e entre as rodadas de uma masmorra do tesouro para manter os efeitos; só Bem Alimentado já é +3% de exp de graça. Os itens são consumidos apenas fora de combate e renovados antes do efeito acabar.",
   "safety.consumables.autoConsumeOff": "O consumo automático está desativado. Ative para escolher itens.",
   "safety.consumables.refreshUnder": "Renovar abaixo de",
   "safety.consumables.refreshUnderHelp": "Consome de novo quando faltarem menos minutos do que este valor para o efeito acabar. 0 só reaplica depois de acabar por completo. Uma refeição dura 30 minutos.",

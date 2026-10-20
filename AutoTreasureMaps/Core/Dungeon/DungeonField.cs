@@ -11,11 +11,16 @@ namespace AutoTreasureMaps.Core.Dungeon;
 // past its frame. Read only on the framework thread.
 internal static unsafe class DungeonField
 {
-    // A chamber or the vault's room is well inside this; a farther object belongs to another chamber.
-    public const float RoomMeters = 60f;
-    // Gates of one wall stand a few metres apart; a gate farther than this from the nearest one is another wall's.
-    private const float GateWallMeters = 30f;
+    // A chamber or the vault's room is well inside this, the way in from the entrance included (the cenote's first
+    // coffer stands 80m from it); the next chamber is farther, 185m or more.
+    public const float RoomMeters = 100f;
+    // The gates of one wall stand on either side of the chamber, up to 50m apart; a gate farther than this from the
+    // nearest one is another wall's.
+    private const float GateWallMeters = 60f;
     private const float EnemyMeters = 45f;
+    // Squared distances are compared, so a gold sack three times as far as a silver one weighs the same.
+    private const float SilverSackWeight = 9f;
+    private const float SackMovedMeters = 1f;
 
     public static Vector3 PlayerPosition => Svc.Objects.LocalPlayer?.Position ?? Vector3.Zero;
 
@@ -44,6 +49,50 @@ internal static unsafe class DungeonField
         }
 
         return nearest;
+    }
+
+    // The game moves a sack it has handed out to a new spot rather than removing it, so one that left its spot counts as
+    // picked up.
+    public static bool SackMoved(IGameObject sack, Vector3 from)
+        => Vector3.DistanceSquared(sack.Position, from) > SackMovedMeters * SackMovedMeters;
+
+    // The bonus round's sack to walk to next: the nearest, with a gold sack counted as near as a silver one three times
+    // closer, since it is worth three. Null when the profile knows no sacks or none is on the field. A skipped sack is
+    // passed over only while it still stands where it was skipped, since the game reuses it once it moves.
+    public static IGameObject? NextSack(DungeonProfile profile, IReadOnlyDictionary<ulong, Vector3>? skipped = null)
+    {
+        if (!profile.HasSacks)
+        {
+            return null;
+        }
+
+        var from = PlayerPosition;
+        IGameObject? next = null;
+        var best = float.MaxValue;
+        var objects = Svc.Objects;
+        for (var index = 0; index < objects.Length; index++)
+        {
+            if (objects[index] is not { ObjectKind: ObjectKind.EventObj, IsTargetable: true } candidate
+                || skipped is not null && skipped.TryGetValue(candidate.GameObjectId, out var at) && !SackMoved(candidate, at))
+            {
+                continue;
+            }
+
+            var weight = profile.IsGoldSack(candidate.BaseId) ? 1f : profile.IsSilverSack(candidate.BaseId) ? SilverSackWeight : 0f;
+            var distance = Vector3.DistanceSquared(from, candidate.Position);
+            if (weight == 0f || distance > RoomMeters * RoomMeters)
+            {
+                continue;
+            }
+
+            if (distance * weight < best)
+            {
+                best = distance * weight;
+                next = candidate;
+            }
+        }
+
+        return next;
     }
 
     public static bool IsCoffer(DungeonProfile profile, IGameObject candidate)

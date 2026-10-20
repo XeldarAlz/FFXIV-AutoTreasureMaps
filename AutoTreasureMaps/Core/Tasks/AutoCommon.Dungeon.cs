@@ -10,6 +10,7 @@ using AutoTreasureMaps.Core.Travel;
 using AutoTreasureMaps.Core.Treasure;
 using clib.TaskSystem;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
@@ -34,6 +35,10 @@ public abstract partial class AutoCommon
     private const int LureClickAttempts = 3;
     private const int LureCloseWaitMs = 3_000;
     private const int BonusRoundCapMs = 120_000;
+    private const float SackReachMeters = 0.6f;
+    private const int SackWalkMs = 10_000;
+    // Standing on a sack picks it up at once; one still there after this is asked by interacting instead.
+    private const int SackPickupMs = 1_200;
     private const int LootPendingWaitMs = 60_000;
     private const int LootRetryMs = 20_000;
     private const int LeaveZoneWaitMs = 15_000;
@@ -178,7 +183,19 @@ public abstract partial class AutoCommon
                     await handler.AnswerLure(context);
                     break;
                 case DungeonStep.Bonus:
-                    await WaitOutBonusRound(context);
+                    if (CombatPluginCollectsSacks(profile))
+                    {
+                        await LeaveBonusRoundToCombatPlugin(context);
+                    }
+                    else if (profile.HasSacks)
+                    {
+                        await CollectBonusSacks(context);
+                    }
+                    else
+                    {
+                        await WaitOutBonusRound(context);
+                    }
+
                     break;
                 case DungeonStep.Fight:
                     await handler.Fight(context);
@@ -195,6 +212,7 @@ public abstract partial class AutoCommon
 
                     break;
                 case DungeonStep.Advance:
+                    await TopUpConsumables();
                     var advanced = await AdvanceDungeon(handler, context);
                     if (advanced is AdvanceResult.Expelled)
                     {
@@ -378,7 +396,128 @@ public abstract partial class AutoCommon
         && !Messages.ArrivedSince(DungeonLogMessages.BonusRoundEnded, started.AtMs)
         && !Messages.ArrivedSince(DungeonLogMessages.BonusRoundCoffer, started.AtMs);
 
-    // The bonus round wants the glowing sacks picked up by hand, which the run does not do yet.
+    // The combat plugin's own module for the sacks starts on one of them, so asking by their data ids tells whether the
+    // loaded edition covers the round.
+    private static bool CombatPluginCollectsSacks(DungeonProfile profile)
+    {
+        foreach (var baseId in profile.GoldSackBaseIds.Concat(profile.SilverSackBaseIds))
+        {
+            if (BossModIPC.Instance.HasModuleFor(baseId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The combat plugin's module walks the character from sack to sack and keeps it out of the charges in between, so
+    // the run only keeps the preset up and its movement free until the round ends.
+    private async Task LeaveBonusRoundToCombatPlugin(DungeonContext context)
+    {
+        const string scope = "dungeon-sacks";
+        var dungeon = context.Dungeon;
+        if (!dungeon.BonusNoticeShown)
+        {
+            dungeon.BonusNoticeShown = true;
+            Diag("Dungeon: a bonus round began; the combat plugin's module picks up its sacks.");
+        }
+
+        EnterStep(TreasurePhase.Fighting);
+        Status = "Bonus round: the combat plugin picks up the sacks";
+        EnsureCombatPreset();
+        ReleaseCombatMovement(scope);
+        var deadline = Environment.TickCount64 + BonusRoundCapMs;
+        try
+        {
+            while (!CancelToken.IsCancellationRequested && Environment.TickCount64 < deadline && context.InDungeon && !context.Zoning && !IsKnockedOut() && BonusRoundOn(dungeon))
+            {
+                await KeepPresetFighting(scope);
+                await NextFrame(DungeonTickFrames);
+            }
+        }
+        finally
+        {
+            BossModIPC.Instance.ClearActive();
+            HoldCombatMovement(scope);
+        }
+
+        Diag($"{scope}: the bonus round is over; {DescribeField(context)}.");
+    }
+
+    // The bonus round scatters sacks over the room for ninety seconds, each picked up by walking onto it. The run walks
+    // from sack to sack until the round ends; one the character stood on without picking it up is asked once by
+    // interacting, and one it cannot reach or pick up is left alone.
+    private async Task CollectBonusSacks(DungeonContext context)
+    {
+        const string scope = "dungeon-sacks";
+        var dungeon = context.Dungeon;
+        if (!dungeon.BonusNoticeShown)
+        {
+            dungeon.BonusNoticeShown = true;
+            Diag("Dungeon: a bonus round began; picking up its sacks.");
+        }
+
+        EnterStep(TreasurePhase.Fighting);
+        Status = "Bonus round: picking up sacks";
+        HoldCombatMovement(scope);
+        var skipped = new Dictionary<ulong, Vector3>();
+        var picked = 0;
+        var deadline = Environment.TickCount64 + BonusRoundCapMs;
+        while (!CancelToken.IsCancellationRequested && Environment.TickCount64 < deadline && context.InDungeon && !context.Zoning && !IsKnockedOut() && BonusRoundOn(dungeon))
+        {
+            // The sacks come a little after the round's message, and in waves.
+            var sack = DungeonField.NextSack(dungeon.Profile, skipped);
+            if (sack is null)
+            {
+                await NextFrame(DungeonTickFrames);
+                continue;
+            }
+
+            var sackId = sack.GameObjectId;
+            var position = sack.Position;
+            // A sack handed out is moved to a new spot, or gone or untargetable on the way there.
+            bool Taken() => Svc.Objects.SearchById(sackId) is not { IsTargetable: true } now || DungeonField.SackMoved(now, position);
+            await context.WalkTo(position, SackReachMeters, Taken, SackWalkMs, scope);
+            if (Taken())
+            {
+                picked++;
+                continue;
+            }
+
+            if (!WithinReach(position, SackReachMeters * 2f))
+            {
+                Diag($"{scope}: could not reach sack {sackId:X} at ({position.X:F1}, {position.Y:F1}, {position.Z:F1}); leaving it.");
+                skipped[sackId] = position;
+                continue;
+            }
+
+            if (await WaitUntilTimed(Taken, SackPickupMs, "sack picked up"))
+            {
+                picked++;
+                continue;
+            }
+
+            Diag($"{scope}: standing on sack {sackId:X} did not pick it up; interacting with it.");
+            if (Svc.Objects.SearchById(sackId) is { } still)
+            {
+                await InteractWithObject(still, Taken, scope);
+            }
+
+            if (Taken())
+            {
+                picked++;
+            }
+            else
+            {
+                skipped[sackId] = position;
+            }
+        }
+
+        Diag($"{scope}: the bonus round is over; {picked} sack(s) picked up, {skipped.Count} left.");
+    }
+
+    // A bonus round whose sacks the run does not know is left to the player.
     private async Task WaitOutBonusRound(DungeonContext context)
     {
         var dungeon = context.Dungeon;
@@ -400,6 +539,9 @@ public abstract partial class AutoCommon
         EnterStep(TreasurePhase.Opening);
         Status = "Opening the coffer";
         var cofferId = coffer.GameObjectId;
+        // The dungeon's own coffers ask their own question ("Open the coffer?" rather than the dug-up coffer's), which no
+        // sheet row gives; a question that opens right after asking one of them is that coffer's.
+        var listedCoffer = coffer.ObjectKind == ObjectKind.EventObj && context.Profile.IsCoffer(coffer.BaseId);
         Diag($"{scope}: {coffer.ObjectKind} base {coffer.BaseId} '{coffer.Name}' ({cofferId:X}), interaction {context.Dungeon.CofferInteractions(cofferId)}.");
         if (!await HumanDelay(HumanAction.OpenCoffer, scope))
         {
@@ -413,7 +555,7 @@ public abstract partial class AutoCommon
         if (NpcInteraction.SelectYesnoOpen())
         {
             var prompt = NpcInteraction.SelectYesnoText();
-            if (DigOps.IsCofferPrompt(prompt))
+            if (listedCoffer || DigOps.IsCofferPrompt(prompt))
             {
                 context.ConfirmPrompt(scope, interacted: true, openBefore: false);
             }
@@ -450,6 +592,13 @@ public abstract partial class AutoCommon
             {
                 if (IsKnockedOut() || context.Zoning || !context.InDungeon || LureDialog.Open())
                 {
+                    return;
+                }
+
+                // The bonus round's enemies only get in the way; its sacks are what it pays out.
+                if (context.Profile.HasSacks && BonusRoundOn(context.Dungeon))
+                {
+                    Diag($"{scope}: a bonus round began; leaving the fight for its sacks.");
                     return;
                 }
 
@@ -668,23 +817,29 @@ public abstract partial class AutoCommon
             return false;
         }
 
+        // The dungeon's own exit point is the way out a player takes; the duty list is the fallback where it has none.
+        if (DungeonField.NearestExit(dungeon.Profile) is { } exit)
+        {
+            var exitId = exit.GameObjectId;
+            Diag($"{scope}: round {dungeon.Round} of {dungeon.Profile.Rounds} done and the field is quiet; leaving through the exit {exit.BaseId}.");
+            dungeon.LeaveRequested = true;
+            var promptBefore = context.PromptOpen();
+            var interacted = await context.Interact(() => Svc.Objects.SearchById(exitId), $"exit {exitId:X}", () => NpcInteraction.SelectYesnoOpen() || context.Zoning, scope);
+            context.ConfirmPrompt(scope, interacted, promptBefore);
+            if (await WaitUntilTimed(() => context.Zoning || !context.InDungeon, LeaveZoneWaitMs, "leaving through the exit"))
+            {
+                return true;
+            }
+
+            Diag($"{scope}: the exit did not take the character out.");
+        }
+
         if (CanLeaveContent())
         {
             Diag($"{scope}: round {dungeon.Round} of {dungeon.Profile.Rounds} done and the field is quiet; leaving the duty.");
             dungeon.LeaveRequested = true;
             LeaveContent();
             return await WaitUntilTimed(() => context.Zoning || !context.InDungeon, LeaveZoneWaitMs, "leaving the duty");
-        }
-
-        if (DungeonField.NearestExit(dungeon.Profile) is { } exit)
-        {
-            var exitId = exit.GameObjectId;
-            Diag($"{scope}: the duty cannot be left from the duty list; using the exit {exit.BaseId}.");
-            dungeon.LeaveRequested = true;
-            var promptBefore = context.PromptOpen();
-            var interacted = await context.Interact(() => Svc.Objects.SearchById(exitId), $"exit {exitId:X}", () => NpcInteraction.SelectYesnoOpen() || context.Zoning, scope);
-            context.ConfirmPrompt(scope, interacted, promptBefore);
-            return await WaitUntilTimed(() => context.Zoning || !context.InDungeon, LeaveZoneWaitMs, "leaving through the exit");
         }
 
         Warn($"{scope}: the game does not let the duty be left yet and no exit is known.");
@@ -702,7 +857,8 @@ public abstract partial class AutoCommon
         var coffer = DungeonField.NearestCoffer(dungeon, int.MaxValue);
         var advance = DungeonField.AdvanceObjects(dungeon.Profile).Count;
         DungeonField.NearestEnemy(out var enemies);
-        return $"coffer {(coffer is null ? "none" : $"{coffer.BaseId} ({dungeon.CofferInteractions(coffer.GameObjectId)} interaction(s))")}, {advance} advance object(s), {enemies} enemy(ies), in combat {Svc.Condition[ConditionFlag.InCombat]}, loot waiting {LootRolls.Pending(static _ => true)}";
+        var at = DungeonField.PlayerPosition;
+        return $"at ({at.X:F1}, {at.Y:F1}, {at.Z:F1}), coffer {(coffer is null ? "none" : $"{coffer.BaseId} ({dungeon.CofferInteractions(coffer.GameObjectId)} interaction(s))")}, {advance} advance object(s), {enemies} enemy(ies), in combat {Svc.Condition[ConditionFlag.InCombat]}, loot waiting {LootRolls.Pending(static _ => true)}";
     }
 
     private static void AnnounceDungeon(in DungeonResult result)
@@ -791,15 +947,15 @@ public abstract partial class AutoCommon
         }
 
         // Walks into reach of the object find returns and interacts with it. True once doneWhen holds.
-        public async Task<bool> Interact(Func<IGameObject?> find, string name, Func<bool> doneWhen, string scope)
+        public async Task<bool> Interact(Func<IGameObject?> find, string name, Func<bool> doneWhen, string scope, bool raised = false)
         {
-            var target = await owner.ApproachObject(find, name, scope);
+            var target = await owner.ApproachObject(find, name, scope, raised);
             if (target is null || !await owner.ReadyToInteract(scope))
             {
                 return false;
             }
 
-            return await owner.InteractWithObject(target, doneWhen, scope);
+            return await owner.InteractWithObject(target, doneWhen, scope, raised);
         }
 
         // A walk inside the dungeon, as its own cancellable operation. True once the character is within reach of the

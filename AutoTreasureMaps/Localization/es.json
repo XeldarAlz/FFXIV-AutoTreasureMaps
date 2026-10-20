@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "PNJ de reparación personalizado fijado: {0} ({1}).",
   "safety.consumables.group": "Consumibles",
   "safety.consumables.autoConsume": "Consumir comida y medicina automáticamente",
-  "safety.consumables.autoConsumeHelp": "Usa comida y medicina entre mapas para mantener sus efectos; Bien alimentado por sí solo es un +3 % de exp gratis. Los objetos solo se consumen fuera de combate y se renuevan antes de que expire el efecto.",
+  "safety.consumables.autoConsumeHelp": "Usa comida y medicina entre mapas, al empezar cada mapa y entre las rondas de una mazmorra del tesoro para mantener sus efectos; Bien alimentado por sí solo es un +3 % de exp gratis. Los objetos solo se consumen fuera de combate y se renuevan antes de que expire el efecto.",
   "safety.consumables.autoConsumeOff": "El consumo automático está desactivado. Actívalo para elegir objetos.",
   "safety.consumables.refreshUnder": "Renovar por debajo de",
   "safety.consumables.refreshUnderHelp": "Vuelve a consumir cuando al efecto le queden menos minutos que este valor. 0 solo lo reaplica cuando ha expirado del todo. Una comida dura 30 minutos.",

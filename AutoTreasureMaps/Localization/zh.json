@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "已设置自定义修理NPC：{0}（{1}）。",
   "safety.consumables.group": "消耗品",
   "safety.consumables.autoConsume": "自动使用食物和药品",
-  "safety.consumables.autoConsumeHelp": "在藏宝图之间使用食物和药品以维持效果；仅饱食状态就是免费的 +3% 经验。只在非战斗状态使用，并在效果结束前刷新。",
+  "safety.consumables.autoConsumeHelp": "在藏宝图之间、每张图开始时以及宝物库每轮之间使用食物和药品以维持效果；仅饱食状态就是免费的 +3% 经验。只在非战斗状态使用，并在效果结束前刷新。",
   "safety.consumables.autoConsumeOff": "自动使用已关闭。开启后才能选择物品。",
   "safety.consumables.refreshUnder": "剩余低于时刷新",
   "safety.consumables.refreshUnderHelp": "效果剩余时间少于此分钟数时重新使用。0 表示完全失效后才补上。食物效果持续30分钟。",

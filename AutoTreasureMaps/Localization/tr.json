@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "Özel onarım NPC'si ayarlandı: {0} ({1}).",
   "safety.consumables.group": "Tüketilebilirler",
   "safety.consumables.autoConsume": "Yemek ve ilacı otomatik kullan",
-  "safety.consumables.autoConsumeHelp": "Etkilerini sürdürmek için haritalar arasında yemek ve ilaç kullanır; Well Fed tek başına bedava %3 tecrübe. Eşyalar yalnızca savaş dışında kullanılır ve etki bitmeden yenilenir.",
+  "safety.consumables.autoConsumeHelp": "Etkilerini sürdürmek için haritalar arasında, her haritanın başında ve hazine zindanı turları arasında yemek ve ilaç kullanır; Well Fed tek başına bedava %3 tecrübe. Eşyalar yalnızca savaş dışında kullanılır ve etki bitmeden yenilenir.",
   "safety.consumables.autoConsumeOff": "Otomatik kullanım kapalı. Eşya seçmek için açın.",
   "safety.consumables.refreshUnder": "Şu sürenin altında yenile",
   "safety.consumables.refreshUnderHelp": "Etkinin bu dakikadan az süresi kalınca yeniden kullanır. 0 yalnızca tamamen bittikten sonra uygular. Bir yemek 30 dakika sürer.",

@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "Eigener Reparatur-NPC gesetzt: {0} ({1}).",
   "safety.consumables.group": "Verbrauchsgüter",
   "safety.consumables.autoConsume": "Essen & Medizin automatisch nutzen",
-  "safety.consumables.autoConsumeHelp": "Nutzt zwischen Karten Essen und Medizin, um deren Buffs aufrechtzuerhalten; allein Wohlgenährt bringt kostenlos +3 % EP. Gegenstände werden nur außerhalb des Kampfes genutzt und erneuert, bevor der Buff ausläuft.",
+  "safety.consumables.autoConsumeHelp": "Nutzt zwischen Karten, zu Beginn jeder Karte und zwischen den Runden eines Schatzgewölbes Essen und Medizin, um deren Buffs aufrechtzuerhalten; allein Wohlgenährt bringt kostenlos +3 % EP. Gegenstände werden nur außerhalb des Kampfes genutzt und erneuert, bevor der Buff ausläuft.",
   "safety.consumables.autoConsumeOff": "Automatisches Verbrauchen ist aus. Aktiviere es, um Gegenstände zu wählen.",
   "safety.consumables.refreshUnder": "Erneuern unter",
   "safety.consumables.refreshUnderHelp": "Erneut nutzen, sobald der Buff weniger als so viele Minuten übrig hat. 0 erneuert erst, nachdem er ganz ausgelaufen ist. Eine Mahlzeit hält 30 Minuten.",

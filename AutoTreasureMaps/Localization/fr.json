@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "PNJ de réparation personnalisé défini : {0} ({1}).",
   "safety.consumables.group": "Consommables",
   "safety.consumables.autoConsume": "Consommer nourriture et médicaments automatiquement",
-  "safety.consumables.autoConsumeHelp": "Utilise nourriture et médicaments entre les cartes pour maintenir leurs effets ; Repu seul vaut +3 % d'exp gratuits. Les objets ne sont consommés qu'hors combat et renouvelés avant la fin de l'effet.",
+  "safety.consumables.autoConsumeHelp": "Utilise nourriture et médicaments entre les cartes, au début de chaque carte et entre les manches d'un donjon au trésor pour maintenir leurs effets ; Repu seul vaut +3 % d'exp gratuits. Les objets ne sont consommés qu'hors combat et renouvelés avant la fin de l'effet.",
   "safety.consumables.autoConsumeOff": "La consommation automatique est désactivée. Activez-la pour choisir des objets.",
   "safety.consumables.refreshUnder": "Renouveler en dessous de",
   "safety.consumables.refreshUnderHelp": "Reconsomme dès qu'il reste moins de minutes que cette valeur à l'effet. 0 ne renouvelle qu'après expiration complète. Un repas dure 30 minutes.",
