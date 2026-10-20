@@ -450,18 +450,19 @@ internal static unsafe class LootCleanup
 
     private static void ConsumeLastSlotIfGone()
     {
-        if (lastItemId != 0 && !SlotHolds(lastContainer, lastSlot, lastItemId))
+        if (lastItemId != 0 && !SlotHolds(lastContainer, lastSlot, lastItemId, lastHighQuality))
         {
             ConsumeLastSlot();
         }
     }
 
-    private static bool SlotHolds(InventoryType container, ushort slot, uint itemId)
+    // The quality counts too: the slot may hold the item again in the other quality, which was never listed.
+    private static bool SlotHolds(InventoryType container, ushort slot, uint itemId, bool highQuality)
     {
         var inventory = InventoryManager.Instance();
         var bag = inventory is null ? null : inventory->GetInventoryContainer(container);
         var item = bag is null ? null : bag->GetInventorySlot(slot);
-        return item is not null && item->ItemId == itemId;
+        return item is not null && item->ItemId == itemId && item->IsHighQuality() == highQuality;
     }
 
     private static int SlotQuantity(InventoryType container, ushort slot)
