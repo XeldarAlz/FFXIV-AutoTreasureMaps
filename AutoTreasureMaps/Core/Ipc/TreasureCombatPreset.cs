@@ -7,24 +7,29 @@ namespace AutoTreasureMaps.Core.Ipc;
 // AutoTarget stays Aggressive with every category off and Retarget NoTarget. The combat plugin ranks a mob that is not
 // fighting the party below zero and Aggressive only picks from zero up, so it only ever takes an attacker, and only while
 // the character has no target: the current target keeps focus, and whatever is still attacking takes over once it is dead.
-// Every rotation uses the player's target but picks its own area attacks: every mob that spawns at a coffer is hostile,
-// so an area attack only ends a wave sooner. FATE targeting stays off.
+// Every rotation picks its own targets and area attacks (Targeting Auto): every mob that spawns at a coffer is hostile,
+// so spreading the attacks over a wave only ends it sooner. FATE targeting stays off.
+// Tracks left out resolve to the combat plugin's own defaults; the role modules are only switched on, so they heal,
+// mitigate and stun with those defaults. Nothing that acts on other players or on mobs outside the fight is enabled.
 // Pathfind movement lets the combat plugin close to range and dodge once the fight is on.
 internal static class TreasureCombatPreset
 {
     public const string Name = "Auto Treasure Maps";
 
-    public const int Revision = 1;
+    // Bumped whenever the preset changes, so the copy in the combat plugin is rewritten once.
+    public const int Revision = 2;
 
     private const string AutoTargetModule = "BossMod.Autorotation.MiscAI.AutoTarget";
     private const string NormalMovementModule = "BossMod.Autorotation.MiscAI.NormalMovement";
+    private const string LeylinesModule = "BossMod.Autorotation.MiscAI.StayWithinLeylines";
     private const string WarriorModule = "BossMod.Autorotation.VeynWAR";
+    private const string ViperModule = "BossMod.Autorotation.xan.VPR";
     private const string RotationModulePrefix = "BossMod.Autorotation.xan.";
 
     private static readonly string[] rotationJobs =
     [
         "AST", "BLM", "BRD", "BST", "DNC", "DRG", "DRK", "GNB", "MCH", "MNK", "NIN",
-        "PCT", "PLD", "RDM", "RPR", "SAM", "SCH", "SGE", "SMN", "VPR", "WHM",
+        "PCT", "PLD", "RDM", "RPR", "SAM", "SCH", "SGE", "SMN", "WHM",
     ];
 
     private static readonly string[] roleModules = ["Caster", "HealerAI", "MeleeAI", "RangedAI", "TankAI"];
@@ -37,7 +42,18 @@ internal static class TreasureCombatPreset
     ];
 
     private static readonly PresetTrack[] movementTracks = [new("Destination", "Pathfind")];
-    private static readonly PresetTrack[] rotationTracks = [new("Targeting", "Manual")];
+    private static readonly PresetTrack[] leylinesTracks = [new("Use Retrace", "Yes"), new("Use Between The Lines", "Yes")];
+    private static readonly PresetTrack[] rotationTracks = [new("Targeting", "Auto")];
+    private static readonly PresetTrack[] viperTracks = [new("Targeting", "Auto"), new("WrithingSnap", "Ranged")];
+
+    // The warrior rotation defaults to single target, so it is told to finish its area combo and spend its gauge.
+    private static readonly PresetTrack[] warriorTracks =
+    [
+        new("AOE", "AutoFinishCombo"),
+        new("Burst", "Spend"),
+        new("Infuriate", "ForceIfNoNC"),
+        new("Tomahawk", "Opener"),
+    ];
 
     private static string? serialized;
 
@@ -53,7 +69,9 @@ internal static class TreasureCombatPreset
             writer.WriteStartObject("Modules");
             WriteModule(writer, AutoTargetModule, autoTargetTracks);
             WriteModule(writer, NormalMovementModule, movementTracks);
-            WriteModule(writer, WarriorModule, []);
+            WriteModule(writer, LeylinesModule, leylinesTracks);
+            WriteModule(writer, WarriorModule, warriorTracks);
+            WriteModule(writer, ViperModule, viperTracks);
             for (var jobIndex = 0; jobIndex < rotationJobs.Length; jobIndex++)
             {
                 WriteModule(writer, RotationModulePrefix + rotationJobs[jobIndex], rotationTracks);
