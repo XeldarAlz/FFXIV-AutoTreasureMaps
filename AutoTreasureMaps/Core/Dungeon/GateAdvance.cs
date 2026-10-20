@@ -53,8 +53,9 @@ internal sealed class GateAdvance : IAdvanceStrategy
         }
 
         var since = TreasureMessageWatcher.Now;
+        var promptBefore = context.PromptOpen();
         var interacted = await context.Interact(() => Svc.Objects.SearchById(gateId), $"gate {gateId:X}", () => Answered(context, since) || context.PromptOpen(), Scope);
-        context.ConfirmPrompt(Scope);
+        context.ConfirmPrompt(Scope, interacted, promptBefore);
         await context.WaitUntil(() => Answered(context, since) || context.Zoning || !context.InDungeon, GateAnswerMs, "gate answer");
         if (context.Cancelled)
         {

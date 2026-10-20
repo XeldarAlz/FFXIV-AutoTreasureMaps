@@ -1,11 +1,13 @@
 using AutoTreasureMaps.Core.Dungeon;
 using AutoTreasureMaps.Core.Game;
 using AutoTreasureMaps.Core.Game.Ops;
+using AutoTreasureMaps.Core.Game.Player;
 using AutoTreasureMaps.Core.Game.Watchers;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Travel;
 using AutoTreasureMaps.Core.Treasure;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using Lumina.Excel.Sheets;
 using System.Threading.Tasks;
@@ -36,23 +38,27 @@ public abstract partial class AutoCommon
     // stop, a pause, or a fault already handed to the session.
     private protected async Task<PortalStep> EnterPortalAndClear(TreasureSession session, TreasureProgress progress)
     {
-        if (!Plugin.Instance.Configuration.DungeonEnterPortal)
+        var lead = session.PendingPortal;
+        session.PendingPortal = null;
+        if (!Plugin.Instance.Configuration.DungeonEnterPortal || lead is not { } portalLead)
         {
             return PortalStep.Skipped;
         }
 
-        if (Svc.Party.Length > 0)
+        if (PartyPresence.InParty())
         {
             Diag("Portal: in a party; the dungeon is left to the party.");
             Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatPortalInParty)}");
             return PortalStep.Skipped;
         }
 
-        if (!await EnterPortal())
+        if (!await EnterPortal(portalLead))
         {
+            DutyWatcher.ReleaseDungeonEntryHold();
             return CancelToken.IsCancellationRequested ? PortalStep.Stop : PortalStep.Skipped;
         }
 
+        session.MarkOwnDungeon();
         return await ClearDungeonHere(session, progress);
     }
 
@@ -66,7 +72,7 @@ public abstract partial class AutoCommon
         {
             Warn($"Portal: territory {Svc.ClientState.TerritoryType} ({TerritoryNames.Of(Svc.ClientState.TerritoryType)}) is no treasure dungeon the run knows.");
             Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatUnknownDungeon)}");
-            return await WaitForPlayerToLeave();
+            return await WaitForPlayerToLeave(session);
         }
 
         progress.SetPhase(TreasurePhase.Fighting);
@@ -82,20 +88,55 @@ public abstract partial class AutoCommon
             return PortalStep.Stop;
         }
 
-        return DutyWatcher.InContent() ? await WaitForPlayerToLeave() : PortalStep.Cleared;
+        if (DutyWatcher.InContent())
+        {
+            return await WaitForPlayerToLeave(session);
+        }
+
+        session.ClearOwnDungeon();
+        return PortalStep.Cleared;
     }
 
-    private async Task<bool> EnterPortal()
+    // Null when the character is not in a treasure dungeon. Inside one the run entered itself, the dungeon is cleared
+    // from where it stands; inside one the player entered, the run waits for them to come out. A dungeon kept for a
+    // resume that the character is no longer in was finished by hand, so it is dropped.
+    private protected async Task<PortalStep?> PickUpDungeon(TreasureSession session, TreasureProgress progress)
+    {
+        if (!DungeonRegistry.IsDungeon(Svc.ClientState.TerritoryType))
+        {
+            if (session.ActiveDungeon is not null)
+            {
+                Diag("Dungeon: the run is outside the dungeon it kept for a resume; it was finished by hand.");
+                session.ClearOwnDungeon();
+                session.ActiveDungeon = null;
+            }
+
+            return null;
+        }
+
+        if (session.InOwnDungeon)
+        {
+            return await ClearDungeonHere(session, progress);
+        }
+
+        Diag("Dungeon: the character is in a treasure dungeon the run did not enter; it is left to the player.");
+        Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatNotOurDungeon)}");
+        return await WaitForPlayerToLeave(session);
+    }
+
+    // Our portal is the one nearest the coffer that was not standing before the dig.
+    private async Task<bool> EnterPortal(PortalLead lead)
     {
         const string scope = "portal";
         var startTerritory = Svc.ClientState.TerritoryType;
         Status = "Entering the portal";
-        await WaitUntilTimed(() => TreasurePortals.FindNear(PlayerPosition(), PortalSearchMeters) is not null, PortalAppearWaitMs, "portal object");
+        IGameObject? Ours() => TreasurePortals.FindNew(lead.Near, PortalSearchMeters, lead.Before);
+        await WaitUntilTimed(() => Ours() is not null, PortalAppearWaitMs, "portal object");
         DutyWatcher.HoldForDungeonEntry();
         for (var attempt = 1; attempt <= PortalEnterAttempts && !CancelToken.IsCancellationRequested; attempt++)
         {
             await FightOffAttackers(scope);
-            var portal = await ApproachObject(() => TreasurePortals.FindNear(PlayerPosition(), PortalSearchMeters), "the portal", scope);
+            var portal = await ApproachObject(Ours, "the portal", scope);
             if (portal is null)
             {
                 Warn($"{scope}: no portal within {PortalSearchMeters:F0}m to enter.");
@@ -143,7 +184,7 @@ public abstract partial class AutoCommon
         return false;
     }
 
-    private async Task<PortalStep> WaitForPlayerToLeave()
+    private protected async Task<PortalStep> WaitForPlayerToLeave(TreasureSession session)
     {
         Status = "The dungeon is up to you; the run waits outside";
         var deadline = Environment.TickCount64 + HandedBackWaitMs;
@@ -163,6 +204,7 @@ public abstract partial class AutoCommon
             return PortalStep.Stop;
         }
 
+        session.ClearOwnDungeon();
         await WaitUntilTimed(() => !Zoning() && NpcInteraction.PlayerReady(), PortalZoneWaitMs, "back outside");
         return PortalStep.Cleared;
     }

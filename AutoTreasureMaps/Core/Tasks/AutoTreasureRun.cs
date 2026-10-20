@@ -69,10 +69,11 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
                 return;
             }
 
-            // A resume after a pause or a fault inside a dungeon picks the dungeon up before anything else.
-            if (DungeonRegistry.IsDungeon(Svc.ClientState.TerritoryType))
+            // A resume after a pause or a fault inside a dungeon the run entered picks that dungeon up before anything else.
+            // A dungeon the player entered by hand is theirs (/atm dungeon clears it), so the run waits for them outside.
+            if (await PickUpDungeon(session, progress) is { } dungeonStep)
             {
-                if (await ClearDungeonHere(session, progress) == PortalStep.Stop)
+                if (dungeonStep == PortalStep.Stop)
                 {
                     return;
                 }

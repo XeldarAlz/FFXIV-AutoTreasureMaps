@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Game.Player;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Treasure;
 using ECommons.DalamudServices;
@@ -46,6 +47,12 @@ public abstract partial class AutoCommon
         {
             Diag("Map: stopped before it finished; the session keeps it for a resume.");
             return result with { Outcome = MapOutcome.Cancelled };
+        }
+
+        // The portal to enter is the one nearest the coffer, or the spot when the dig itself turned it up.
+        if ((result.PortalSeen || result.Refusal == MapRefusal.PortalDug) && session.ActiveMap is { } ended)
+        {
+            session.PendingPortal = new PortalLead(ended.CofferOpened ? ended.CofferPosition : ended.Spot.Position, ended.PortalsBefore);
         }
 
         if (MapOutcomes.Final(result.Outcome))
@@ -215,8 +222,10 @@ public abstract partial class AutoCommon
             return;
         }
 
+        // Only this coffer's word, or a portal that was not standing before the dig, is ours; another player's portal nearby
+        // is not.
         var announced = Messages.ArrivedSince(TreasureLogMessages.PortalAppeared, map.CofferOpenedAtMs);
-        var portal = TreasurePortals.FindNear(map.CofferPosition, PortalSearchMeters);
+        var portal = TreasurePortals.FindNew(map.CofferPosition, PortalSearchMeters, map.PortalsBefore);
         if (!announced && portal is null)
         {
             return;
@@ -224,7 +233,7 @@ public abstract partial class AutoCommon
 
         map.PortalSeen = true;
         var found = portal is null ? "no portal object nearby" : $"portal object {portal.BaseId} at {FormatPosition(portal.Position)}";
-        var entering = Plugin.Instance.Configuration.DungeonEnterPortal && Svc.Party.Length == 0;
+        var entering = Plugin.Instance.Configuration.DungeonEnterPortal && !PartyPresence.InParty();
         Diag($"Map: a portal appeared (message {(announced ? "seen" : "not seen")}, {found}); {(entering ? "it is entered once the coffer is looted" : "it is left alone")}.");
         if (!entering)
         {
