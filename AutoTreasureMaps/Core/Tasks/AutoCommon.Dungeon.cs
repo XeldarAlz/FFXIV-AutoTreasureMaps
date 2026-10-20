@@ -539,7 +539,7 @@ public abstract partial class AutoCommon
         EnterStep(TreasurePhase.Opening);
         Status = "Opening the coffer";
         var cofferId = coffer.GameObjectId;
-        // The dungeon's own coffers ask their own question (要打开宝箱吗？ rather than the dug-up coffer's), which no
+        // The dungeon's own coffers ask their own question ("Open the coffer?" rather than the dug-up coffer's), which no
         // sheet row gives; a question that opens right after asking one of them is that coffer's.
         var listedCoffer = coffer.ObjectKind == ObjectKind.EventObj && context.Profile.IsCoffer(coffer.BaseId);
         Diag($"{scope}: {coffer.ObjectKind} base {coffer.BaseId} '{coffer.Name}' ({cofferId:X}), interaction {context.Dungeon.CofferInteractions(cofferId)}.");
@@ -947,15 +947,15 @@ public abstract partial class AutoCommon
         }
 
         // Walks into reach of the object find returns and interacts with it. True once doneWhen holds.
-        public async Task<bool> Interact(Func<IGameObject?> find, string name, Func<bool> doneWhen, string scope)
+        public async Task<bool> Interact(Func<IGameObject?> find, string name, Func<bool> doneWhen, string scope, bool raised = false)
         {
-            var target = await owner.ApproachObject(find, name, scope);
+            var target = await owner.ApproachObject(find, name, scope, raised);
             if (target is null || !await owner.ReadyToInteract(scope))
             {
                 return false;
             }
 
-            return await owner.InteractWithObject(target, doneWhen, scope);
+            return await owner.InteractWithObject(target, doneWhen, scope, raised);
         }
 
         // A walk inside the dungeon, as its own cancellable operation. True once the character is within reach of the

@@ -376,7 +376,7 @@
   "safety.repair.npcSetChat": "カスタム修理NPCを設定しました: {0}（{1}）。",
   "safety.consumables.group": "消耗品",
   "safety.consumables.autoConsume": "食事と薬を自動使用",
-  "safety.consumables.autoConsumeHelp": "地図の合間に食事と薬を使って効果を維持します。食事効果だけで経験値+3%です。アイテムは非戦闘時のみ使用し、効果が切れる前に更新します。",
+  "safety.consumables.autoConsumeHelp": "地図の合間、各地図の開始時、宝物庫のラウンドの合間に食事と薬を使って効果を維持します。食事効果だけで経験値+3%です。アイテムは非戦闘時のみ使用し、効果が切れる前に更新します。",
   "safety.consumables.autoConsumeOff": "自動使用はオフです。アイテムを選ぶにはオンにしてください。",
   "safety.consumables.refreshUnder": "残り時間がこれ未満で更新",
   "safety.consumables.refreshUnderHelp": "効果の残りがこの分数未満になったら再使用します。0にすると完全に切れてから使います。食事の効果は30分持続します。",

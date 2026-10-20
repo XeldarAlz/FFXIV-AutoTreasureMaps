@@ -59,7 +59,7 @@ internal sealed class GateAdvance : IAdvanceStrategy
         var since = TreasureMessageWatcher.Now;
         var promptBefore = context.PromptOpen();
         bool Taken() => Answered(context, since) || context.PromptOpen() || Svc.Condition[ConditionFlag.Casting] || context.MessageSince(DungeonLogMessages.GateHandPlaced, since);
-        var interacted = await context.Interact(() => Svc.Objects.SearchById(gateId), $"gate {gateId:X}", Taken, Scope);
+        var interacted = await context.Interact(() => Svc.Objects.SearchById(gateId), $"gate {gateId:X}", Taken, Scope, raised: true);
         if (!interacted && !Taken())
         {
             context.Warn($"{Scope}: could not use gate {gateBaseId}.");
