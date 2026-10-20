@@ -18,9 +18,17 @@ internal sealed class DungeonInProgress(DungeonProfile profile)
 
     public Dictionary<uint, int>? BagsBefore { get; set; }
 
+    // Set when the run was paused inside: what the player did meanwhile would read as loot, so the cleanup leaves this
+    // dungeon's loot alone.
+    public bool CleanupBlocked { get; set; }
+
     // A gate dungeon counts chambers from 1, read from the game's own gate message; a slot dungeon counts the draws
     // made so far, from 0.
     public int Round { get; private set; } = profile.Kind == DungeonKind.Gate ? 1 : 0;
+
+    // The last round the run had something to do in: a fight, a coffer, the loot, a bonus round or a lure. A draw that
+    // only showed the way out moved Round on but reached nothing, so the record goes by this instead.
+    public int RoundReached { get; private set; }
 
     // When the current chamber or draw began, for the messages that belong to it.
     public long RoundStartedAtMs { get; private set; } = Environment.TickCount64;
@@ -56,6 +64,8 @@ internal sealed class DungeonInProgress(DungeonProfile profile)
         cofferInteractions[cofferId] = CofferInteractions(cofferId) + 1;
         CofferInteractionsThisRound++;
     }
+
+    public void NoteRoundReached() => RoundReached = Math.Max(RoundReached, Round);
 
     // The machine drew its final notion, so no draw is left whatever the count says.
     public void MarkFinalRound() => Round = Math.Max(Round, Profile.Rounds);

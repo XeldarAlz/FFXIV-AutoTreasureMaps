@@ -180,8 +180,19 @@ internal static partial class L
         public static readonly LocString HoursAgo = new("history.time.hoursAgo", "{0}h ago");
         public static readonly LocString DaysAgo = new("history.time.daysAgo", "{0}d ago");
         public static readonly LocString ClearHistory = new("history.clear", "Clear history");
-        public static readonly LocString ClearQuestion = new("history.clearQuestion", "Delete all recorded runs?");
+        public static readonly LocString ClearQuestion = new("history.clearQuestion", "Delete all recorded runs and the map log?");
         public static readonly LocString ClearYes = new("history.clearYes", "Yes, clear");
+        public static readonly LocString MapLogTab = new("history.mapLogTab", "Map log");
+        public static readonly LocString NoMapLog = new("history.noMapLog", "No maps logged yet. Every map a run finishes is added here.");
+        public static readonly LocString LogNumber = new("history.log.number", "No.");
+        public static readonly LocString LogMap = new("history.log.map", "Map");
+        public static readonly LocString LogPortal = new("history.log.portal", "Portal");
+        public static readonly LocString LogFloor = new("history.log.floor", "Floor");
+        public static readonly LocString LogDeaths = new("history.log.deaths", "Deaths");
+        public static readonly LocString LogLoot = new("history.log.loot", "High-value loot");
+        public static readonly LocString LogYes = new("history.log.yes", "Yes");
+        public static readonly LocString LogLootItem = new("history.log.lootItem", "{0}×{1}");
+        public static readonly LocString LogLootSeparator = new("history.log.lootSeparator", ", ");
     }
 
     internal static class Plugins
@@ -362,6 +373,8 @@ internal static partial class L
         public static readonly LocString GeneralBehavior = new("settings.general.behavior", "Behavior");
         public static readonly LocString AutoPause = new("settings.general.autoPause", "Auto-pause in content");
         public static readonly LocString AutoPauseHelp = new("settings.general.autoPauseHelp", "Pause the run while you are inside a duty, trial, raid, or any other instanced content, then resume it once you are back outside. Your run and session stats are kept.");
+        public static readonly LocString LootPrices = new("settings.general.lootPrices", "Estimate loot prices");
+        public static readonly LocString LootPricesHelp = new("settings.general.lootPricesHelp", "Price the rare loot on the stat cards and in the tooltips from Universalis. While a run is going or the stats are on screen, the plugin sends Universalis your home data centre's name and the rare loot's item ids, at most every half hour. Off by default.");
         public static readonly LocString Tankbuster = new("settings.general.tankbuster", "Mitigate tankbusters");
         public static readonly LocString TankbusterHelp = new("settings.general.tankbusterHelp", "While a run is on and you play a tank, an enemy cast of 1.5 s or more aimed at you gets your job's short mitigation (Bloodwhetting, Holy Sheltron, The Blackest Night or Heart of Corundum) in the last 6 seconds of the cast, unless one of your mitigations is already up. A boss's tankbuster (a cast of 4 s or more) gets a bigger cooldown such as Rampart when the short one is down; shorter casts never use one. Off by default.");
     }

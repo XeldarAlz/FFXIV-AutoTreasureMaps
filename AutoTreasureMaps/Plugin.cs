@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core;
+using AutoTreasureMaps.Core.Cleanup;
 using AutoTreasureMaps.Core.Debug;
 using AutoTreasureMaps.Core.Dungeon;
 using AutoTreasureMaps.Core.Gather;
@@ -47,6 +48,8 @@ public sealed class Plugin : IDalamudPlugin
     internal Configuration Configuration { get; }
     internal WindowSystem WindowSystem { get; } = new("AutoTreasureMaps");
     internal RunHistory History { get; }
+
+    internal MapLog MapLog { get; }
     internal TreasureController Controller { get; }
     internal TreasureCatalog Catalog { get; }
     internal TreasureMessageWatcher Messages { get; }
@@ -55,6 +58,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly GmAlertWatcher gmAlertWatcher;
     private readonly PartyInviteWatcher partyInviteWatcher;
     private readonly TankbusterWatcher tankbusterWatcher;
+    private readonly CleanupContextMenu cleanupContextMenu;
     private readonly AppWindow appWindow;
     private readonly CommandInfo primaryCommand;
     private readonly CommandInfo aliasCommand;
@@ -74,6 +78,7 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         History = new RunHistory();
+        MapLog = new MapLog();
         Catalog = TreasureCatalog.Build();
         Messages = new TreasureMessageWatcher(Catalog);
         Controller = new TreasureController();
@@ -81,6 +86,7 @@ public sealed class Plugin : IDalamudPlugin
         gmAlertWatcher = new GmAlertWatcher();
         partyInviteWatcher = new PartyInviteWatcher();
         tankbusterWatcher = new TankbusterWatcher();
+        cleanupContextMenu = new CleanupContextMenu();
 
         InitializeLocalization();
         Fonts.Initialize(PluginInterface.UiBuilder, PluginDirectory);
@@ -98,6 +104,7 @@ public sealed class Plugin : IDalamudPlugin
 
         Svc.Framework.Update += OnFrameworkUpdate;
         Svc.ClientState.Login += OnLogin;
+        Svc.ClientState.Logout += OnLogout;
         if (Svc.ClientState.IsLoggedIn)
         {
             OnLogin();
@@ -118,6 +125,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
         Svc.Framework.Update -= OnFrameworkUpdate;
         Svc.ClientState.Login -= OnLogin;
+        Svc.ClientState.Logout -= OnLogout;
         Configuration.SaveIfPending();
 
         WindowSystem.RemoveAllWindows();
@@ -132,6 +140,7 @@ public sealed class Plugin : IDalamudPlugin
         gmAlertWatcher.Dispose();
         partyInviteWatcher.Dispose();
         tankbusterWatcher.Dispose();
+        cleanupContextMenu.Dispose();
         Messages.Dispose();
 
         CLibMain.Dispose();
@@ -266,6 +275,8 @@ public sealed class Plugin : IDalamudPlugin
         Controller.Tick();
         MapAllowance.Tick(Configuration);
         GatherGearsetReturn.Tick();
+        LootPrices.Tick();
+        LootCleanup.Tick();
     }
 
     private static string CommandHelp() => string.Join(" ", Loc.T(L.Plugin.CommandHelp), Loc.T(L.Gather.CommandHelp), Loc.T(L.Dungeon.CommandHelp));
@@ -333,6 +344,9 @@ public sealed class Plugin : IDalamudPlugin
         var osLanguage = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName;
         return Languages.IsKnown(osLanguage) ? Languages.Resolve(osLanguage).Code : Languages.English.Code;
     }
+
+    // The noted loot belongs to the character that looted it, so it never carries over to the next login.
+    private static void OnLogout(int type, int code) => LootCleanup.Clear();
 
     private void OnLogin()
     {

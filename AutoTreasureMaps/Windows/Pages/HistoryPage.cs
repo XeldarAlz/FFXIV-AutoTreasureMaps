@@ -1,8 +1,10 @@
 using AutoTreasureMaps.Core.Localization;
+using AutoTreasureMaps.Core.Market;
 using AutoTreasureMaps.Core.Stats;
 using AutoTreasureMaps.Core.Tasks;
 using AutoTreasureMaps.Core.Treasure;
 using AutoTreasureMaps.Windows.Components;
+using AutoTreasureMaps.Windows.Sections;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
@@ -21,6 +23,16 @@ internal sealed class HistoryPage
     private const string NoValue = "-";
     private const float BadgeGap = 6f;
 
+    // Indexes the list switch's segments.
+    private enum ListView
+    {
+        Runs,
+        MapLog,
+    }
+
+    private readonly MapTallyCards tallyCards = new();
+    private readonly MapLogTable mapLogTable = new();
+    private ListView listView;
     private bool confirmClear;
     private CachedText mapsText;
     private CachedText gilText;
@@ -37,29 +49,61 @@ internal sealed class HistoryPage
             : Loc.Plural(L.History.Summary, history.Records.Count, Formatting.Elapsed(totals.Duration), totals.MapsPerHour.ToString("F1", Loc.Culture));
         PageHeader.Draw(Loc.T(L.History.Title), subtitle);
 
-        DrawLifetime(totals, history.Revision);
+        DrawLifetime(totals, LootPrices.ValueOf(history.LifetimeTallies), history.Revision);
         Styling.VSpace(14f);
 
-        if (history.Records.Count == 0)
+        var mapLog = plugin.MapLog;
+        if (history.Records.Count == 0 && mapLog.Entries.Count == 0)
         {
             DrawEmptyState();
             return;
         }
 
-        Label(Loc.T(L.History.MapsPerRun));
-        DrawChart(history);
-        Styling.VSpace(12f);
-
-        Label(Loc.T(L.History.RecentRuns));
-        var records = history.Records;
-        for (var index = 0; index < records.Count; index++)
+        if (history.LifetimeTallies.Count > 0)
         {
-            DrawRow(records[index], index);
-            Styling.VSpace(2f);
+            tallyCards.Draw(history.LifetimeTallies, history.Revision);
+            Styling.VSpace(14f);
+        }
+
+        if (history.Records.Count > 0)
+        {
+            Label(Loc.T(L.History.MapsPerRun));
+            DrawChart(history);
+            Styling.VSpace(12f);
+        }
+
+        DrawListSwitch();
+        Styling.VSpace(10f);
+        if (listView == ListView.MapLog)
+        {
+            mapLogTable.Draw(mapLog);
+        }
+        else
+        {
+            var records = history.Records;
+            for (var index = 0; index < records.Count; index++)
+            {
+                DrawRow(records[index], index);
+                Styling.VSpace(2f);
+            }
         }
 
         Styling.VSpace(8f);
-        DrawClearControl(history);
+        DrawClearControl(history, mapLog);
+    }
+
+    private void DrawListSwitch()
+    {
+        ReadOnlySpan<Segmented.Item> items =
+        [
+            new(FontAwesomeIcon.History, Loc.T(L.History.RecentRuns)),
+            new(FontAwesomeIcon.Map, Loc.T(L.History.MapLogTab)),
+        ];
+        var selected = (int)listView;
+        if (Segmented.Draw("##atm_hist_list", items, ref selected, height: Layout.ActionPillHeight + 4f, width: Segmented.PreferredWidth(items)))
+        {
+            listView = (ListView)selected;
+        }
     }
 
     private static void Label(string text)
@@ -71,23 +115,30 @@ internal sealed class HistoryPage
         ImGui.Dummy(new Vector2(ImGui.GetContentRegionAvail().X, size.Y + 8f * scale));
     }
 
-    // The captions are rebuilt only when the history changes; the revision is their cache key.
-    private void DrawLifetime(RunHistory.LifetimeTotals totals, int revision)
+    // The captions are rebuilt only when what they show changes: the history's revision, or the gil they total. The
+    // high-value loot counts at today's market price, on top of the gil looted less the gil spent on maps.
+    private void DrawLifetime(RunHistory.LifetimeTotals totals, long lootValue, int revision)
     {
         var scale = ImGuiHelpers.GlobalScale;
         var gap = 8f * scale;
         var tileWidth = (ImGui.GetContentRegionAvail().X - gap * (TileCount - 1)) / TileCount;
+        var totalGil = totals.Gil;
         var runs = totals.Runs > 0 ? runsText.Get(revision, static _ => Loc.Plural(L.History.TileRunsCount, Plugin.Instance.History.Lifetime.Runs)) : null;
         var perMap = totals.MapsRun > 0
-            ? perMapText.Get(revision, static _ => Loc.T(L.History.TilePerMap, Plugin.Instance.History.Lifetime.GilPerMap.ToString("N0", Loc.Culture)))
+            ? perMapText.Get(totalGil / totals.MapsRun, static key => Loc.T(L.History.TilePerMap, key.ToString("N0", Loc.Culture)))
             : null;
         var maps = mapsText.Get(totals.Maps, static key => key.ToString("N0", Loc.Culture));
-        var gil = gilText.Get(totals.Gil, static key => key.ToString("N0", Loc.Culture));
+        var gil = gilText.Get(totalGil, static key => key.ToString("N0", Loc.Culture));
         var portals = portalsText.Get(totals.Portals, static key => key.ToString("N0", Loc.Culture));
 
         StatTile.Draw(Loc.T(L.History.TileMaps), maps, runs, Styling.AccentBlue, tileWidth);
         ImGui.SameLine(0, gap);
         StatTile.Draw(Loc.T(L.History.TileGil), gil, perMap, Styling.AccentAmber, tileWidth);
+        if (lootValue > 0 && ImGui.IsItemHovered())
+        {
+            Tooltip.Show(Loc.T(L.Run.TooltipCount, Loc.T(L.Stats.LootValue), lootValue.ToString("N0", Loc.Culture)));
+        }
+
         ImGui.SameLine(0, gap);
         StatTile.Draw(Loc.T(L.History.TilePortals), portals, null, Styling.AccentNebula, tileWidth);
     }
@@ -234,7 +285,7 @@ internal sealed class HistoryPage
         }
     }
 
-    private static Vector4 GilColor(int netGil) => netGil switch
+    private static Vector4 GilColor(long netGil) => netGil switch
     {
         > 0 => Styling.AccentAmber,
         < 0 => Styling.AccentRose,
@@ -289,9 +340,19 @@ internal sealed class HistoryPage
         CountLine(Loc.T(L.Gather.MapsGathered), record.MapsGathered);
         CountLine(Loc.T(L.History.TilePortals), record.PortalsSeen);
         CountLine(Loc.T(L.History.Items), record.ItemsGained);
-        if (record.MapsBought > 0)
+        var lootValue = LootPrices.ValueOf(record.Tallies);
+        if (record.MapsBought > 0 || lootValue > 0)
         {
             Tooltip.Text(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipLooted), record.Gil.ToString("N0", Loc.Culture)));
+        }
+
+        if (lootValue > 0)
+        {
+            Tooltip.Text(Loc.T(L.Run.TooltipCount, Loc.T(L.Stats.LootValue), lootValue.ToString("N0", Loc.Culture)));
+        }
+
+        if (record.MapsBought > 0)
+        {
             Tooltip.Text(Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipSpent), record.GilSpentOnMaps.ToString("N0", Loc.Culture)));
             CountLine(Loc.T(L.Market.TooltipBought), record.MapsBought);
         }
@@ -345,7 +406,7 @@ internal sealed class HistoryPage
         return span.TotalDays < 7 ? Loc.T(L.History.DaysAgo, (int)span.TotalDays) : utc.ToLocalTime().ToString("M", Loc.Culture);
     }
 
-    private void DrawClearControl(RunHistory history)
+    private void DrawClearControl(RunHistory history, MapLog mapLog)
     {
         var scale = ImGuiHelpers.GlobalScale;
         var available = ImGui.GetContentRegionAvail().X;
@@ -387,6 +448,7 @@ internal sealed class HistoryPage
         if (PillButton.Draw("##atm_hist_clear_yes", yes, Styling.AccentRose, PillButton.Emphasis.Filled))
         {
             history.Clear();
+            mapLog.Clear();
             confirmClear = false;
         }
 

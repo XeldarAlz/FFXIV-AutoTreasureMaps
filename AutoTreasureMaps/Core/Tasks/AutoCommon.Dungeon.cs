@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Cleanup;
 using AutoTreasureMaps.Core.Dungeon;
 using AutoTreasureMaps.Core.Game;
 using AutoTreasureMaps.Core.Game.Ops;
@@ -86,7 +87,7 @@ public abstract partial class AutoCommon
         }
 
         var (gil, items) = BagSnapshot.Gains(dungeon.BagsBefore, BagSnapshot.Capture());
-        var result = new DungeonResult(dungeon.Profile, outcome, dungeon.Round, gil, items, TimeSpan.FromMilliseconds(Environment.TickCount64 - dungeon.StartedAtMs));
+        var result = new DungeonResult(dungeon.Profile, outcome, dungeon.RoundReached, gil, items, TimeSpan.FromMilliseconds(Environment.TickCount64 - dungeon.StartedAtMs));
         if (!DungeonOutcomes.Final(outcome))
         {
             Diag($"Dungeon: {dungeon.Profile.Key} {outcome} in round {dungeon.Round}; the session keeps it for a resume.");
@@ -95,7 +96,8 @@ public abstract partial class AutoCommon
 
         session.ActiveDungeon = null;
         session.RecordDungeon(result);
-        Diag($"Dungeon: {dungeon.Profile.Key} ended {outcome} in round {dungeon.Round} of {dungeon.Profile.Rounds}, {gil} gil, {result.ItemCount} items in {items.Length} stacks, {result.Duration.TotalSeconds:F0}s.");
+        LootCleanup.Note(result.Items, dungeon.CleanupBlocked ? null : dungeon.BagsBefore);
+        Diag($"Dungeon: {dungeon.Profile.Key} ended {outcome} in round {dungeon.Round} of {dungeon.Profile.Rounds} (reached {dungeon.RoundReached}), {gil} gil, {result.ItemCount} items in {items.Length} stacks, {result.Duration.TotalSeconds:F0}s.");
         AnnounceDungeon(result);
         return result;
     }
@@ -117,6 +119,7 @@ public abstract partial class AutoCommon
         var advanceFailures = 0;
         var notReadyAdvances = 0;
         var lastStep = DungeonStep.Idle;
+        var lootFingerprint = 0L;
         while (true)
         {
             if (CancelToken.IsCancellationRequested)
@@ -134,6 +137,8 @@ public abstract partial class AutoCommon
             {
                 return HowItEnded(dungeon);
             }
+
+            lootFingerprint = PreviewDungeonLoot(dungeon, lootFingerprint);
 
             if (PartyPresence.InParty())
             {
@@ -160,6 +165,11 @@ public abstract partial class AutoCommon
             {
                 idleSince = 0;
                 dungeon.LastBusyAtMs = Environment.TickCount64;
+            }
+
+            if (step is DungeonStep.Lure or DungeonStep.Bonus or DungeonStep.Fight or DungeonStep.Loot or DungeonStep.Coffer)
+            {
+                dungeon.NoteRoundReached();
             }
 
             switch (step)
@@ -235,6 +245,25 @@ public abstract partial class AutoCommon
                     break;
             }
         }
+    }
+
+    // The loot so far shows in the cleanup list while the dungeon goes on; the bags are compared only when they changed.
+    private static long PreviewDungeonLoot(DungeonInProgress dungeon, long seen)
+    {
+        if (dungeon.BagsBefore is not { } before || dungeon.CleanupBlocked || !Plugin.Instance.Configuration.AutoDiscard)
+        {
+            return seen;
+        }
+
+        var fingerprint = BagSnapshot.Fingerprint();
+        if (fingerprint == seen)
+        {
+            return seen;
+        }
+
+        var (_, items) = BagSnapshot.Gains(before, BagSnapshot.Capture());
+        LootCleanup.ShowPreview(items, before);
+        return fingerprint;
     }
 
     // In order of what must come first: a dialog that waits on an answer, then anything that attacks, then the loot,

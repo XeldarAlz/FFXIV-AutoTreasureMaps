@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Cleanup;
 using AutoTreasureMaps.Core.Game.Player;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Treasure;
@@ -55,12 +56,20 @@ public abstract partial class AutoCommon
             session.PendingPortal = new PortalLead(ended.CofferOpened ? ended.CofferPosition : ended.Spot.Position, ended.PortalsBefore);
         }
 
-        if (MapOutcomes.Final(result.Outcome))
+        // A faulted map is noted once it ends after the restart, and a map paused after its coffer opened not at all.
+        var bagsBefore = session.ActiveMap is { CleanupBlocked: false } noted ? noted.BagsBefore : null;
+        var final = MapOutcomes.Final(result.Outcome);
+        if (final)
         {
             session.ActiveMap = null;
         }
 
         session.RecordMap(result);
+        if (final)
+        {
+            LootCleanup.Note(result.Items, bagsBefore);
+        }
+
         progress.FinishMap(result);
         Diag($"Map: {(result.HasTier ? result.Tier.Name : "no map")} ended {result.Outcome}{(result.Refusal == MapRefusal.None ? string.Empty : $" ({result.Refusal})")}, {result.Gil} gil, {result.ItemCount} items in {result.Items.Length} stacks, portal {(result.PortalSeen ? "seen" : "not seen")}, {result.Duration.TotalSeconds:F0}s.");
         Announce(result);
