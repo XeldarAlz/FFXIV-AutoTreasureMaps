@@ -271,7 +271,7 @@ internal static class RunningPanel
         }
 
         var tomestoneText = Loc.Plural(L.MapRun.Tomestones, tomestones);
-        return items == 0 ? tomestoneText : $"{Loc.Plural(L.MapRun.Items, items)} · {tomestoneText}";
+        return items == 0 ? tomestoneText : string.Concat(Loc.Plural(L.MapRun.Items, items), TextDraw.Separator, tomestoneText);
     }
 
     private static string? TimeLeft(TimeSpan elapsed)

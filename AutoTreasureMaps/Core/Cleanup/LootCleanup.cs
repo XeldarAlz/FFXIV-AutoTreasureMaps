@@ -36,6 +36,13 @@ internal static unsafe class LootCleanup
     private const byte NotableRarity = 1;
     private const uint MedicineCategory = 44;
     private const uint MealCategory = 46;
+    private const uint FurnishingCategory = 57;
+    private const uint FirstHousingCategory = 65;
+    private const uint LastHousingCategory = 80;
+    private const uint MinionCategory = 81;
+    private const uint CardCategory = 86;
+    private const uint OrchestrionCategory = 94;
+    private const uint PaintingCategory = 95;
 
     private static readonly InventoryType[] Bags = [InventoryType.Inventory1, InventoryType.Inventory2, InventoryType.Inventory3, InventoryType.Inventory4];
     private static readonly List<PendingLoot> pending = [];
@@ -209,13 +216,21 @@ internal static unsafe class LootCleanup
         && Svc.Data.GetExcelSheet<Item>().GetRowOrDefault(itemId) is { } item
         && KeptByKind(item);
 
-    // Notable rarity, unique, equipment, or an item with a use other than a meal or a medicine (a minion, a mount, an
-    // orchestrion roll, a card, a hairstyle and the like unlock something).
+    // Notable rarity, unique, equipment, a furnishing, a minion, an orchestrion roll or a card, or an item with a use other
+    // than a meal or a medicine (a mount, a hairstyle, facewear and the like unlock something). This covers the rare loot
+    // of every map the plugin has no list for.
     private static bool KeptByKind(in Item item)
         => item.Rarity > NotableRarity
         || item.IsUnique
         || item.EquipSlotCategory.RowId != 0
+        || KeptCategory(item.ItemUICategory.RowId)
         || (item.ItemAction.RowId != 0 && item.ItemUICategory.RowId is not (MealCategory or MedicineCategory));
+
+    // ItemUICategory rows: Furnishing 57, the housing exterior and interior parts 65 to 80, Minion 81, Triple Triad Card
+    // 86, Orchestrion Roll 94 and Painting 95.
+    private static bool KeptCategory(uint category)
+        => category is FurnishingCategory or (>= FirstHousingCategory and <= LastHousingCategory) or MinionCategory
+            or CardCategory or OrchestrionCategory or PaintingCategory;
 
     public static bool OnWhitelist(uint itemId) => Plugin.Instance.Configuration.AutoDiscardKeep.Contains(itemId);
 
