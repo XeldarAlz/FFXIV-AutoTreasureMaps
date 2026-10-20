@@ -13,7 +13,7 @@ internal static class ItemIcon
     public static uint IdOf(uint itemId)
         => Svc.Data.GetExcelSheet<Item>().GetRowOrDefault(itemId) is { } row ? row.Icon : 0u;
 
-    public static void Draw(ImDrawListPtr dl, uint iconId, Vector2 min, Vector2 max, float rounding)
+    public static void Draw(ImDrawListPtr drawList, uint iconId, Vector2 min, Vector2 max, float rounding)
     {
         if (iconId == 0)
         {
@@ -21,6 +21,6 @@ internal static class ItemIcon
         }
 
         var texture = Svc.Texture.GetFromGameIcon(new GameIconLookup(iconId)).GetWrapOrEmpty();
-        dl.AddImageRounded(texture.Handle, min, max, Vector2.Zero, Vector2.One, Paint.Col(Vector4.One), rounding, ImDrawFlags.RoundCornersAll);
+        drawList.AddImageRounded(texture.Handle, min, max, Vector2.Zero, Vector2.One, Paint.Col(Vector4.One), rounding, ImDrawFlags.RoundCornersAll);
     }
 }

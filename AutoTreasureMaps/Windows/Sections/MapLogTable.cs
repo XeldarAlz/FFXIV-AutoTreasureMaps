@@ -25,7 +25,9 @@ internal sealed class MapLogTable
     private int builtRevision = -1;
     private LanguageInfo? builtLanguage;
 
-    private readonly record struct Row(string Number, string Map, bool Portal, string Floor, bool Bottom, int Deaths, string Loot, DateTime AtUtc);
+    private readonly float[] columnEdges = new float[7];
+
+    private readonly record struct Row(string Number, string Map, bool Portal, string Floor, bool Bottom, int Deaths, string DeathsText, string Loot, DateTime AtUtc);
 
     public void Draw(MapLog log)
     {
@@ -46,7 +48,7 @@ internal sealed class MapLogTable
         var scale = ImGuiHelpers.GlobalScale;
         var width = ImGui.GetContentRegionAvail().X;
         var rowHeight = ImGui.GetTextLineHeight() + RowPad * scale;
-        var columns = Columns(ImGui.GetCursorScreenPos().X, width);
+        var columns = Columns(columnEdges, ImGui.GetCursorScreenPos().X, width);
         DrawHeader(columns, width, rowHeight);
         var yes = Loc.T(L.History.LogYes);
         for (var index = 0; index < rows.Count; index++)
@@ -55,8 +57,9 @@ internal sealed class MapLogTable
         }
     }
 
-    // The left edge of each column: number, map, portal, floor, knockouts, loot; the last value is the right edge.
-    private static float[] Columns(float left, float width)
+    // The left edge of each column: number, map, portal, floor, knockouts, loot; the last value is the right edge. Written
+    // into the one array the table keeps, so nothing is allocated per frame.
+    private static float[] Columns(float[] edges, float left, float width)
     {
         var scale = ImGuiHelpers.GlobalScale;
         var gap = CellGap * scale;
@@ -68,7 +71,14 @@ internal sealed class MapLogTable
         var floor = portal + FlagWidth * scale + gap;
         var deaths = floor + FlagWidth * scale + gap;
         var loot = deaths + FlagWidth * scale + gap;
-        return [number, map, portal, floor, deaths, loot, right];
+        edges[0] = number;
+        edges[1] = map;
+        edges[2] = portal;
+        edges[3] = floor;
+        edges[4] = deaths;
+        edges[5] = loot;
+        edges[6] = right;
+        return edges;
     }
 
     private static void DrawHeader(float[] columns, float width, float rowHeight)
@@ -109,7 +119,7 @@ internal sealed class MapLogTable
         TextDraw.At(TextDraw.Truncate(row.Map, columns[2] - columns[1] - gap), new Vector2(columns[1], y), Styling.TextStrong);
         TextDraw.At(row.Portal ? yes : NoValue, new Vector2(columns[2], y), row.Portal ? Styling.AccentMint : Styling.TextMuted);
         TextDraw.At(row.Floor, new Vector2(columns[3], y), row.Floor == NoValue ? Styling.TextMuted : row.Bottom ? Styling.AccentMint : Styling.TextStrong);
-        TextDraw.At(row.Deaths.ToString(Loc.Culture), new Vector2(columns[4], y), row.Deaths > 0 ? Styling.AccentRose : Styling.TextMuted);
+        TextDraw.At(row.DeathsText, new Vector2(columns[4], y), row.Deaths > 0 ? Styling.AccentRose : Styling.TextMuted);
         var loot = TextDraw.Truncate(row.Loot, columns[6] - columns[5]);
         TextDraw.At(loot, new Vector2(columns[5], y), row.Loot == NoValue ? Styling.TextMuted : Styling.AccentAmberSoft);
         ImGui.Dummy(size);
@@ -134,7 +144,7 @@ internal sealed class MapLogTable
         for (var index = entries.Count - 1; index >= 0; index--)
         {
             var entry = entries[index];
-            rows.Add(new Row(entry.Number.ToString(CultureInfo.InvariantCulture), NotableLoot.Name(entry.MapItemId), entry.Portal, FloorText(entry), entry.Rounds > 0 && entry.Floor >= entry.Rounds, entry.Deaths, LootText(entry), entry.AtUtc));
+            rows.Add(new Row(entry.Number.ToString(CultureInfo.InvariantCulture), NotableLoot.Name(entry.MapItemId), entry.Portal, FloorText(entry), entry.Rounds > 0 && entry.Floor >= entry.Rounds, entry.Deaths, entry.Deaths.ToString(Loc.Culture), LootText(entry), entry.AtUtc));
         }
     }
 
