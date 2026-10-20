@@ -26,6 +26,10 @@ internal sealed class MapInProgress(TreasureTier tier, DigSpot spot)
 
     public bool PortalSeen { get; set; }
 
+    // Set when the run was paused after the coffer opened: what the player did meanwhile would read as loot, so the
+    // cleanup leaves this map's loot alone.
+    public bool CleanupBlocked { get; set; }
+
     // The portals that stood near the spot before the dig, which belong to someone else.
     public ulong[] PortalsBefore { get; set; } = [];
 

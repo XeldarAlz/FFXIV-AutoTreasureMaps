@@ -96,7 +96,7 @@ public abstract partial class AutoCommon
 
         session.ActiveDungeon = null;
         session.RecordDungeon(result);
-        LootCleanup.Note(result.Items, dungeon.BagsBefore);
+        LootCleanup.Note(result.Items, dungeon.CleanupBlocked ? null : dungeon.BagsBefore);
         Diag($"Dungeon: {dungeon.Profile.Key} ended {outcome} in round {dungeon.Round} of {dungeon.Profile.Rounds} (reached {dungeon.RoundReached}), {gil} gil, {result.ItemCount} items in {items.Length} stacks, {result.Duration.TotalSeconds:F0}s.");
         AnnounceDungeon(result);
         return result;
@@ -250,7 +250,7 @@ public abstract partial class AutoCommon
     // The loot so far shows in the cleanup list while the dungeon goes on; the bags are compared only when they changed.
     private static long PreviewDungeonLoot(DungeonInProgress dungeon, long seen)
     {
-        if (dungeon.BagsBefore is not { } before || !Plugin.Instance.Configuration.AutoDiscard)
+        if (dungeon.BagsBefore is not { } before || dungeon.CleanupBlocked || !Plugin.Instance.Configuration.AutoDiscard)
         {
             return seen;
         }

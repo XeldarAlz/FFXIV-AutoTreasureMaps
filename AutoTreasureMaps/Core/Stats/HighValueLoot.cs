@@ -4,17 +4,17 @@ namespace AutoTreasureMaps.Core.Stats;
 // per map and priced into the gil a run made; everything else stays in the plain item count.
 internal static class HighValueLoot
 {
-    // G17 陈旧的狞豹革地图 and G18 陈旧的卡冈图亚革地图.
+    // G17 Timeworn Br'aaxskin Map and G18 Timeworn Gargantuaskin Map.
     public const uint BraaxskinMap = 43557;
     public const uint GargantuaskinMap = 46185;
 
-    private const uint DreamscapeWeaponCoffer = 45070; // 幻梦武器箱
-    private const uint LambHorn = 46829;               // 羊角笛
-    private const uint WeeLamb = 47964;                // 小小羊
-    private const uint EnergyDrinkGg = 46773;          // 能量饮料GG
-    private const uint Grabbycat = 47965;              // 索取小猫
-    private const uint AthleticCloth = 52630;          // 运动布
-    private const uint IndigoTwill = 52631;            // 靛蓝斜纹布
+    private const uint DreamscapeWeaponCoffer = 45070; // Figmental Weapon Coffer
+    private const uint LambHorn = 46829;               // Yan Horn
+    private const uint WeeLamb = 47964;                // Mini Yan
+    private const uint EnergyDrinkGg = 46773;          // DAM
+    private const uint Grabbycat = 47965;              // Gimme Kitten
+    private const uint AthleticCloth = 52630;          // Sweatcloth
+    private const uint IndigoTwill = 52631;            // Indigo Twill Cloth
 
     private static readonly Dictionary<uint, uint[]> itemsByMap = new()
     {

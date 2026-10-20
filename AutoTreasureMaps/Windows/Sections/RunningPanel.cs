@@ -242,9 +242,9 @@ internal static class RunningPanel
         ImGui.SameLine(0, gap);
         var items = session?.ItemsGained ?? 0;
         var itemsSub = items > 0 ? itemsText.Get(items, static key => Loc.Plural(L.MapRun.Items, (int)key)) : null;
-        // The high-value loot counts at its market price on top of the gil looted less the gil spent on maps.
+        // Gil looted less the gil spent on maps; the high-value loot's worth is an estimate, so it is only in the tooltip.
         var lootValue = session is null ? 0 : LootPrices.ValueOf(session.Tallies);
-        var netGil = session is null ? 0 : session.Gil - session.GilSpentOnMaps + lootValue;
+        var netGil = session is null ? 0 : session.Gil - session.GilSpentOnMaps;
         var gil = gilText.Get(netGil, static key => key.ToString("N0", Loc.Culture));
         StatTile.Draw(Loc.T(L.Run.TileGil), gil, itemsSub, Styling.AccentAmber, tileWidth);
         if (session is not null && (session.NotableItems.Count > 0 || session.MapsBought > 0 || lootValue > 0) && ImGui.IsItemHovered())

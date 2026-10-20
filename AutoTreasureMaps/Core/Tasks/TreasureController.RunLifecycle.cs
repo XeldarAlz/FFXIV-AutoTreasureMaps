@@ -39,8 +39,26 @@ internal sealed partial class TreasureController
             return;
         }
 
-        StartFinalCleanup(owningSession);
+        // The last maps' loot never reaches an upkeep, so a run that met its stop condition discards it before the
+        // after-run action, which may log out or close the game. The list goes with the run either way.
+        if (NeedsFinalCleanup(owningSession))
+        {
+            Diag($"Run ended by its stop condition; discarding {LootCleanup.Pending.Count} kinds of noted loot before anything else.");
+            progress.SetPhase(TreasurePhase.Finishing);
+            RunTask(new AutoFinalCleanup(), () =>
+            {
+                LootCleanup.Clear();
+                FinishEnding(owningSession);
+            });
+            return;
+        }
 
+        LootCleanup.Clear();
+        FinishEnding(owningSession);
+    }
+
+    private void FinishEnding(TreasureSession owningSession)
+    {
         if (!TryRunAfterAction(owningSession) && !TryTravelBack(owningSession, ClearRun))
         {
             ClearRun();
@@ -66,17 +84,8 @@ internal sealed partial class TreasureController
         return true;
     }
 
-    // The loot of the last maps never reaches an upkeep, so a run that met its stop condition discards it as it ends.
-    private void StartFinalCleanup(TreasureSession ending)
-    {
-        if (!ending.CompletedByStopCondition || ending.EndedWithFault || !Plugin.Instance.Configuration.AutoDiscard || !LootCleanup.HasPending)
-        {
-            return;
-        }
-
-        Diag($"Run ended by its stop condition; discarding {LootCleanup.Pending.Count} kinds of noted loot.");
-        LootCleanup.Start();
-    }
+    private static bool NeedsFinalCleanup(TreasureSession ending)
+        => ending.CompletedByStopCondition && !ending.EndedWithFault && Plugin.Instance.Configuration.AutoDiscard && LootCleanup.HasPending;
 
     // The finished run stays on screen while its after-run action runs, and is cleared once that ends.
     private bool TryRunAfterAction(TreasureSession ending)

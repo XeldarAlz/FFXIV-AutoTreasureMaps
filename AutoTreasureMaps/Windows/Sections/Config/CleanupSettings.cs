@@ -61,6 +61,12 @@ internal static class CleanupSettings
             return;
         }
 
+        SettingsRow.Draw(Loc.T(L.Cleanup.KeepNotable),
+            Loc.T(L.Cleanup.KeepNotableHelp),
+            SettingsControls.ToggleWidth,
+            () => SettingsControls.DrawToggle(configuration, () => configuration.AutoDiscardKeepNotable, value => configuration.AutoDiscardKeepNotable = value, "##atm_cleanup_notable"),
+            SettingsRow.ToggleHeight);
+
         SettingsRow.Draw(Loc.T(L.Cleanup.MaxQuantity),
             Loc.T(L.Cleanup.MaxQuantityHelp),
             Stepper.DefaultWidth,

@@ -114,8 +114,8 @@ internal sealed partial class TreasureController
         currentTask = null;
         PauseReason = PauseReason.None;
         Svc.Automation.Stop();
-        LootCleanup.Stop();
-        LootCleanup.DropPreview();
+        // The noted loot belongs to this run, so it goes with it.
+        LootCleanup.Clear();
         if (ending is not null || taskWasRunning)
         {
             ReleaseHelpers();

@@ -104,6 +104,7 @@ public sealed class Plugin : IDalamudPlugin
 
         Svc.Framework.Update += OnFrameworkUpdate;
         Svc.ClientState.Login += OnLogin;
+        Svc.ClientState.Logout += OnLogout;
         if (Svc.ClientState.IsLoggedIn)
         {
             OnLogin();
@@ -124,6 +125,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
         Svc.Framework.Update -= OnFrameworkUpdate;
         Svc.ClientState.Login -= OnLogin;
+        Svc.ClientState.Logout -= OnLogout;
         Configuration.SaveIfPending();
 
         WindowSystem.RemoveAllWindows();
@@ -342,6 +344,9 @@ public sealed class Plugin : IDalamudPlugin
         var osLanguage = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName;
         return Languages.IsKnown(osLanguage) ? Languages.Resolve(osLanguage).Code : Languages.English.Code;
     }
+
+    // The noted loot belongs to the character that looted it, so it never carries over to the next login.
+    private static void OnLogout(int type, int code) => LootCleanup.Clear();
 
     private void OnLogin()
     {

@@ -18,6 +18,10 @@ internal sealed class DungeonInProgress(DungeonProfile profile)
 
     public Dictionary<uint, int>? BagsBefore { get; set; }
 
+    // Set when the run was paused inside: what the player did meanwhile would read as loot, so the cleanup leaves this
+    // dungeon's loot alone.
+    public bool CleanupBlocked { get; set; }
+
     // A gate dungeon counts chambers from 1, read from the game's own gate message; a slot dungeon counts the draws
     // made so far, from 0.
     public int Round { get; private set; } = profile.Kind == DungeonKind.Gate ? 1 : 0;
