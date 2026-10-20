@@ -42,7 +42,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 - **Party invites**: auto-declines incoming invites during a run after a random delay, with an optional reply message.
 - **GM alert**: stops the bot when a GM is near, with optional toast, beeps, or custom commands.
 - **Stop conditions**: a run ends when no enabled map is left, after a set number of maps or minutes, after failed maps in a row, or after a second knockout.
-- **History**: every run recorded with its maps, gil (less what it spent on maps), portals, dungeons and how it ended. Per-map cards show each map's high-value loot with an estimate of its worth from Universalis, and a map log lists every map with its dungeon floor, knockouts and high-value loot.
+- **History**: every run recorded with its maps, gil (less what it spent on maps), portals, dungeons and how it ended. Per-map cards show each map's high-value loot (with an estimate of its worth from Universalis, off by default), and a map log lists every map with its dungeon floor, knockouts and high-value loot.
 - **Console**: a live log of every step, with filters and a copy button for bug reports.
 
 ## Install

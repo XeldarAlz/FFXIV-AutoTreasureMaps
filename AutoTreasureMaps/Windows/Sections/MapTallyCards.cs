@@ -134,7 +134,9 @@ internal sealed class MapTallyCards
 
     private void Build(Dictionary<uint, MapTally> tallies)
     {
-        pricesCaption = LootPrices.Loaded ? Loc.T(L.Stats.Prices, LootPrices.DataCenter) : Loc.T(L.Stats.PricesLoading);
+        pricesCaption = !LootPrices.Enabled ? Loc.T(L.Stats.PricesOff)
+            : LootPrices.Loaded ? Loc.T(L.Stats.Prices, LootPrices.DataCenter)
+            : Loc.T(L.Stats.PricesLoading);
         cards.Clear();
         var catalog = Plugin.Instance.Catalog;
         var ordered = new List<(byte Rank, uint MapItemId, MapTally Tally)>(tallies.Count);
