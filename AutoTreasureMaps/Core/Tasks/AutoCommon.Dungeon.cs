@@ -101,7 +101,7 @@ public abstract partial class AutoCommon
 
         session.ActiveDungeon = null;
         session.RecordDungeon(result);
-        LootCleanup.Note(result.Items, dungeon.CleanupBlocked ? null : dungeon.BagsBefore);
+        LootCleanup.Note(dungeon.CleanupBlocked ? null : dungeon.BagsBefore);
         Diag($"Dungeon: {dungeon.Profile.Key} ended {outcome} in round {dungeon.Round} of {dungeon.Profile.Rounds} (reached {dungeon.RoundReached}), {gil} gil, {result.ItemCount} items in {items.Length} stacks, {result.Duration.TotalSeconds:F0}s.");
         AnnounceDungeon(result);
         return result;
@@ -279,8 +279,7 @@ public abstract partial class AutoCommon
             return seen;
         }
 
-        var (_, items) = BagSnapshot.Gains(before, BagSnapshot.Capture());
-        LootCleanup.ShowPreview(items, before);
+        LootCleanup.ShowPreview(before);
         return fingerprint;
     }
 

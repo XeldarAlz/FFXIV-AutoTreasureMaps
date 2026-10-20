@@ -166,6 +166,7 @@ internal static partial class L
         public static readonly LocPlural TileRunsCount = new("history.tile.runsCount", "{0} run", "{0} runs");
         public static readonly LocString TilePerMap = new("history.tile.perMap", "{0} per map");
         public static readonly LocString Items = new("history.items", "Items gained");
+        public static readonly LocString TileTomestones = new("history.tile.tomestones", "Tomestones");
         public static readonly LocString EndedBy = new("history.endedBy", "Ended");
         public static readonly LocString NoRuns = new("history.noRuns", "No runs recorded yet. Finish (or stop) a run and it'll show up here.");
         public static readonly LocString MapsPerRun = new("history.mapsPerRun", "Maps per run");
@@ -189,7 +190,8 @@ internal static partial class L
         public static readonly LocString LogPortal = new("history.log.portal", "Portal");
         public static readonly LocString LogFloor = new("history.log.floor", "Floor");
         public static readonly LocString LogDeaths = new("history.log.deaths", "Deaths");
-        public static readonly LocString LogLoot = new("history.log.loot", "High-value loot");
+        public static readonly LocString LogDuration = new("history.log.duration", "Time");
+        public static readonly LocString LogLoot = new("history.log.loot", "Rare loot");
         public static readonly LocString LogYes = new("history.log.yes", "Yes");
         public static readonly LocString LogLootItem = new("history.log.lootItem", "{0}×{1}");
         public static readonly LocString LogLootSeparator = new("history.log.lootSeparator", ", ");

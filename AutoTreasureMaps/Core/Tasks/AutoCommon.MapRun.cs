@@ -67,7 +67,7 @@ public abstract partial class AutoCommon
         session.RecordMap(result);
         if (final)
         {
-            LootCleanup.Note(result.Items, bagsBefore);
+            LootCleanup.Note(bagsBefore);
         }
 
         progress.FinishMap(result);

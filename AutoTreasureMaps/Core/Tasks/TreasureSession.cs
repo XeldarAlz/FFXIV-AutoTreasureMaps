@@ -76,7 +76,10 @@ public sealed class TreasureSession
 
     public int Gil { get; private set; }
 
+    // Crystals and tomestones left out.
     public int ItemsGained { get; private set; }
+
+    public int Tomestones { get; private set; }
 
     public int MapsBought { get; private set; }
 
@@ -153,6 +156,7 @@ public sealed class TreasureSession
         MapsRun++;
         Gil += result.Gil;
         ItemsGained += result.ItemCount;
+        Tomestones += result.Tomestones;
         var portal = result.PortalSeen || result.Refusal == MapRefusal.PortalDug;
         if (portal)
         {
@@ -166,9 +170,9 @@ public sealed class TreasureSession
             var mapItemId = result.Tier.TimewornItemId;
             var tally = TallyFor(mapItemId);
             tally.Maps++;
-            NoteHighValueItems(tally, mapItemId, result.Items);
+            NoteRareItems(tally, mapItemId, result.Items);
             portalMapItemId = portal ? mapItemId : 0;
-            var entry = Plugin.Instance.MapLog.Add(mapItemId, portal, result.Outcome == MapOutcome.Died ? 1 : 0, result.Items);
+            var entry = Plugin.Instance.MapLog.Add(mapItemId, portal, result.Outcome == MapOutcome.Died ? 1 : 0, result.Duration, result.Items);
             portalLogEntry = portal ? entry : null;
         }
     }
@@ -189,6 +193,7 @@ public sealed class TreasureSession
 
         Gil += result.Gil;
         ItemsGained += result.ItemCount;
+        Tomestones += result.Tomestones;
         NoteNotableItems(result.Items);
 
         // A dungeon entered by hand, or resumed after the portal's map was recorded in another run, goes to the map
@@ -197,11 +202,11 @@ public sealed class TreasureSession
         portalMapItemId = 0;
         var tally = TallyFor(mapItemId);
         tally.NoteFloor(result.Round);
-        NoteHighValueItems(tally, mapItemId, result.Items);
+        NoteRareItems(tally, mapItemId, result.Items);
 
         // A dungeon without its map's line in this run gets a line of its own.
         var mapLog = Plugin.Instance.MapLog;
-        var entry = portalLogEntry ?? mapLog.Add(mapItemId, portal: true, deaths: 0, ImmutableArray<ItemGain>.Empty);
+        var entry = portalLogEntry ?? mapLog.Add(mapItemId, portal: true, deaths: 0, result.Duration, ImmutableArray<ItemGain>.Empty);
         portalLogEntry = null;
         mapLog.NoteDungeon(entry, result.Round, result.Profile.Rounds, result.Outcome == DungeonOutcome.Died, result.Items);
     }
@@ -348,7 +353,7 @@ public sealed class TreasureSession
         return tally;
     }
 
-    private static void NoteHighValueItems(MapTally tally, uint mapItemId, ImmutableArray<ItemGain> gains)
+    private static void NoteRareItems(MapTally tally, uint mapItemId, ImmutableArray<ItemGain> gains)
     {
         if (gains.IsDefaultOrEmpty)
         {
@@ -359,7 +364,7 @@ public sealed class TreasureSession
         for (var index = 0; index < items.Length; index++)
         {
             var item = items[index];
-            if (HighValueLoot.Counts(mapItemId, item.ItemId))
+            if (RareLoot.Counts(mapItemId, item.ItemId))
             {
                 tally.NoteItem(item.ItemId, item.Quantity);
             }

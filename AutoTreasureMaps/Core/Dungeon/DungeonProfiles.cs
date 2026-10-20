@@ -12,7 +12,7 @@ internal static class DungeonProfiles
     // onto a circle that flies the character to the next chamber, and the fifth holds a boss and the exit point.
     public static readonly DungeonProfile CenoteJaJaGural = new(
         Key: "cenote-ja-ja-gural",
-        MapItemId: HighValueLoot.BraaxskinMap,
+        MapItemId: RareLoot.BraaxskinMap,
         TerritoryId: 1209,
         ContentFinderConditionId: 993,
         Kind: DungeonKind.Gate,
@@ -46,7 +46,7 @@ internal static class DungeonProfiles
     // bronze coffer once its enemies fall.
     public static readonly DungeonProfile VaultOneiron = new(
         Key: "vault-oneiron",
-        MapItemId: HighValueLoot.GargantuaskinMap,
+        MapItemId: RareLoot.GargantuaskinMap,
         TerritoryId: 1279,
         ContentFinderConditionId: 1060,
         Kind: DungeonKind.Slot,

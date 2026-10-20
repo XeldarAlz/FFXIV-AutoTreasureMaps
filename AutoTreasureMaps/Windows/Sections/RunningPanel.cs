@@ -241,8 +241,11 @@ internal static class RunningPanel
 
         ImGui.SameLine(0, gap);
         var items = session?.ItemsGained ?? 0;
-        var itemsSub = items > 0 ? itemsText.Get(items, static key => Loc.Plural(L.MapRun.Items, (int)key)) : null;
-        // Gil looted less the gil spent on maps; the high-value loot's worth is an estimate, so it is only in the tooltip.
+        var tomestones = session?.Tomestones ?? 0;
+        var itemsSub = items > 0 || tomestones > 0
+            ? itemsText.Get(((long)items << 32) | (uint)tomestones, static key => LootLine((int)(key >> 32), (int)(key & uint.MaxValue)))
+            : null;
+        // Gil looted less the gil spent on maps; the rare loot's worth is an estimate, so it is only in the tooltip.
         var lootValue = session is null ? 0 : LootPrices.ValueOf(session.Tallies);
         var netGil = session is null ? 0 : session.Gil - session.GilSpentOnMaps;
         var gil = gilText.Get(netGil, static key => key.ToString("N0", Loc.Culture));
@@ -257,6 +260,18 @@ internal static class RunningPanel
         ImGui.SameLine(0, gap);
         var elapsed = session?.Elapsed ?? TimeSpan.Zero;
         StatTile.Draw(Loc.T(L.Run.TileElapsed), Formatting.Elapsed(elapsed), TimeLeft(elapsed), Styling.AccentBlue, tileWidth);
+    }
+
+    // The items and tomestones looted, either left out while none came.
+    private static string LootLine(int items, int tomestones)
+    {
+        if (tomestones == 0)
+        {
+            return Loc.Plural(L.MapRun.Items, items);
+        }
+
+        var tomestoneText = Loc.Plural(L.MapRun.Tomestones, tomestones);
+        return items == 0 ? tomestoneText : string.Concat(Loc.Plural(L.MapRun.Items, items), TextDraw.Separator, tomestoneText);
     }
 
     private static string? TimeLeft(TimeSpan elapsed)
@@ -296,7 +311,7 @@ internal static class RunningPanel
         }
     }
 
-    // The tile shows the gil looted and the high-value loot's worth, less the gil spent on maps; the tooltip splits them.
+    // The tile shows the gil looted and the rare loot's worth, less the gil spent on maps; the tooltip splits them.
     private static string GilTooltip(TreasureSession session, long lootValue)
     {
         var lines = new StringBuilder();
