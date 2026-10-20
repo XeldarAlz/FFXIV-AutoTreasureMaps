@@ -26,10 +26,27 @@ internal sealed class AutoMapRun(TreasureSession session, TreasureProgress progr
     {
         try
         {
+            // A pause or a fault restart inside the dungeon the map's portal led to picks that dungeon up first.
+            if (await PickUpDungeon(session, progress) is { } dungeonStep)
+            {
+                if (dungeonStep != PortalStep.Stop)
+                {
+                    session.Finish(RunEnd.SingleMap);
+                }
+
+                return;
+            }
+
             var result = await RunHeldMap(session, progress);
             if (MapFault is { } fault)
             {
                 session.RecordFault(fault, CancelToken);
+                return;
+            }
+
+            if ((result.PortalSeen || result.Refusal == MapRefusal.PortalDug) && result.Outcome != MapOutcome.Cancelled
+                && await EnterPortalAndClear(session, progress) == PortalStep.Stop)
+            {
                 return;
             }
 

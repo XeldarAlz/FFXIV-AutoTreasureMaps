@@ -55,9 +55,29 @@ internal static class TreasureCombatPreset
         new("Tomahawk", "Opener"),
     ];
 
+    public const string TargetingTrack = "Targeting";
+    // The rotation then attacks only what the character has targeted.
+    public const string ManualTargeting = "Manual";
+
     private static string? serialized;
+    private static string[]? targetingModules;
 
     public static string GetSerialized() => serialized ??= Serialize();
+
+    // The job rotations that pick their own target, which a fight that wants one enemy first switches to Manual for a while.
+    public static string[] TargetingModules => targetingModules ??= BuildTargetingModules();
+
+    private static string[] BuildTargetingModules()
+    {
+        var modules = new string[rotationJobs.Length + 1];
+        for (var jobIndex = 0; jobIndex < rotationJobs.Length; jobIndex++)
+        {
+            modules[jobIndex] = RotationModulePrefix + rotationJobs[jobIndex];
+        }
+
+        modules[rotationJobs.Length] = ViperModule;
+        return modules;
+    }
 
     private static string Serialize()
     {
