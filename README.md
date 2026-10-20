@@ -26,7 +26,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 
 - **Decipher and dig**: reads each timeworn map you carry, works out where it points, and digs at the spot.
 - **Travel**: teleports to the nearest aetheryte, then flies, rides or walks to the dig spot, and lands where it can dig.
-- **Hands-off combat**: fights off every wave that guards a coffer with a bundled combat preset, then opens the coffer.
+- **Hands-off combat**: fights off every wave that guards a coffer with a bundled combat preset, then opens the coffer. As a tank, it can also use your short mitigation in the last seconds of an enemy cast aimed at you, and a bigger cooldown for a boss's tankbuster when the short one is down (off by default).
 - **Map choice**: pick which map tiers to run and whether the highest or the lowest goes first.
 - **Loot rolls**: answers the Need or Greed window for the coffer's items the way you choose, or leaves it to you.
 - **Daily map**: once a day, gathers the free timeworn map as a Miner or Botanist when the run has no map left, then switches back to your gearset (off by default). A Miner skips Gargantuaskin, whose only Miner nodes hold nothing but collectables.
