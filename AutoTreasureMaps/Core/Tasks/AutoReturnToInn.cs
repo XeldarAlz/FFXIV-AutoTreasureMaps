@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.Game.Ops;
+using AutoTreasureMaps.Core.Ipc;
 using AutoTreasureMaps.Core.Travel;
 using clib.TaskSystem;
 using Dalamud.Game.ClientState.Conditions;
@@ -35,6 +36,24 @@ public sealed class AutoReturnToInn : AutoCommon
         await HoldCombatMovementAndSettle("inn");
         try
         {
+            // A visitor cannot take an inn room, and a market run may have left the character on another world. A home on
+            // another data centre is out of reach for a same-DC visit, so the inn is skipped then.
+            if (Worlds.AwayFromHome && !LifestreamIPC.Instance.CanVisit(Worlds.NameOf(Worlds.Home)))
+            {
+                Warn($"Return to inn: {Worlds.NameOf(Worlds.Home)} cannot be reached from here; staying where the run ended.");
+                return;
+            }
+
+            if (Worlds.AwayFromHome && !await ChangeWorld(Worlds.Home, "inn-home", CityGateway(inn.CityTerritoryId)))
+            {
+                if (!CancelToken.IsCancellationRequested)
+                {
+                    Warn($"Return to inn: could not travel back to {Worlds.NameOf(Worlds.Home)}; staying where the run ended.");
+                }
+
+                return;
+            }
+
             var arrived = await TravelTo(inn.CityTerritoryId, inn.InnkeeperPosition, InnkeeperArrivalMeters);
             if (CancelToken.IsCancellationRequested)
             {
@@ -59,6 +78,15 @@ public sealed class AutoReturnToInn : AutoCommon
             ReleaseCombatMovement("inn");
         }
     }
+
+    // The inn city's own aetheryte, so the visit home lands in the city the inn is in: Limsa 8, Gridania 2, Ul'dah 9.
+    private static uint CityGateway(uint cityTerritoryId) => cityTerritoryId switch
+    {
+        128 or 129 => 8,
+        132 or 133 => 2,
+        130 or 131 => 9,
+        _ => 0,
+    };
 
     private async Task EnterInn(CityInn inn, string cityName)
     {

@@ -244,7 +244,7 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
-        Controller.Stop();
+        Controller.Stop(travelBack: true);
         Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Run.ChatStopped)}");
     }
 

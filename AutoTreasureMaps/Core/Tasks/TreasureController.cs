@@ -85,7 +85,9 @@ internal sealed partial class TreasureController
         BeginRun(new TreasureSession(), owningSession => new AutoMapRun(owningSession, progress), "the held map");
     }
 
-    public void Stop()
+    // travelBack is set when the player stops the run, so a run that bought on another world goes back to its own; an
+    // unload or a GM alert leaves the character where it stands.
+    public void Stop(bool travelBack = false)
     {
         var ending = session;
         var wasPaused = Paused;
@@ -105,6 +107,10 @@ internal sealed partial class TreasureController
         if (ending is not null)
         {
             Diag("Stop requested; session cleared.");
+            if (travelBack)
+            {
+                TryTravelBack(ending, static () => { });
+            }
         }
     }
 

@@ -30,7 +30,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 - **Map choice**: pick which map tiers to run and whether the highest or the lowest goes first.
 - **Loot rolls**: answers the Need or Greed window for the coffer's items the way you choose, or leaves it to you.
 - **Daily map**: once a day, gathers the free timeworn map as a Miner or Botanist when the run has no map left, then switches back to your gearset (off by default). A Miner skips Gargantuaskin, whose only Miner nodes hold nothing but collectables.
-- **Market board**: when no map is left in your bags and no daily map can be gathered, buys the next one on the market board under a price cap you set per tier, within a gil budget per run and never below the gil you choose to keep (off by default).
+- **Market board**: when no map is left in your bags and no daily map can be gathered, buys the next one on the market board under a price cap you set per tier, within a gil budget per run and never below the gil you choose to keep (off by default). With Lifestream installed, it can look the map up on Universalis and buy it on the cheapest world of your data center, then travel back once the run ends (off by default). It can also buy a second map ahead so the next one needs no trip to the board (off by default).
 - **Recovery**: gets back up after a death; re-paths, jumps, or teleports out when it gets stuck.
 - **After-run action**: stay logged in, return to the inn, log out, or close the game once the last map is done.
 - **Auto-repair**: Dark Matter first, then your Grand Company mender or a repair NPC you pick.

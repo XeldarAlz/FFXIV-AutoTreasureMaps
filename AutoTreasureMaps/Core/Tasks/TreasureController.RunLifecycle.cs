@@ -1,4 +1,5 @@
 using AutoTreasureMaps.Core.Stats;
+using AutoTreasureMaps.Core.Travel;
 
 namespace AutoTreasureMaps.Core.Tasks;
 
@@ -37,10 +38,29 @@ internal sealed partial class TreasureController
             return;
         }
 
-        if (!TryRunAfterAction(owningSession))
+        if (!TryRunAfterAction(owningSession) && !TryTravelBack(owningSession, ClearRun))
         {
             ClearRun();
         }
+    }
+
+    // Logging out or closing the game needs no trip, and the inn action travels home on its own; a run that ended any
+    // other way on a world it visited goes back to the one it started on.
+    private bool TryTravelBack(TreasureSession ending, Action onDone)
+    {
+        if (ending.EndedWithFault || ending.StartWorldId == 0 || Worlds.Current == 0 || Worlds.Current == ending.StartWorldId)
+        {
+            return false;
+        }
+
+        Diag($"Run ended on {Worlds.NameOf(Worlds.Current)}; travelling back to {Worlds.NameOf(ending.StartWorldId)}, where it started.");
+        progress.SetPhase(TreasurePhase.Finishing);
+        RunTask(new AutoReturnToWorld(ending.StartWorldId), () =>
+        {
+            Diag("The trip back to the starting world finished.");
+            onDone();
+        });
+        return true;
     }
 
     // The finished run stays on screen while its after-run action runs, and is cleared once that ends.

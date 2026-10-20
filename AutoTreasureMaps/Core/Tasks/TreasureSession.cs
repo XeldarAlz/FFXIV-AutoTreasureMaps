@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Travel;
 using AutoTreasureMaps.Core.Treasure;
 using ECommons.DalamudServices;
 using System.Threading;
@@ -16,7 +17,11 @@ public sealed class TreasureSession
     public TreasureSession()
     {
         JobAbbreviation = CurrentJobAbbreviation();
+        StartWorldId = Worlds.Current;
     }
+
+    // The world the run started on, which a run that bought on other worlds travels back to once it ends.
+    internal uint StartWorldId { get; }
 
     public DateTime StartedAt { get; } = DateTime.UtcNow;
 
@@ -80,6 +85,9 @@ public sealed class TreasureSession
     // does not go back after every map.
     internal bool DailyGatherTried { get; private set; }
 
+    // Set once the run looked at buying a spare for the deciphered map it started with, whatever came of it.
+    internal bool SpareChecked { get; private set; }
+
     // A run that only bought or gathered a map still spent gil or the day's allowance, so it is recorded.
     public bool DidNothing => MapsRun == 0 && MapsBought == 0 && MapsGathered == 0;
 
@@ -140,6 +148,8 @@ public sealed class TreasureSession
     internal void NoteMapGathered() => MapsGathered++;
 
     internal void NoteDailyGatherTried() => DailyGatherTried = true;
+
+    internal void NoteSpareChecked() => SpareChecked = true;
 
     // A run stopped from outside keeps the end it had already decided on.
     internal void MarkStopped() => EndedBy ??= RunEnd.Stopped;
