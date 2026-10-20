@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Travel;
 using AutoTreasureMaps.Core.Treasure;
 using ECommons.DalamudServices;
 using System.Threading;
@@ -16,7 +17,11 @@ public sealed class TreasureSession
     public TreasureSession()
     {
         JobAbbreviation = CurrentJobAbbreviation();
+        StartWorldId = Worlds.Current;
     }
+
+    // The world the run started on, which a run that bought on other worlds travels back to once it ends.
+    internal uint StartWorldId { get; }
 
     public DateTime StartedAt { get; } = DateTime.UtcNow;
 

@@ -80,6 +80,12 @@ internal static class MarketSettings
             () => SettingsControls.DrawToggle(configuration, () => configuration.MarketBuyAhead, value => configuration.MarketBuyAhead = value, "##atm_market_ahead"),
             SettingsRow.ToggleHeight);
 
+        SettingsRow.Draw(Loc.T(L.Market.SpareFirst),
+            Loc.T(L.Market.SpareFirstHelp),
+            SettingsControls.ToggleWidth,
+            () => SettingsControls.DrawToggle(configuration, () => configuration.MarketSpareFirst, value => configuration.MarketSpareFirst = value, "##atm_market_spare"),
+            SettingsRow.ToggleHeight);
+
         SettingsRow.Draw(Loc.T(L.Market.CrossWorld),
             Loc.T(L.Market.CrossWorldHelp),
             SettingsControls.ToggleWidth,

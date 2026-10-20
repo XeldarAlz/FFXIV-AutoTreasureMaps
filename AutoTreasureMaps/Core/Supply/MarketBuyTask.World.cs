@@ -1,3 +1,4 @@
+using AutoTreasureMaps.Core.Game.Player;
 using AutoTreasureMaps.Core.Ipc;
 using AutoTreasureMaps.Core.Localization;
 using AutoTreasureMaps.Core.Market;
@@ -22,13 +23,28 @@ internal sealed partial class MarketBuyTask
     // The world travelled to for this visit, or 0 when the run stayed where it was.
     private async Task<uint> MoveToCheapestWorld(Configuration configuration, List<TreasureTier> tiers)
     {
-        if (!configuration.MarketCrossWorld || !LifestreamIPC.Instance.IsAvailable)
+        if (!configuration.MarketCrossWorld)
         {
-            if (configuration.MarketCrossWorld)
-            {
-                Diag("Market: cross-world buying is on but Lifestream is not loaded; buying on this world.");
-            }
+            return 0;
+        }
 
+        // A purchase outside a run has nothing to travel back after it, so it buys where the character stands.
+        if (session is null)
+        {
+            Diag("Market: a purchase outside a run stays on this world.");
+            return 0;
+        }
+
+        if (!LifestreamIPC.Instance.IsAvailable)
+        {
+            Diag("Market: cross-world buying is on but Lifestream is not loaded; buying on this world.");
+            return 0;
+        }
+
+        // A visit would leave the party behind, and the dig would wait on members who are on another world.
+        if (PartyPresence.InParty())
+        {
+            Diag("Market: in a party, so buying on this world instead of visiting another.");
             return 0;
         }
 
@@ -72,7 +88,8 @@ internal sealed partial class MarketBuyTask
             }
 
             var cheapest = Cheapest(listings, cap, spendable, Elsewhere);
-            var cheapestHere = Cheapest(listings, cap, spendable, worldId => worldId == here);
+            // A world whose board was already read empty has nothing to buy, whatever Universalis still lists for it.
+            var cheapestHere = excludedWorlds.Contains(here) ? null : Cheapest(listings, cap, spendable, worldId => worldId == here);
             if (cheapest is null && cheapestHere is null)
             {
                 var lowest = listings.Count == 0 ? "none" : $"{listings.Min(listing => listing.UnitPrice)} gil";

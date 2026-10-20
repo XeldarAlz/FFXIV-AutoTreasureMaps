@@ -135,7 +135,7 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
 
         session.NoteSpareChecked();
         var configuration = plugin.Configuration;
-        if (!configuration.MarketBuyAhead)
+        if (!configuration.MarketSpareFirst)
         {
             return LoopStep.Continue;
         }
