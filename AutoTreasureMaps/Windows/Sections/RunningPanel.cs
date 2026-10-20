@@ -242,7 +242,7 @@ internal static class RunningPanel
         ImGui.SameLine(0, gap);
         var items = session?.ItemsGained ?? 0;
         var itemsSub = items > 0 ? itemsText.Get(items, static key => Loc.Plural(L.MapRun.Items, (int)key)) : null;
-        // Gil looted less the gil spent on maps; the high-value loot's worth is an estimate, so it is only in the tooltip.
+        // Gil looted less the gil spent on maps; the rare loot's worth is an estimate, so it is only in the tooltip.
         var lootValue = session is null ? 0 : LootPrices.ValueOf(session.Tallies);
         var netGil = session is null ? 0 : session.Gil - session.GilSpentOnMaps;
         var gil = gilText.Get(netGil, static key => key.ToString("N0", Loc.Culture));
@@ -296,7 +296,7 @@ internal static class RunningPanel
         }
     }
 
-    // The tile shows the gil looted and the high-value loot's worth, less the gil spent on maps; the tooltip splits them.
+    // The tile shows the gil looted and the rare loot's worth, less the gil spent on maps; the tooltip splits them.
     private static string GilTooltip(TreasureSession session, long lootValue)
     {
         var lines = new StringBuilder();

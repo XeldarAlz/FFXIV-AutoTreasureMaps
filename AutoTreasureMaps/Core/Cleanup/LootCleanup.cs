@@ -12,7 +12,7 @@ namespace AutoTreasureMaps.Core.Cleanup;
 internal readonly record struct PendingLoot(uint ItemId, int Quantity);
 
 // The loot coffers and treasure dungeons gave that is not kept, and the pass that discards it from the four bags. Kept
-// means whitelisted, a timeworn map, any map's high-value loot, an item the game will not let go of, or (unless turned
+// means whitelisted, a timeworn map, any map's rare loot, an item the game will not let go of, or (unless turned
 // off) an item of notable rarity, a unique item, equipment or an item that unlocks something. Only loot that landed in
 // the bags is listed, so gil, crystals and currency never are. The game discards whole slots, so an item is listed only
 // when the bags held none of it before the coffer opened (or it is listed already): every copy in the bags is then loot.
@@ -192,10 +192,10 @@ internal static unsafe class LootCleanup
     public static bool IsKept(uint itemId)
         => IsAlwaysKept(itemId) || OnWhitelist(itemId);
 
-    // Kept whatever the whitelist says: a map, any map's high-value loot, an item the game refuses to discard, and with
+    // Kept whatever the whitelist says: a map, any map's rare loot, an item the game refuses to discard, and with
     // the setting on (the default) anything that may be worth more than a material.
     public static bool IsAlwaysKept(uint itemId)
-        => HighValueLoot.IsHighValue(itemId)
+        => RareLoot.IsRare(itemId)
         || Plugin.Instance.Catalog.TryGetByTimewornItem(itemId, out _)
         || Svc.Data.GetExcelSheet<Item>().GetRowOrDefault(itemId) is not { IsIndisposable: false } item
         || (Plugin.Instance.Configuration.AutoDiscardKeepNotable && KeptByKind(item));

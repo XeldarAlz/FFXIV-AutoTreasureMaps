@@ -8,7 +8,7 @@ internal static partial class L
         public static readonly LocString CatSub = new("cleanup.catSub", "Discard the loot you do not keep, so the bags never fill up during a run.");
         public static readonly LocString Group = new("cleanup.group", "Auto-discard");
         public static readonly LocString Enable = new("cleanup.enable", "Auto-discard loot");
-        public static readonly LocString EnableHelp = new("cleanup.enableHelp", "Every item a coffer or a treasure dungeon gives is noted. Between maps, before walking into a portal, and once a run finishes, the noted items that are not kept are discarded from your bags. Maps, each map's high-value loot and anything on the whitelist are never discarded. The noted list belongs to the run and the character: it is forgotten when the run stops or ends and when you log out.");
+        public static readonly LocString EnableHelp = new("cleanup.enableHelp", "Every item a coffer or a treasure dungeon gives is noted. Between maps, before walking into a portal, and once a run finishes, the noted items that are not kept are discarded from your bags. Maps, each map's rare loot and anything on the whitelist are never discarded. The noted list belongs to the run and the character: it is forgotten when the run stops or ends and when you log out.");
         public static readonly LocString Safety = new("cleanup.safety", "Only an item the bags held none of before the coffer opened can be discarded, and never more copies than the coffer or dungeon gave. A map or dungeon you paused the run in after its coffer opened is left alone, since what you did meanwhile would look like its loot.");
         public static readonly LocString Off = new("cleanup.off", "Auto-discard is off. Nothing is noted or discarded.");
         public static readonly LocString MaxQuantity = new("cleanup.maxQuantity", "Keep large stacks");
@@ -27,7 +27,7 @@ internal static partial class L
         public static readonly LocString KeptItemsHelp = new("cleanup.keptItemsHelp", "Never discarded.");
         public static readonly LocString NoKept = new("cleanup.noKept", "The whitelist is empty, so all noted loot is discarded.");
         public static readonly LocString AlwaysKept = new("cleanup.alwaysKept", "Always kept");
-        public static readonly LocString AlwaysKeptHelp = new("cleanup.alwaysKeptHelp", "Timeworn maps and each map's high-value loot, built into the plugin.");
+        public static readonly LocString AlwaysKeptHelp = new("cleanup.alwaysKeptHelp", "Timeworn maps and each map's rare loot, built into the plugin.");
         public static readonly LocString MenuAdd = new("cleanup.menuAdd", "Add to cleanup whitelist");
         public static readonly LocString MenuRemove = new("cleanup.menuRemove", "Remove from cleanup whitelist");
         public static readonly LocString ChatKept = new("cleanup.chatKept", "{0} is on the cleanup whitelist and will not be discarded.");

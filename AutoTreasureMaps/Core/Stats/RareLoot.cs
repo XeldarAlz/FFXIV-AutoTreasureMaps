@@ -2,7 +2,7 @@ namespace AutoTreasureMaps.Core.Stats;
 
 // The loot worth counting on its own for each map, keyed by the timeworn map's item id. Only these items are tallied
 // per map and priced into the gil a run made; everything else stays in the plain item count.
-internal static class HighValueLoot
+internal static class RareLoot
 {
     // G17 Timeworn Br'aaxskin Map and G18 Timeworn Gargantuaskin Map.
     public const uint BraaxskinMap = 43557;
@@ -31,7 +31,7 @@ internal static class HighValueLoot
         => itemsByMap.TryGetValue(mapItemId, out var items) ? items : [];
 
     // Listed for any map; the loot cleanup never discards these.
-    public static bool IsHighValue(uint itemId) => Array.IndexOf(allItems, itemId) >= 0;
+    public static bool IsRare(uint itemId) => Array.IndexOf(allItems, itemId) >= 0;
 
     public static bool Counts(uint mapItemId, uint itemId)
         => itemsByMap.TryGetValue(mapItemId, out var items) && Array.IndexOf(items, itemId) >= 0;
