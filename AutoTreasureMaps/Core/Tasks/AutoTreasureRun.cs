@@ -173,6 +173,13 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
             return LoopStep.Stop;
         }
 
+        // The wait can take minutes, so a limit that ran out meanwhile ends the run before anything is deciphered or bought.
+        if (RunLimits.Reached(session, plugin.Configuration) is { } limit)
+        {
+            Finish(limit);
+            return LoopStep.Stop;
+        }
+
         var steps = MapSupplyChain.Steps;
         LocString emptyReason = default;
         var hasReason = false;
@@ -253,7 +260,7 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
     // bag as the end of the run.
     private async Task WaitOutHuntDuty()
     {
-        if (!DutyWatcher.InContent())
+        if (!DutyWatcher.InContent() || !TreasureHuntDirector.IsActive())
         {
             return;
         }
