@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "強欲の罠が仕掛けられています。選択してください。ウィンドウが閉じたら続行します。",
   "dungeon.chat.bonusRound": "ボーナスラウンドが始まりました。光る袋はご自身で拾ってください。終わったら続行します。",
   "dungeon.chat.enteringPortal": "魔紋が出現しました。宝物庫を攻略するために入ります。",
+  "dungeon.chat.portalNotEntered": "魔紋に入れなかったため、宝物庫はご自身でお願いします。",
   "dungeon.chat.portalInParty": "魔紋が出現しましたが、パーティ中のため宝物庫はご自身でお願いします。",
   "dungeon.chat.unknownDungeon": "この宝物庫はまだ攻略に対応していません。ご自身でお願いします。外に出たら続行します。",
   "dungeon.chat.recordStarted": "宝物庫を {0} に記録しています。手動で攻略してから /atm dungeon record stop を入力してください。",

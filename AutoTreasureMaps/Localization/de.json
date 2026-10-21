@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "Die Falle der Verlockung ist aktiv. Triff deine Wahl; der Lauf geht weiter, sobald ihr Fenster zu ist.",
   "dungeon.chat.bonusRound": "Eine Bonusrunde hat begonnen. Sammle die leuchtenden Beutel selbst ein; der Lauf geht weiter, sobald sie vorbei ist.",
   "dungeon.chat.enteringPortal": "Ein Portal ist erschienen. Es wird betreten, um das Schatzgewölbe zu räumen.",
+  "dungeon.chat.portalNotEntered": "Der Lauf ist nicht durch das Portal gekommen, daher liegt das Gewölbe bei dir.",
   "dungeon.chat.portalInParty": "Ein Portal ist erschienen, aber du bist in einer Gruppe, daher liegt das Gewölbe bei dir.",
   "dungeon.chat.unknownDungeon": "Dieses Schatzgewölbe kann das Plugin noch nicht räumen, es liegt also bei dir. Der Lauf geht weiter, sobald du wieder draußen bist.",
   "dungeon.chat.recordStarted": "Das Gewölbe wird in {0} aufgezeichnet. Räum es selbst, dann /atm dungeon record stop.",

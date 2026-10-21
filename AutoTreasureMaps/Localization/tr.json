@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "Açgözlülük tuzağı kuruldu. Seçimini yap; penceresi kapanınca devam edilir.",
   "dungeon.chat.bonusRound": "Bir bonus turu başladı. Parlayan keseleri kendin topla; bitince devam edilir.",
   "dungeon.chat.enteringPortal": "Bir portal belirdi. Hazine zindanını tamamlamak için giriliyor.",
+  "dungeon.chat.portalNotEntered": "Çalışma portala giremedi, bu yüzden zindan sana kaldı.",
   "dungeon.chat.portalInParty": "Bir portal belirdi ama gruptasın, bu yüzden zindan sana kaldı.",
   "dungeon.chat.unknownDungeon": "Eklenti bu hazine zindanını henüz tamamlayamıyor, gerisi sende. Dışarı çıkınca devam edilir.",
   "dungeon.chat.recordStarted": "Zindan {0} dosyasına kaydediliyor. Elle tamamla, sonra /atm dungeon record stop.",
