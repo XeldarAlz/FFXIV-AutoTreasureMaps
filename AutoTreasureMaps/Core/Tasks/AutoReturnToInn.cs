@@ -44,7 +44,7 @@ public sealed class AutoReturnToInn : AutoCommon
                 return;
             }
 
-            if (Worlds.AwayFromHome && !await ChangeWorld(Worlds.Home, "inn-home", CityGateway(inn.CityTerritoryId)))
+            if (Worlds.AwayFromHome && !await ChangeWorld(Worlds.Home, "inn-home", inn.CityAetheryteId))
             {
                 if (!CancelToken.IsCancellationRequested)
                 {
@@ -78,15 +78,6 @@ public sealed class AutoReturnToInn : AutoCommon
             ReleaseCombatMovement("inn");
         }
     }
-
-    // The inn city's own aetheryte, so the visit home lands in the city the inn is in: Limsa 8, Gridania 2, Ul'dah 9.
-    private static uint CityGateway(uint cityTerritoryId) => cityTerritoryId switch
-    {
-        128 or 129 => 8,
-        132 or 133 => 2,
-        130 or 131 => 9,
-        _ => 0,
-    };
 
     private async Task EnterInn(CityInn inn, string cityName)
     {
