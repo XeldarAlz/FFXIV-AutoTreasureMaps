@@ -685,15 +685,18 @@ public abstract partial class AutoCommon
 
     // Keeps the character on the enemy the settings or the profile want killed first, with the rotations told to attack
     // only that target, and hands targeting back to the rotations once none is left. True while such an enemy is targeted.
-    // The combat plugin's treasure room modules rank the mandragora party above the room's other enemies, so while one
-    // waits unpulled and the settings leave the party alone, the run picks the targets itself: the combat plugin's
-    // automatic targeting rests, the rotations attack only the character's target, and that target is never a
-    // mandragora that is not fighting yet. Enemy is the room's nearest one the run fights, or null.
+    // The combat plugin's treasure room modules rank the mandragora party above the room's other enemies, so while the
+    // settings leave the party alone and one is in the room, the run picks the targets itself: the combat plugin's
+    // automatic targeting rests, the rotations attack only the character's target, and that target is the nearest other
+    // enemy. An area attack can pull a mandragora into the fight; it is only targeted once no other enemy is left, and
+    // one that is not fighting yet never is. Enemy is the room's nearest one the run fights, or null.
     private bool FocusPriorityEnemy(DungeonContext context, string scope, IBattleNpc? enemy)
     {
         var configuration = context.Config;
         var priority = DungeonField.PriorityEnemy(context.Profile, configuration.PreferBonusFor(context.Profile.Key), configuration.DungeonMandragorasInOrder);
-        var avoidMandragoras = !configuration.DungeonMandragorasInOrder && DungeonField.UnpulledMandragora(context.Profile);
+        var other = configuration.DungeonMandragorasInOrder ? null : DungeonField.NearestNonMandragora(context.Profile);
+        var avoidMandragoras = !configuration.DungeonMandragorasInOrder
+            && (DungeonField.UnpulledMandragora(context.Profile) || other is not null && DungeonField.AnyMandragora(context.Profile));
         SetPriorityTargeting(scope, priority is not null || avoidMandragoras, avoidMandragoras);
         if (priority is not null)
         {
@@ -711,18 +714,20 @@ public abstract partial class AutoCommon
             return false;
         }
 
-        if (Svc.Targets.Target is IBattleNpc current && DungeonField.Unpulled(context.Profile, current))
+        var next = other ?? enemy;
+        if (Svc.Targets.Target is IBattleNpc current
+            && (DungeonField.Unpulled(context.Profile, current) || other is not null && context.Profile.MandragoraOrder(current.NameId) >= 0))
         {
-            Diag($"{scope}: {current.Name} ({current.GameObjectId:X}) is a mandragora the settings leave alone; {(enemy is null ? "dropping the target" : $"targeting {enemy.Name} ({enemy.GameObjectId:X}) instead")}.");
-            Svc.Targets.Target = enemy;
+            Diag($"{scope}: {current.Name} ({current.GameObjectId:X}) is a mandragora the settings leave for last; {(next is null ? "dropping the target" : $"targeting {next.Name} ({next.GameObjectId:X}) instead")}.");
+            Svc.Targets.Target = next;
         }
         // Anything else that is not a live enemy, such as the coffer or gate the run just used, would leave the rotations
         // with nothing to attack, so it is replaced too.
-        else if (enemy is not null && !LiveEnemy(Svc.Targets.Target))
+        else if (next is not null && !LiveEnemy(Svc.Targets.Target))
         {
             var previous = Svc.Targets.Target;
-            Diag($"{scope}: targeting {enemy.Name} ({enemy.GameObjectId:X}){(previous is null ? string.Empty : $" instead of {previous.Name} ({previous.GameObjectId:X})")}; the mandragoras are left alone.");
-            Svc.Targets.Target = enemy;
+            Diag($"{scope}: targeting {next.Name} ({next.GameObjectId:X}){(previous is null ? string.Empty : $" instead of {previous.Name} ({previous.GameObjectId:X})")}; the mandragoras are left for last.");
+            Svc.Targets.Target = next;
         }
 
         return true;
@@ -760,7 +765,7 @@ public abstract partial class AutoCommon
                 ? BossModIPC.Instance.AddTransientStrategy(TreasureCombatPreset.Name, TreasureCombatPreset.AutoTargetModule, TreasureCombatPreset.AutoTargetTrack, TreasureCombatPreset.PassiveAutoTarget)
                 : BossModIPC.Instance.ClearTransientStrategy(TreasureCombatPreset.Name, TreasureCombatPreset.AutoTargetModule, TreasureCombatPreset.AutoTargetTrack);
             Diag(autoTargetPaused
-                ? $"{scope}: a mandragora waits unpulled; the combat plugin's automatic targeting rests (took it: {done})."
+                ? $"{scope}: a mandragora is in the room; the combat plugin's automatic targeting rests (took it: {done})."
                 : $"{scope}: the combat plugin's automatic targeting is back.");
         }
     }
