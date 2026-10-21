@@ -29,6 +29,7 @@ internal static class GeneralSettings
         DrawBehaviorGroup(configuration);
         DrawRunGroup(configuration);
         DrawAfterRunGroup(configuration);
+        PostRunSettings.Draw(configuration);
     }
 
     private static void DrawRunGroup(Configuration configuration)

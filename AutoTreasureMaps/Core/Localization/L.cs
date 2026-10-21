@@ -396,6 +396,11 @@ internal static partial class L
         public static readonly LocString LootPricesHelp = new("settings.general.lootPricesHelp", "Price the rare loot on the stat cards and in the tooltips from Universalis. While a run is going or the stats are on screen, the plugin sends Universalis your home data centre's name and the rare loot's item ids, at most every half hour. Off by default.");
         public static readonly LocString Tankbuster = new("settings.general.tankbuster", "Mitigate tankbusters");
         public static readonly LocString TankbusterHelp = new("settings.general.tankbusterHelp", "While a run is on and you play a tank, an enemy cast of 1.5 s or more aimed at you gets your job's short mitigation (Bloodwhetting, Holy Sheltron, The Blackest Night or Heart of Corundum) in the last 6 seconds of the cast, unless one of your mitigations is already up. A boss's tankbuster (a cast of 4 s or more) gets a bigger cooldown such as Rampart when the short one is down; shorter casts never use one. Off by default.");
+
+        public static readonly LocString PostRunGroup = new("settings.postRun.group", "Chat commands");
+        public static readonly LocString PostRunLabel = new("settings.postRun.label", "Run when the run finishes");
+        public static readonly LocString PostRunHelp = new("settings.postRun.help", "One command per line, each starting with a slash. They run when a run ends on its own, before the after-run action, and never after Stop or a failure.");
+        public static readonly LocString PostRunCaption = new("settings.postRun.caption", "Lines that do not start with a slash are skipped, so nothing is ever said in chat. Try /li home to head home or /ays m to hand off to AutoRetainer.");
     }
 
     internal static class Plugin
