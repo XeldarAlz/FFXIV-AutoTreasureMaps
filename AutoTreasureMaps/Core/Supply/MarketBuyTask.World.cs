@@ -20,31 +20,32 @@ internal sealed partial class MarketBuyTask
 
     private readonly HashSet<uint> excludedWorlds = [];
 
-    // The world travelled to for this visit, or 0 when the run stayed where it was.
-    private async Task<uint> MoveToCheapestWorld(Configuration configuration, List<TreasureTier> tiers)
+    // Whether this purchase may visit other worlds at all. A purchase outside a run has nothing to travel back after it,
+    // and in a party a visit would leave the party behind while the dig waits on members who are on another world.
+    private bool CanVisitWorlds(Configuration configuration, bool log = false)
     {
         if (!configuration.MarketCrossWorld)
         {
-            return 0;
+            return false;
         }
 
-        // A purchase outside a run has nothing to travel back after it, so it buys where the character stands.
-        if (session is null)
+        var reason = session is null ? "a purchase outside a run stays on this world"
+            : !LifestreamIPC.Instance.IsAvailable ? "cross-world buying is on but Lifestream is not loaded; buying on this world"
+            : PartyPresence.InParty() ? "in a party, so buying on this world instead of visiting another"
+            : null;
+        if (reason is not null && log)
         {
-            Diag("Market: a purchase outside a run stays on this world.");
-            return 0;
+            Diag($"Market: {reason}.");
         }
 
-        if (!LifestreamIPC.Instance.IsAvailable)
-        {
-            Diag("Market: cross-world buying is on but Lifestream is not loaded; buying on this world.");
-            return 0;
-        }
+        return reason is null;
+    }
 
-        // A visit would leave the party behind, and the dig would wait on members who are on another world.
-        if (PartyPresence.InParty())
+    // The world travelled to for this visit, or 0 when the run stayed where it was.
+    private async Task<uint> MoveToCheapestWorld(Configuration configuration, List<TreasureTier> tiers)
+    {
+        if (!CanVisitWorlds(configuration, log: true))
         {
-            Diag("Market: in a party, so buying on this world instead of visiting another.");
             return 0;
         }
 
@@ -88,7 +89,8 @@ internal sealed partial class MarketBuyTask
             }
 
             var cheapest = Cheapest(listings, cap, spendable, Elsewhere);
-            // A world whose board was already read empty has nothing to buy, whatever Universalis still lists for it.
+            // A world whose board was already read empty, or that kept asking to wait, has nothing to buy, whatever
+            // Universalis still lists for it.
             var cheapestHere = excludedWorlds.Contains(here) ? null : Cheapest(listings, cap, spendable, worldId => worldId == here);
             if (cheapest is null && cheapestHere is null)
             {
