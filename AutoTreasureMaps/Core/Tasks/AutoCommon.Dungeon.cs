@@ -13,6 +13,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
+using ECommons.GameFunctions;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using System.Globalization;
 using System.Numerics;
@@ -714,14 +715,19 @@ public abstract partial class AutoCommon
             Diag($"{scope}: {current.Name} ({current.GameObjectId:X}) is a mandragora the settings leave alone; {(enemy is null ? "dropping the target" : $"targeting {enemy.Name} ({enemy.GameObjectId:X}) instead")}.");
             Svc.Targets.Target = enemy;
         }
-        else if (Svc.Targets.Target is null && enemy is not null)
+        // Anything else that is not a live enemy, such as the coffer or gate the run just used, would leave the rotations
+        // with nothing to attack, so it is replaced too.
+        else if (enemy is not null && !LiveEnemy(Svc.Targets.Target))
         {
-            Diag($"{scope}: targeting {enemy.Name} ({enemy.GameObjectId:X}); the mandragoras are left alone.");
+            var previous = Svc.Targets.Target;
+            Diag($"{scope}: targeting {enemy.Name} ({enemy.GameObjectId:X}){(previous is null ? string.Empty : $" instead of {previous.Name} ({previous.GameObjectId:X})")}; the mandragoras are left alone.");
             Svc.Targets.Target = enemy;
         }
 
         return true;
     }
+
+    private static bool LiveEnemy(IGameObject? target) => target is IBattleNpc { IsDead: false } npc && npc.IsHostile();
 
     private void SetPriorityTargeting(string scope, bool manual, bool autoTargetPaused)
     {
