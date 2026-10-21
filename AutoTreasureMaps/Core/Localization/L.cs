@@ -263,6 +263,21 @@ internal static partial class L
         public static readonly LocString New = new("changelog.new", "New");
         public static readonly LocPlural Changes = new("changelog.changes", "{0} change", "{0} changes");
 
+        public static readonly LocString[] Release1100 =
+        [
+            new("changelog.r1100.1", "Added treasure dungeons (experimental): with Enter the portal on under Dungeons (off by default), a solo run walks into the portal a map turns up, clears Cenote Ja Ja Gural or the Vault Oneiron, then moves on to the next map; /atm dig does the same. Contributed by blackappleD"),
+            new("changelog.r1100.2", "In treasure dungeons the run follows the glowing gate hint or a gate side you pick, fights a boss's adds before the boss, collects the bonus round's sacks and leaves the mandragora party alone unless you ask; Attack bonus enemies first can now be set per dungeon. Contributed by blackappleD"),
+            new("changelog.r1100.3", "Added a Gambler's Lure choice for treasure dungeons: Let me choose (the default) waits out the whole lure and suggests the better guess in chat, Open the coffer skips the game, and Challenge by the loot plays it on each card's odds, more carefully when the coffer holds rare loot you keep. Contributed by blackappleD"),
+            new("changelog.r1100.4", "Added Buy on the cheapest world (off by default): with Lifestream installed, the run checks Universalis and buys maps on another world of your data centre when that saves enough gil, skips worlds whose listings are over 12 hours old, and goes back to its starting world when the run ends. Contributed by blackappleD"),
+            new("changelog.r1100.5", "Added Buy a map ahead and Buy a spare before the first dig (both off by default), so back-to-back maps need fewer trips to the market board, and a busy market board is now waited out instead of ending the visit. Contributed by blackappleD"),
+            new("changelog.r1100.6", "Coffer guards go down faster, as the combat preset now spreads area attacks over the whole wave, and the new Mitigate tankbusters setting (off by default) uses a tank's short mitigation near the end of a heavy cast. Contributed by blackappleD"),
+            new("changelog.r1100.7", "Added per-map stats on the Treasure and History pages, and a Map log in History with each map's portal, dungeon floor, deaths, time and rare loot; tomestones are now counted on their own, like gil. Contributed by blackappleD"),
+            new("changelog.r1100.8", "Added Loot cleanup (off by default): it discards the low-value items coffers and dungeons drop, never anything you already held, keeps whitelisted and notable items, and lets you pick per map and per dungeon which rare loot to keep. Contributed by blackappleD"),
+            new("changelog.r1100.9", "Hovering a map name in the map settings or the market price caps shows the game's item tooltip, each map shows the patch it arrived in, and the /atm help lists one command per line. Contributed by blackappleD"),
+            new("changelog.r1100.10", "Fixed digs attempted in mid-air after a flying dismount, and, on the Chinese client, coffers left unopened after their guards fell and missing characters in map, city and loot names. Contributed by blackappleD"),
+            new("changelog.r1100.11", "Fixed long sessions ending in a crash or a Start button that stops working; moving around no longer sets up new game hooks each time"),
+        ];
+
         public static readonly LocString[] Release1000 =
         [
             new("changelog.r1000.1", "Runs your timeworn maps from start to finish: deciphers each one, flies to the dig spot, digs up the coffer, fights off its guards and loots it"),
