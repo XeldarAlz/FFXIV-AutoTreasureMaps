@@ -38,6 +38,7 @@ internal static class DungeonProfiles
         // Alpaca of fortune, uolon of fortune; Turali onion, eggplant, garlic, tomato, Tuligora queen.
         BonusNameIds: [13240, 13241],
         MandragoraNameIds: [13242, 13243, 13244, 13245, 13246],
+        FirstNameIds: [],
         GoldSackBaseIds: [],
         SilverSackBaseIds: [],
         Verified: true);
@@ -59,6 +60,9 @@ internal static class DungeonProfiles
         // Goldy cat, vaultkeeper; vault onion, eggplant, garlic, tomato, queen.
         BonusNameIds: [14014, 14015],
         MandragoraNameIds: [14016, 14017, 14018, 14019, 14020],
+        // The adds that come with a boss hit hard and are killed before it: Fastitocalon's vault laser cannons, Bitter
+        // Eye's vault eyeclopses, Gwyddneu's vault leptocyons, Paeonia's seedlings, the Gilded Sentry's laser turrets.
+        FirstNameIds: [14000, 14002, 13997, 14006, 14008],
         // The bonus round's gold and silver sacks; it asks for a hundred glowing sacks in ninety seconds.
         GoldSackBaseIds: [2014791],
         SilverSackBaseIds: [2014792],
