@@ -55,6 +55,14 @@ internal static partial class L
         public static readonly LocString GroupBonus = new("dungeon.group.bonus", "Bonus enemies");
         public static readonly LocString PreferBonus = new("dungeon.preferBonus", "Attack bonus enemies first");
         public static readonly LocString PreferBonusHelp = new("dungeon.preferBonusHelp", "Rare enemies that drop extra loot and run off if left too long, such as the goldy cat and the vaultkeeper, are attacked before anything else.");
+        public static readonly LocString PerDungeonBonus = new("dungeon.perDungeonBonus", "Per dungeon");
+        public static readonly LocString PerDungeonNone = new("dungeon.perDungeonNone", "All attack first");
+        public static readonly LocPlural PerDungeonCustom = new("dungeon.perDungeonCustom", "{0} not first", "{0} not first");
+        public static readonly LocString PerDungeonBonusHelp = new("dungeon.perDungeonBonusHelp", "Not first leaves this dungeon's bonus enemies to the usual order, so the other enemies are not left hitting you.");
+        public static readonly LocString BonusFirstName = new("dungeon.bonus.first.name", "Attack first");
+        public static readonly LocString BonusFirstDetail = new("dungeon.bonus.first.detail", "Bonus enemies are attacked before anything else here.");
+        public static readonly LocString BonusLastName = new("dungeon.bonus.last.name", "Not first");
+        public static readonly LocString BonusLastDetail = new("dungeon.bonus.last.detail", "Bonus enemies are fought like the rest here, so the other enemies are not left hitting you.");
         public static readonly LocString MandragorasInOrder = new("dungeon.mandragorasInOrder", "Kill the mandragora party in order");
         public static readonly LocString MandragorasInOrderHelp = new("dungeon.mandragorasInOrderHelp", "The five mandragoras are killed by the numbers over their heads: onion, eggplant, garlic, tomato, then the queen. With both settings on, bonus enemies still come first.");
         public static readonly LocString MandragorasSoloNote = new("dungeon.mandragorasSoloNote", "Not recommended solo: area attacks and the rotation's own picks can kill them out of order, which loses the full reward.");
