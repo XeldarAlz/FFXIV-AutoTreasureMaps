@@ -791,7 +791,7 @@
   "dungeon.chat.notOurDungeon": "A execução não entrou nesta masmorra do tesouro, então é com você (/atm dungeon a conclui). A execução continua quando você sair.",
   "dungeon.chat.lootWaiting": "Ainda há itens esperando uma rolagem, então a execução deixa a masmorra com você em vez de perdê-los.",
   "dungeon.chat.nearbyWritten": "{0} objeto(s) próximo(s) escrito(s) no console (/atm log).",
-  "dungeon.chat.lure": "A armadilha da cobiça apareceu. Faça sua escolha; a execução continua quando a janela fechar.",
+  "dungeon.chat.lure": "A armadilha da cobiça apareceu. Faça sua escolha; a execução continua quando a armadilha acabar.",
   "dungeon.chat.bonusRound": "Começou uma rodada bônus. Pegue você mesmo os sacos brilhantes; a execução continua quando acabar.",
   "dungeon.chat.enteringPortal": "Um portal apareceu. Entrando para concluir a masmorra do tesouro.",
   "dungeon.chat.portalInParty": "Um portal apareceu, mas você está em grupo, então a masmorra fica com você.",
@@ -800,6 +800,13 @@
   "dungeon.chat.recording": "Já está gravando em {0}.",
   "dungeon.chat.recordStopped": "Gravação salva em {0}.",
   "dungeon.chat.notRecording": "Nada está sendo gravado.",
+  "dungeon.chat.lureRare": "O baú tem saque raro ({0}), então após o primeiro desafio só se continua com uma carta de 1 a 3 ou de 7 a 9.",
+  "dungeon.chat.lureChallenge": "Armadilha da cobiça: desafio {0} aceito.",
+  "dungeon.chat.lureTake": "Armadilha da cobiça: levando o tesouro em {0}x.",
+  "dungeon.chat.lureBlindGuess": "Armadilha da cobiça: ninguém adivinhou em um minuto e a carta não pôde ser lida, então {0} foi escolhido ao acaso para não perder o tesouro. O resto da execução leva os baús como estão.",
+  "dungeon.chat.lureCardHint": "Armadilha da cobiça: a carta mostra {0}; escolha {1}.",
+  "dungeon.lure.high": "maior",
+  "dungeon.lure.low": "menor",
   "dungeon.outcome.cleared": "Concluída",
   "dungeon.outcome.expelled": "Expulso",
   "dungeon.outcome.died": "Nocauteado",
@@ -846,5 +853,7 @@
   "dungeon.lure.ask.name": "Deixar eu escolher",
   "dungeon.lure.ask.detail": "A execução espera enquanto você joga ou abre o baú.",
   "dungeon.lure.open.name": "Abrir o baú",
-  "dungeon.lure.open.detail": "Levar o tesouro como está e pular o jogo."
+  "dungeon.lure.open.detail": "Levar o tesouro como está e pular o jogo.",
+  "dungeon.lure.auto.name": "Desafiar conforme o saque",
+  "dungeon.lure.auto.detail": "Aceita o primeiro desafio e avalia cada seguinte pela carta, já que a carta virada é a próxima a ser adivinhada. Sem saque raro que a limpeza mantém, joga pela maior média; com ele, só continua com carta de 1 a 3 ou de 7 a 9. Cada escolha segue a carta: 1 a 4 maior, 6 a 9 menor."
 }

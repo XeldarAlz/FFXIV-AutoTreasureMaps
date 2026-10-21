@@ -14,6 +14,7 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -34,6 +35,23 @@ public abstract partial class AutoCommon
     private const int DungeonFightCapMs = 600_000;
     private const int LureClickAttempts = 3;
     private const int LureCloseWaitMs = 3_000;
+    // Nobody may be there to guess: the game waits about five minutes for a guess before it takes the treasure away.
+    private const int LureQuietLimitMs = 360_000;
+    // The first challenge is taken before any card shows and is won 7 times in 9, so it is always taken. The right card
+    // a won guess turns over becomes the next left card, so every later challenge is weighed on a known card: a card
+    // of c is won max(9 - c, c - 1) times in 8, a tie being dealt again. Without rare loot the treasure is played for
+    // the most on average: at 2x anything but a 5, at 3x a card of 1 to 3 or 7 to 9, from 4x a card of 1, 2, 8 or 9
+    // (2.00x on average, all lost 41% of the time). With rare loot only a card won at least 6 times in 8 is
+    // challenged, 1 to 3 or 7 to 9 at any share (1.95x, 34%).
+    private const int LureMiddleCard = 5;
+    private const int LureGameChallenges = 5;
+    // The game takes the treasure away about five minutes after the cards are dealt if no one guesses. With the card
+    // dealt face up readable, the run guesses on it at once; when it cannot be read, a guess not made by the player
+    // within this long is made by a coin toss: an even chance beats losing the treasure for sure.
+    private const int LureGuessWaitMs = 60_000;
+
+    private const int LureGuessAnswerMs = 10_000;
+    private const int LureCardReadMs = 3_000;
     private const int BonusRoundCapMs = 120_000;
     private const float SackReachMeters = 0.6f;
     private const int SackWalkMs = 10_000;
@@ -53,6 +71,10 @@ public abstract partial class AutoCommon
 
     // Set when the last RunDungeon ended on an unexpected error, for the caller to hand to the session's fault handling.
     private protected Exception? DungeonFault { get; private set; }
+
+    // Set once the run had to guess a lure's cards itself: no one is at the keyboard, so the coffers that follow in this
+    // run are taken as they are rather than challenged. Cleared when the player guesses one themselves.
+    private bool lureUnattended;
 
     // Set while the rotations are told to attack only the enemy the settings want killed first.
     private bool priorityTargeting;
@@ -291,7 +313,7 @@ public abstract partial class AutoCommon
     private DungeonStep Decide(TreasureDungeonHandler handler, DungeonContext context, long idleSince)
     {
         var dungeon = context.Dungeon;
-        if (LureDialog.Open())
+        if (LureOngoing(dungeon))
         {
             return DungeonStep.Lure;
         }
@@ -592,7 +614,7 @@ public abstract partial class AutoCommon
         {
             while (!CancelToken.IsCancellationRequested && Environment.TickCount64 < deadline)
             {
-                if (IsKnockedOut() || context.Zoning || !context.InDungeon || LureDialog.Open())
+                if (IsKnockedOut() || context.Zoning || !context.InDungeon || LureOngoing(context.Dungeon))
                 {
                     return;
                 }
@@ -738,35 +760,61 @@ public abstract partial class AutoCommon
 
     private void ReleasePriorityTargeting(string scope) => SetPriorityTargeting(scope, false, false);
 
+    // The lure's window closes the moment a challenge is taken and opens again for the next one, so between the two
+    // the coffer looks free to open and the gates free to take. The lure runs while its window is up or its high and
+    // low cards wait on a guess, and from the trap springing until the game says how it ended; until then nothing else
+    // in the chamber is touched. The cards are read off the field, so a plugin reload mid-lure still sees it.
+    private bool LureOngoing(DungeonInProgress dungeon)
+    {
+        if (LureDialog.Open() || DungeonField.LureGuessPending())
+        {
+            return true;
+        }
+
+        return Messages.TryGetLatest(LureMessages, dungeon.RoundStartedAtMs, out var latest)
+            && latest.Id is DungeonLogMessages.LureSprung or DungeonLogMessages.LureRound or DungeonLogMessages.LureDisarmed
+            && Environment.TickCount64 - latest.AtMs < LureQuietLimitMs;
+    }
+
+    private static ReadOnlySpan<uint> LureMessages =>
+    [
+        DungeonLogMessages.LureSprung,
+        DungeonLogMessages.LureRound,
+        DungeonLogMessages.LureDisarmed,
+        DungeonLogMessages.LureNotDisarmed,
+        DungeonLogMessages.LureDeclined,
+        DungeonLogMessages.LureStopped,
+        DungeonLogMessages.LureAllDisarmed,
+        DungeonLogMessages.LureFailed,
+    ];
+
     private async Task AnswerDungeonLure(DungeonContext context)
     {
         const string scope = "dungeon-lure";
         var dungeon = context.Dungeon;
         var policy = Plugin.Instance.Configuration.DungeonLurePolicy;
-        if (policy == LurePolicy.OpenCoffer)
+        if (DungeonField.LureGuessPending() && !LureDialog.Open())
         {
-            Status = "Opening the coffer as it is";
-            if (!await HumanDelay(HumanAction.OpenCoffer, scope))
-            {
-                return;
-            }
+            await AwaitLureGuess(scope, context, policy);
+            return;
+        }
 
-            for (var attempt = 1; attempt <= LureClickAttempts && LureDialog.Open(); attempt++)
-            {
-                if (LureDialog.OpenCoffer())
-                {
-                    Diag($"{scope}: the Gambler's Lure is up; opening the coffer as it is (attempt {attempt}).");
-                }
+        if (policy != LurePolicy.AskMe && !LureDialog.Open())
+        {
+            // The window is answered; the coffer is opening, or the cards are out for the player to guess.
+            Status = "Gambler's Lure: waiting for it to end";
+            await NextFrame(DungeonTickFrames);
+            return;
+        }
 
-                await WaitUntilTimed(() => !LureDialog.Open(), LureCloseWaitMs, "lure closed", 1);
-            }
+        if (policy == LurePolicy.Auto && await PlayLure(scope, dungeon))
+        {
+            return;
+        }
 
-            if (!LureDialog.Open())
-            {
-                return;
-            }
-
-            Warn($"{scope}: the lure window would not take the open-the-coffer choice; leaving it to the player.");
+        if (policy == LurePolicy.OpenCoffer && await AnswerLureWindow(scope, challenge: false))
+        {
+            return;
         }
 
         if (!dungeon.LureNoticeShown)
@@ -777,10 +825,196 @@ public abstract partial class AutoCommon
         }
 
         Status = "Gambler's Lure: up to you";
-        while (LureDialog.Open() && !CancelToken.IsCancellationRequested && context.InDungeon)
+        while (LureOngoing(dungeon) && !CancelToken.IsCancellationRequested && context.InDungeon)
         {
             await NextFrame(DungeonTickFrames);
         }
+    }
+
+    // Challenges or takes the treasure by what the coffer holds, the shares it stands at and the card the next
+    // challenge would be guessed on. False when the window could not be read or would not take the choice.
+    private async Task<bool> PlayLure(string scope, DungeonInProgress dungeon)
+    {
+        if (!LureDialog.TryReadRareLoot(out var rare, out var entries))
+        {
+            Warn($"{scope}: the lure window's treasure could not be read; taking the treasure as it is.");
+            return await AnswerLureWindow(scope, challenge: false);
+        }
+
+        rare.RemoveAll(static itemId => !LootCleanup.KeepsRare(itemId));
+        var next = NextLureChallenge(dungeon);
+        int? card = null;
+        var raw = 0;
+        if (next > 1)
+        {
+            card = DungeonField.LureCardFace(left: false, out raw);
+        }
+
+        var challenge = !lureUnattended && WorthChallenging(next, card, rare.Count > 0);
+        var names = string.Join(", ", rare.Select(static itemId => NotableLoot.Name(itemId)));
+        var cardText = next == 1 ? "none yet" : card?.ToString(CultureInfo.InvariantCulture) ?? $"unreadable (mask 0x{raw:X})";
+        Diag($"{scope}: {entries} treasure entr(ies), rare loot kept [{names}], unattended {lureUnattended}; challenge {next}, next card {cardText}: {(challenge ? "challenging" : "taking the treasure")}.");
+        if (rare.Count > 0 && !dungeon.LureNoticeShown)
+        {
+            dungeon.LureNoticeShown = true;
+            Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatLureRare, names)}");
+        }
+
+        if (!await AnswerLureWindow(scope, challenge))
+        {
+            return false;
+        }
+
+        Svc.Chat.Print(challenge
+            ? $"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatLureChallenge, next)}"
+            : $"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatLureTake, next)}");
+        return true;
+    }
+
+    // Whether to take challenge next, counted from 1, with the treasure at next shares. An unread card is not gambled on.
+    private static bool WorthChallenging(int next, int? card, bool rare)
+    {
+        if (next == 1)
+        {
+            return true;
+        }
+
+        if (next > LureGameChallenges || card is not { } value)
+        {
+            return false;
+        }
+
+        var wins = Math.Max(9 - value, value - 1);
+        if (rare)
+        {
+            return wins >= 6;
+        }
+
+        return next switch
+        {
+            2 => value != LureMiddleCard,
+            3 => wins >= 6,
+            _ => wins >= 7,
+        };
+    }
+
+    // The cards are dealt and wait on a guess. With the policy left to the player, the run names the better guess
+    // and waits. Otherwise it guesses on the card dealt face up; if that card cannot be read, the player has a minute
+    // to guess before the run tosses a coin, and the run stops challenging for the rest of it.
+    private async Task AwaitLureGuess(string scope, DungeonContext context, LurePolicy policy)
+    {
+        Status = "Gambler's Lure: waiting for the guess";
+        var dealtAt = Environment.TickCount64;
+        var (shown, raw) = await WaitForShownCard(context);
+
+        Diag($"{scope}: the card dealt face up reads {(shown?.ToString(CultureInfo.InvariantCulture) ?? "unreadable")} (mask 0x{raw:X}).");
+        if (shown is { } card)
+        {
+            var high = card < LureMiddleCard || (card == LureMiddleCard && Random.Shared.Next(2) == 0);
+            if (policy == LurePolicy.AskMe)
+            {
+                Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatLureCardHint, card, Loc.T(high ? L.Dungeon.LureHigh : L.Dungeon.LureLow))}");
+            }
+            else
+            {
+                await GuessLure(scope, context, high, $"the card shows {card}");
+                return;
+            }
+        }
+
+        while (DungeonField.LureGuessPending() && !CancelToken.IsCancellationRequested && context.InDungeon)
+        {
+            if (shown is null && policy != LurePolicy.AskMe && Environment.TickCount64 - dealtAt >= LureGuessWaitMs && !NpcInteraction.SelectYesnoOpen())
+            {
+                lureUnattended = true;
+                var coin = Random.Shared.Next(2) == 0;
+                Warn($"{scope}: no guess within {LureGuessWaitMs / TimeUnits.MillisecondsPerSecond}s and the card unreadable; guessing at random and taking the coffers as they are for the rest of the run.");
+                Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatLureBlindGuess, Loc.T(coin ? L.Dungeon.LureHigh : L.Dungeon.LureLow))}");
+                await GuessLure(scope, context, coin, "a coin toss");
+                return;
+            }
+
+            await NextFrame(DungeonTickFrames);
+        }
+
+        if (!CancelToken.IsCancellationRequested && lureUnattended && Environment.TickCount64 - dealtAt < LureGuessWaitMs)
+        {
+            lureUnattended = false;
+            Diag($"{scope}: the player guessed; challenges are back on.");
+        }
+    }
+
+    // The card turns over a moment before the choices can be targeted, so it is read for a short while.
+    private async Task<(int? Card, int Raw)> WaitForShownCard(DungeonContext context)
+    {
+        var deadline = Environment.TickCount64 + LureCardReadMs;
+        while (Environment.TickCount64 < deadline && DungeonField.LureGuessPending() && !CancelToken.IsCancellationRequested && context.InDungeon)
+        {
+            if (DungeonField.LureShownCard(out var raw) is { } card)
+            {
+                return (card, raw);
+            }
+
+            await NextFrame(DungeonTickFrames);
+        }
+
+        return (null, 0);
+    }
+
+    private async Task GuessLure(string scope, DungeonContext context, bool high, string reason)
+    {
+        if (!await HumanDelay(HumanAction.OpenCoffer, scope) || DungeonField.LureChoice(high) is not { } choice)
+        {
+            return;
+        }
+
+        var choiceId = choice.GameObjectId;
+        var name = high ? "high" : "low";
+        Diag($"{scope}: guessing {name} ({reason}).");
+        Status = "Gambler's Lure: guessing";
+        var promptBefore = context.PromptOpen();
+        var interacted = await context.Interact(() => Svc.Objects.SearchById(choiceId), $"lure choice {name}", NpcInteraction.SelectYesnoOpen, scope);
+        if (await WaitUntilTimed(NpcInteraction.SelectYesnoOpen, LureGuessAnswerMs, "lure guess question"))
+        {
+            context.ConfirmPrompt(scope, interacted || NpcInteraction.SelectYesnoOpen(), promptBefore);
+        }
+
+        await WaitUntilTimed(() => !DungeonField.LureGuessPending(), LureGuessAnswerMs, "lure guess taken");
+    }
+
+    // The challenge the window offers now, counted from 1; the treasure stands at this many shares.
+    private int NextLureChallenge(DungeonInProgress dungeon)
+    {
+        var since = Messages.TryGetLatest(DungeonLogMessages.LureSprung, dungeon.RoundStartedAtMs, out var sprung) ? sprung.AtMs : dungeon.RoundStartedAtMs;
+        return Messages.TryGetLatest(DungeonLogMessages.LureRound, since, out var round) && round.TryGetParameter(0, out var taken) ? taken + 1 : 1;
+    }
+
+    // True once the window took the choice and closed, or the run was stopped before it chose.
+    private async Task<bool> AnswerLureWindow(string scope, bool challenge)
+    {
+        Status = challenge ? "Gambler's Lure: challenging" : "Opening the coffer as it is";
+        if (!await HumanDelay(HumanAction.OpenCoffer, scope))
+        {
+            return true;
+        }
+
+        for (var attempt = 1; attempt <= LureClickAttempts && LureDialog.Open(); attempt++)
+        {
+            if (challenge ? LureDialog.Challenge() : LureDialog.OpenCoffer())
+            {
+                Diag($"{scope}: {(challenge ? "challenging the lure" : "opening the coffer as it is")} (attempt {attempt}).");
+            }
+
+            await WaitUntilTimed(() => !LureDialog.Open(), LureCloseWaitMs, "lure closed", 1);
+        }
+
+        if (!LureDialog.Open())
+        {
+            return true;
+        }
+
+        Warn($"{scope}: the lure window would not take the choice; leaving it to the player.");
+        return false;
     }
 
     // Rolls whatever waits on a roll by the Loot setting, then gives the bags a moment to settle.
@@ -941,7 +1175,7 @@ public abstract partial class AutoCommon
 
         // Something on the field that answers what the run just did: a fight, or the lure.
         public bool FieldBusy()
-            => Svc.Condition[ConditionFlag.InCombat] || LureDialog.Open() || NearestEnemy(out _) is not null;
+            => Svc.Condition[ConditionFlag.InCombat] || owner.LureOngoing(Dungeon) || NearestEnemy(out _) is not null;
 
         // The room's nearest enemy the run fights; the mandragora party only counts when the settings want it killed.
         public IBattleNpc? NearestEnemy(out int count) => DungeonField.NearestEnemy(Profile, Config.DungeonMandragorasInOrder, out count);
