@@ -34,9 +34,16 @@ public sealed partial class Configuration
     // The rare enemies that drop extra loot and run off if left alone are attacked before anything else.
     public bool DungeonPreferBonusEnemies { get; set; } = false;
 
+    // Keyed by the dungeon profile's key; false leaves that dungeon's bonus enemies to the usual order while
+    // DungeonPreferBonusEnemies is on. Nothing here applies while it is off.
+    public Dictionary<string, bool> DungeonPreferBonusOverrides { get; set; } = [];
+
     // The mandragora party is killed in its markers' order; it comes after the rare enemies when both are on.
     public bool DungeonMandragorasInOrder { get; set; } = false;
 
     public GatePolicy GatePolicyFor(string dungeonKey)
         => DungeonGatePolicyOverrides.TryGetValue(dungeonKey, out var policy) && policy != GatePolicy.Default ? policy : DungeonGatePolicy;
+
+    public bool PreferBonusFor(string dungeonKey)
+        => DungeonPreferBonusEnemies && (!DungeonPreferBonusOverrides.TryGetValue(dungeonKey, out var prefer) || prefer);
 }

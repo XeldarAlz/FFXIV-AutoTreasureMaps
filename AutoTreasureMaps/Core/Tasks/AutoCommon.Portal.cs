@@ -29,6 +29,7 @@ public abstract partial class AutoCommon
     // The portal does not wait for ever, so the coffer's loot gets only this long before the walk in; the rest is
     // discarded after the dungeon.
     private const int PortalCleanupWaitMs = 30_000;
+    private const int DungeonCleanupWaitMs = 120_000;
 
     private static string[]? portalPromptFragments;
 
@@ -107,13 +108,19 @@ public abstract partial class AutoCommon
             return PortalStep.Stop;
         }
 
-        if (DutyWatcher.InContent())
+        var step = DutyWatcher.InContent() ? await WaitForPlayerToLeave(session) : PortalStep.Cleared;
+        if (step != PortalStep.Cleared)
         {
-            return await WaitForPlayerToLeave(session);
+            return step;
         }
 
         session.ClearOwnDungeon();
-        return PortalStep.Cleared;
+
+        // The dungeon's loot is cleared out of the bags as soon as the character is back outside, rather than with
+        // the next map's coffer.
+        await WaitUntilTimed(() => !Zoning() && NpcInteraction.PlayerReady(), PortalZoneWaitMs, "back outside");
+        await DiscardNotedLoot(DungeonCleanupWaitMs, "Dungeon");
+        return CancelToken.IsCancellationRequested ? PortalStep.Stop : PortalStep.Cleared;
     }
 
     // Null when the character is not in a treasure dungeon. Inside one the run entered itself, the dungeon is cleared
