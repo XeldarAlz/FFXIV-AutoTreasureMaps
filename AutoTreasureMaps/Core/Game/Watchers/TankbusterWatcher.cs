@@ -51,6 +51,8 @@ internal sealed unsafe class TankbusterWatcher : IDisposable
     // A pack this big hitting the character this low gets one bigger cooldown, the only use outside a tankbuster.
     private const float PackHpRatio = 0.4f;
     private const int PackAttackers = 3;
+    // The bigger cooldowns last 15 to 20 s, so a pack gets no second one within this long, even if a buff goes unseen.
+    private const long PackCooldownMs = 20_000;
     private const float WarriorHealHpRatio = 0.5f;
     private const float AuroraHpRatio = 0.8f;
     // The tank module's setting is a transient one that a rewritten preset loses, so it is set again this often.
@@ -72,8 +74,41 @@ internal sealed unsafe class TankbusterWatcher : IDisposable
     private const uint Camouflage = 16140;
     private const uint Nebula = 16148; // Great Nebula from level 92
     private const uint Aurora = 16151;
-    // Aurora is cast on a target, so the Action sheet names no buff of its own for it.
+    private const uint Bloodwhetting = 25751;
+    private const uint Damnation = 36923;
+    private const uint HolySheltron = 25746;
+    private const uint Guardian = 36920;
+    private const uint ShadowedVigil = 36927;
+    private const uint HeartOfCorundum = 25758;
+    private const uint GreatNebula = 36935;
     private const uint AuroraStatus = 1835;
+
+    // The buffs each mitigation puts on the character, by the action as the game adjusts it for the level. The Action
+    // sheet's StatusGainSelf is 0 for every one of them, so read from there none ever showed as up and a warrior got
+    // Rampart right after Damnation.
+    private static readonly Dictionary<uint, uint[]> mitigationStatuses = new()
+    {
+        [Rampart] = [1191],
+        [RawIntuition] = [735],
+        [Bloodwhetting] = [2678, 2679],
+        [Vengeance] = [89],
+        [Damnation] = [3832],
+        [Sheltron] = [1856],
+        [HolySheltron] = [2674, 2675],
+        [Sentinel] = [74],
+        [Guardian] = [3829],
+        [Bulwark] = [77],
+        [TheBlackestNight] = [1178],
+        [ShadowWall] = [747],
+        [ShadowedVigil] = [3835],
+        [Oblation] = [2682],
+        [DarkMind] = [746],
+        [HeartOfStone] = [1840],
+        [HeartOfCorundum] = [2683, 2684],
+        [Nebula] = [1834],
+        [GreatNebula] = [3838],
+        [Camouflage] = [1832],
+    };
 
     // The short mitigation comes first; the rest, strongest first, are only used against a boss's tankbuster.
     private static readonly uint[] warriorMitigations = [RawIntuition, Vengeance, Rampart];
@@ -113,6 +148,7 @@ internal sealed unsafe class TankbusterWatcher : IDisposable
     private (uint Caster, uint Action) answering;
     private readonly List<uint> pressed = [];
     private long lastTankbusterMs = long.MinValue / 2;
+    private long lastPackMs = long.MinValue / 2;
 
     private enum Press : byte { Now, Done }
 
@@ -404,8 +440,9 @@ internal sealed unsafe class TankbusterWatcher : IDisposable
 
     // The short mitigation once the HP falls under 80% (50% while a boss that casts tankbusters is up, so it is ready for
     // them) without its own buff up, one bigger cooldown when a pack of three or more is hitting the character under
-    // 40%, and the warrior's and the gunbreaker's heals. At most one press, and only while the character is free to act.
-    private static void MitigateByHp(uint[] mitigations, IPlayerCharacter player, bool bossUp, int attackers)
+    // 40% (at most one every 20 s), and the warrior's and the gunbreaker's heals. At most one press, and only while the
+    // character is free to act.
+    private void MitigateByHp(uint[] mitigations, IPlayerCharacter player, bool bossUp, int attackers)
     {
         var actions = ActionManager.Instance();
         if (actions is null || player.MaxHp == 0 || !FreeToAct())
@@ -421,9 +458,11 @@ internal sealed unsafe class TankbusterWatcher : IDisposable
             return;
         }
 
-        if (ratio < PackHpRatio && attackers >= PackAttackers && BigUp(actions, mitigations, player) == 0
+        var now = Environment.TickCount64;
+        if (ratio < PackHpRatio && attackers >= PackAttackers && now - lastPackMs >= PackCooldownMs && BigUp(actions, mitigations, player) == 0
             && ReadyBig(actions, mitigations, player) is var bigId and not 0 && UseByHp(actions, bigId, player, ratio))
         {
+            lastPackMs = now;
             RunLog.Info($"Tankbuster: {attackers} enemies are hitting the character; used {ActionName(bigId)} for the pack.");
             return;
         }
@@ -470,15 +509,22 @@ internal sealed unsafe class TankbusterWatcher : IDisposable
         return 0;
     }
 
-    // The buff an action puts on its user is read from the Action sheet, so no status ids are kept here.
     private static bool BuffUp(IPlayerCharacter player, uint actionId)
     {
-        if (!Svc.Data.GetExcelSheet<LuminaAction>().TryGetRow(actionId, out var action) || action.StatusGainSelf.RowId == 0)
+        if (!mitigationStatuses.TryGetValue(actionId, out var statusIds))
         {
             return false;
         }
 
-        return StatusUp(player, action.StatusGainSelf.RowId);
+        foreach (var statusId in statusIds)
+        {
+            if (StatusUp(player, statusId))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool StatusUp(IPlayerCharacter player, uint statusId)
