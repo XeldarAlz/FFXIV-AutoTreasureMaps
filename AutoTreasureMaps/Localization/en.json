@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "The Gambler's Lure is up. Make your choice; the run goes on once its window closes.",
   "dungeon.chat.bonusRound": "A bonus round began. Pick up the glowing sacks yourself; the run goes on once it ends.",
   "dungeon.chat.enteringPortal": "A portal appeared. Entering it to clear the treasure dungeon.",
+  "dungeon.chat.portalNotEntered": "The run could not get into the portal, so the dungeon is left to you.",
   "dungeon.chat.portalInParty": "A portal appeared, but you are in a party, so the dungeon is left to you.",
   "dungeon.chat.unknownDungeon": "This treasure dungeon is not one the plugin can clear yet, so it is up to you. The run carries on once you are back outside.",
   "dungeon.chat.recordStarted": "Recording the dungeon to {0}. Clear it by hand, then /atm dungeon record stop.",

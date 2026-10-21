@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "A armadilha da cobiça apareceu. Faça sua escolha; a execução continua quando a janela fechar.",
   "dungeon.chat.bonusRound": "Começou uma rodada bônus. Pegue você mesmo os sacos brilhantes; a execução continua quando acabar.",
   "dungeon.chat.enteringPortal": "Um portal apareceu. Entrando para concluir a masmorra do tesouro.",
+  "dungeon.chat.portalNotEntered": "A execução não conseguiu entrar no portal, então a masmorra fica com você.",
   "dungeon.chat.portalInParty": "Um portal apareceu, mas você está em grupo, então a masmorra fica com você.",
   "dungeon.chat.unknownDungeon": "O plugin ainda não sabe concluir esta masmorra do tesouro, então é com você. A execução continua quando você sair.",
   "dungeon.chat.recordStarted": "Gravando a masmorra em {0}. Conclua-a à mão e depois /atm dungeon record stop.",

@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "Ha aparecido la trampa de la codicia. Elige tú; la ejecución sigue en cuanto se cierre su ventana.",
   "dungeon.chat.bonusRound": "Ha empezado una ronda extra. Recoge tú las bolsas brillantes; la ejecución sigue cuando termine.",
   "dungeon.chat.enteringPortal": "Ha aparecido un portal. Entrando para completar la mazmorra del tesoro.",
+  "dungeon.chat.portalNotEntered": "La ejecución no pudo entrar en el portal, así que la mazmorra queda en tus manos.",
   "dungeon.chat.portalInParty": "Ha aparecido un portal, pero estás en un grupo, así que la mazmorra queda en tus manos.",
   "dungeon.chat.unknownDungeon": "El complemento aún no sabe completar esta mazmorra del tesoro, así que depende de ti. La ejecución sigue cuando vuelvas a salir.",
   "dungeon.chat.recordStarted": "Grabando la mazmorra en {0}. Complétala a mano y luego /atm dungeon record stop.",

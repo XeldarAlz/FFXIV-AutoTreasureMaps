@@ -794,6 +794,7 @@
   "dungeon.chat.lure": "La tentation du flambeur est apparue. Faites votre choix ; la session reprend dès que sa fenêtre se ferme.",
   "dungeon.chat.bonusRound": "Une manche bonus a commencé. Ramassez vous-même les sacs lumineux ; la session reprend à la fin.",
   "dungeon.chat.enteringPortal": "Un portail est apparu. Entrée pour terminer le donjon au trésor.",
+  "dungeon.chat.portalNotEntered": "La session n'a pas pu entrer dans le portail, le donjon est donc entre vos mains.",
   "dungeon.chat.portalInParty": "Un portail est apparu, mais vous êtes en équipe, le donjon vous est donc laissé.",
   "dungeon.chat.unknownDungeon": "Le plugin ne sait pas encore terminer ce donjon au trésor, il est donc entre vos mains. La session reprend une fois dehors.",
   "dungeon.chat.recordStarted": "Enregistrement du donjon dans {0}. Terminez-le à la main, puis /atm dungeon record stop.",
