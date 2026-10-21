@@ -792,7 +792,7 @@
   "dungeon.chat.notOurDungeon": "La session n'est pas entrée dans ce donjon au trésor, il est donc entre vos mains (/atm dungeon le termine). La session reprend une fois dehors.",
   "dungeon.chat.lootWaiting": "Des objets attendent encore un jet, la session vous laisse donc le donjon plutôt que de les perdre.",
   "dungeon.chat.nearbyWritten": "{0} objet(s) à proximité écrit(s) dans la console (/atm log).",
-  "dungeon.chat.lure": "La tentation du flambeur est apparue. Faites votre choix ; la session reprend dès que sa fenêtre se ferme.",
+  "dungeon.chat.lure": "La tentation du flambeur est apparue. Faites votre choix ; la session reprend une fois le jeu terminé.",
   "dungeon.chat.bonusRound": "Une manche bonus a commencé. Ramassez vous-même les sacs lumineux ; la session reprend à la fin.",
   "dungeon.chat.enteringPortal": "Un portail est apparu. Entrée pour terminer le donjon au trésor.",
   "dungeon.chat.portalNotEntered": "La session n'a pas pu entrer dans le portail, le donjon est donc entre vos mains.",
@@ -802,6 +802,13 @@
   "dungeon.chat.recording": "Enregistrement déjà en cours dans {0}.",
   "dungeon.chat.recordStopped": "Enregistrement sauvegardé dans {0}.",
   "dungeon.chat.notRecording": "Aucun enregistrement en cours.",
+  "dungeon.chat.lureRare": "Le coffre contient un butin rare ({0}) : après le premier défi, on ne continue que sur une carte de 1 à 3 ou de 7 à 9.",
+  "dungeon.chat.lureChallenge": "Tentation du flambeur : défi {0} relevé.",
+  "dungeon.chat.lureTake": "Tentation du flambeur : le trésor est pris à x{0}.",
+  "dungeon.chat.lureBlindGuess": "Tentation du flambeur : personne n'a deviné en une minute et la carte était illisible, {0} a donc été choisi au hasard pour ne pas perdre le trésor. Le reste de la session prend les coffres tels quels.",
+  "dungeon.chat.lureCardHint": "Tentation du flambeur : la carte montre {0} ; choisissez {1}.",
+  "dungeon.lure.high": "plus haut",
+  "dungeon.lure.low": "plus bas",
   "dungeon.outcome.cleared": "Terminé",
   "dungeon.outcome.expelled": "Expulsé",
   "dungeon.outcome.died": "K.O.",
@@ -848,5 +855,7 @@
   "dungeon.lure.ask.name": "Me laisser choisir",
   "dungeon.lure.ask.detail": "La session attend que vous jouiez ou ouvriez le coffre vous-même.",
   "dungeon.lure.open.name": "Ouvrir le coffre",
-  "dungeon.lure.open.detail": "Prendre le trésor tel quel et passer le jeu."
+  "dungeon.lure.open.detail": "Prendre le trésor tel quel et passer le jeu.",
+  "dungeon.lure.auto.name": "Relever selon le butin",
+  "dungeon.lure.auto.detail": "Relève le premier défi, puis juge chaque suivant sur sa carte, car la carte retournée devient la suivante. Sans butin rare gardé par le nettoyage, joue pour la meilleure moyenne ; avec, ne continue que sur une carte de 1 à 3 ou de 7 à 9. Chaque choix suit la carte : 1 à 4 plus haut, 6 à 9 plus bas."
 }

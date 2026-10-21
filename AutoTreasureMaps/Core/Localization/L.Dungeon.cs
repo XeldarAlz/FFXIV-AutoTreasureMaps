@@ -12,7 +12,7 @@ internal static partial class L
         public static readonly LocString ChatNotInDungeon = new("dungeon.chat.notInDungeon", "You are not in a treasure dungeon the plugin knows. It knows Cenote Ja Ja Gural and Vault Oneiron so far.");
         public static readonly LocString ChatInParty = new("dungeon.chat.inParty", "Treasure dungeons are only cleared solo for now. Leave the party first.");
         public static readonly LocString ChatStuck = new("dungeon.chat.stuck", "The dungeon shows nothing the plugin knows how to act on, so the rest is up to you.");
-        public static readonly LocString ChatLure = new("dungeon.chat.lure", "The Gambler's Lure is up. Make your choice; the run goes on once its window closes.");
+        public static readonly LocString ChatLure = new("dungeon.chat.lure", "The Gambler's Lure is up. Make your choice; the run goes on once the lure is over.");
         public static readonly LocString ChatBonusRound = new("dungeon.chat.bonusRound", "A bonus round began. Pick up the glowing sacks yourself; the run goes on once it ends.");
         public static readonly LocString ChatEnteringPortal = new("dungeon.chat.enteringPortal", "A portal appeared. Entering it to clear the treasure dungeon.");
         public static readonly LocString ChatPortalNotEntered = new("dungeon.chat.portalNotEntered", "The run could not get into the portal, so the dungeon is left to you.");
@@ -25,6 +25,13 @@ internal static partial class L
         public static readonly LocString ChatRecordStarted = new("dungeon.chat.recordStarted", "Recording the dungeon to {0}. Clear it by hand, then /atm dungeon record stop.");
         public static readonly LocString ChatRecording = new("dungeon.chat.recording", "Already recording to {0}.");
         public static readonly LocString ChatRecordStopped = new("dungeon.chat.recordStopped", "Recording saved to {0}.");
+        public static readonly LocString ChatLureRare = new("dungeon.chat.lureRare", "The coffer holds rare loot ({0}), so after the first challenge the lure is challenged only on a card of 1 to 3 or 7 to 9.");
+        public static readonly LocString ChatLureChallenge = new("dungeon.chat.lureChallenge", "Gambler's Lure: challenge {0} taken.");
+        public static readonly LocString ChatLureTake = new("dungeon.chat.lureTake", "Gambler's Lure: taking the treasure at {0}x.");
+        public static readonly LocString ChatLureBlindGuess = new("dungeon.chat.lureBlindGuess", "Gambler's Lure: no one guessed within a minute and the card could not be read, so the run guessed {0} at random to keep the treasure from being lost. The rest of this run takes the coffers as they are.");
+        public static readonly LocString ChatLureCardHint = new("dungeon.chat.lureCardHint", "Gambler's Lure: the card shows {0}; guess {1}.");
+        public static readonly LocString LureHigh = new("dungeon.lure.high", "high");
+        public static readonly LocString LureLow = new("dungeon.lure.low", "low");
         public static readonly LocString ChatNotRecording = new("dungeon.chat.notRecording", "Nothing is being recorded.");
 
         public static readonly LocString OutcomeCleared = new("dungeon.outcome.cleared", "Cleared");
@@ -74,5 +81,7 @@ internal static partial class L
         public static readonly LocString LureAskDetail = new("dungeon.lure.ask.detail", "The run waits while you play it or open the coffer yourself.");
         public static readonly LocString LureOpenName = new("dungeon.lure.open.name", "Open the coffer");
         public static readonly LocString LureOpenDetail = new("dungeon.lure.open.detail", "Take the treasure as it is and skip the game.");
+        public static readonly LocString LureAutoName = new("dungeon.lure.auto.name", "Challenge by the loot");
+        public static readonly LocString LureAutoDetail = new("dungeon.lure.auto.detail", "Takes the first challenge, then weighs each next one on its card, since the card turned over becomes the next one to guess on. Without rare loot the cleanup keeps it plays for the most on average; with it, it goes on only on a card of 1 to 3 or 7 to 9. Each guess is made on the card: 1 to 4 high, 6 to 9 low.");
     }
 }

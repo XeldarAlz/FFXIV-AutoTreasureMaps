@@ -21,6 +21,20 @@ internal static unsafe class DungeonField
     // Squared distances are compared, so a gold sack three times as far as a silver one weighs the same.
     private const float SilverSackWeight = 9f;
     private const float SackMovedMeters = 1f;
+    // EObj rows of the Gambler's Lure's 大 (high) and 小 (low) choices: five pairs, 大 on the even row, one pair per
+    // treasure dungeon that has the lure.
+    private const uint FirstLureChoice = 2013872;
+    private const uint LastLureChoice = 2013881;
+    // The cards themselves are nameless event objects of this row, one either side of the coffer, a metre outside the
+    // 大 and 小 choices. A card's face is one bit of a mask in the object: 1 << (value + 3) for 1 to 9. A face-down card
+    // shows bit 2 and a cleared one bit 0, outside that range. Read in game: a 4 showed 0x80 and a 2 showed 0x20.
+    private const uint LureCardObject = 2007457;
+    private const int LureCardFaceOffset = 0x1B2;
+    private const int LureCardFaceShift = 3;
+    // The left card stands about 2m from the midpoint of the choices on the 大 side, the right card as far on the 小
+    // side, and the coffer between them; a card counts as a side's past this.
+    private const float LureCardSideMeters = 1.5f;
+    private const float LureCardMeters = 3.5f;
 
     public static Vector3 PlayerPosition => Svc.Objects.LocalPlayer?.Position ?? Vector3.Zero;
 
@@ -209,6 +223,99 @@ internal static unsafe class DungeonField
 
         return nearest;
     }
+
+    // The Gambler's Lure deals its cards as the 大 and 小 event objects beside the coffer; they can be targeted only
+    // while a guess is waited on.
+    public static bool LureGuessPending()
+    {
+        foreach (var candidate in Svc.Objects)
+        {
+            if (IsLureChoice(candidate) && candidate.IsTargetable)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The 大 or 小 choice waiting on a guess.
+    public static IGameObject? LureChoice(bool high) => FindLureChoice(high, targetableOnly: true);
+
+    // The value of the left card, dealt face up, while a guess is waited on; null when it does not show one face.
+    // raw is the mask read, for the log.
+    public static int? LureShownCard(out int raw)
+    {
+        raw = 0;
+        return LureGuessPending() ? LureCardFace(left: true, out raw) : null;
+    }
+
+    // The value a card shows, 1 to 9, at any point of the lure: the right card turned over by the last guess becomes
+    // the next challenge's left card, so it is read before deciding to challenge again. Null when the card is face
+    // down or not found.
+    public static int? LureCardFace(bool left, out int raw)
+    {
+        raw = 0;
+        if (FindLureChoice(high: true, targetableOnly: false) is not { } high || FindLureChoice(high: false, targetableOnly: false) is not { } low)
+        {
+            return null;
+        }
+
+        var middle = (high.Position + low.Position) / 2f;
+        var towardRight = low.Position - high.Position;
+        if (towardRight.LengthSquared() < float.Epsilon)
+        {
+            return null;
+        }
+
+        towardRight = Vector3.Normalize(towardRight);
+        foreach (var candidate in Svc.Objects)
+        {
+            if (candidate.ObjectKind != ObjectKind.EventObj || candidate.BaseId != LureCardObject || candidate.Address == 0
+                || Vector3.Distance(middle, candidate.Position) > LureCardMeters)
+            {
+                continue;
+            }
+
+            var along = Vector3.Dot(candidate.Position - middle, towardRight);
+            if (left ? along > -LureCardSideMeters : along < LureCardSideMeters)
+            {
+                continue;
+            }
+
+            raw = *(ushort*)((byte*)candidate.Address + LureCardFaceOffset);
+            return FaceOf(raw);
+        }
+
+        return null;
+    }
+
+    private static IGameObject? FindLureChoice(bool high, bool targetableOnly)
+    {
+        foreach (var candidate in Svc.Objects)
+        {
+            if (IsLureChoice(candidate) && (!targetableOnly || candidate.IsTargetable) && (candidate.BaseId % 2 == 0) == high)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static int? FaceOf(int mask)
+    {
+        if (mask == 0 || (mask & (mask - 1)) != 0)
+        {
+            return null;
+        }
+
+        var value = BitOperations.TrailingZeroCount(mask) - LureCardFaceShift;
+        return value is >= 1 and <= 9 ? value : null;
+    }
+
+    private static bool IsLureChoice(IGameObject candidate)
+        => candidate.ObjectKind == ObjectKind.EventObj && candidate.BaseId is >= FirstLureChoice and <= LastLureChoice;
 
     public static HashSet<ulong> EventObjectIds()
     {

@@ -792,7 +792,7 @@
   "dungeon.chat.notOurDungeon": "The run did not enter this treasure dungeon, so it is up to you (/atm dungeon clears it). The run carries on once you are back outside.",
   "dungeon.chat.lootWaiting": "Items still wait on a roll, so the run leaves the dungeon to you rather than lose them.",
   "dungeon.chat.nearbyWritten": "{0} object(s) nearby written to the console (/atm log).",
-  "dungeon.chat.lure": "The Gambler's Lure is up. Make your choice; the run goes on once its window closes.",
+  "dungeon.chat.lure": "The Gambler's Lure is up. Make your choice; the run goes on once the lure is over.",
   "dungeon.chat.bonusRound": "A bonus round began. Pick up the glowing sacks yourself; the run goes on once it ends.",
   "dungeon.chat.enteringPortal": "A portal appeared. Entering it to clear the treasure dungeon.",
   "dungeon.chat.portalNotEntered": "The run could not get into the portal, so the dungeon is left to you.",
@@ -802,6 +802,13 @@
   "dungeon.chat.recording": "Already recording to {0}.",
   "dungeon.chat.recordStopped": "Recording saved to {0}.",
   "dungeon.chat.notRecording": "Nothing is being recorded.",
+  "dungeon.chat.lureRare": "The coffer holds rare loot ({0}), so after the first challenge the lure is challenged only on a card of 1 to 3 or 7 to 9.",
+  "dungeon.chat.lureChallenge": "Gambler's Lure: challenge {0} taken.",
+  "dungeon.chat.lureTake": "Gambler's Lure: taking the treasure at {0}x.",
+  "dungeon.chat.lureBlindGuess": "Gambler's Lure: no one guessed within a minute and the card could not be read, so the run guessed {0} at random to keep the treasure from being lost. The rest of this run takes the coffers as they are.",
+  "dungeon.chat.lureCardHint": "Gambler's Lure: the card shows {0}; guess {1}.",
+  "dungeon.lure.high": "high",
+  "dungeon.lure.low": "low",
   "dungeon.outcome.cleared": "Cleared",
   "dungeon.outcome.expelled": "Sent out",
   "dungeon.outcome.died": "Knocked out",
@@ -848,5 +855,7 @@
   "dungeon.lure.ask.name": "Let me choose",
   "dungeon.lure.ask.detail": "The run waits while you play it or open the coffer yourself.",
   "dungeon.lure.open.name": "Open the coffer",
-  "dungeon.lure.open.detail": "Take the treasure as it is and skip the game."
+  "dungeon.lure.open.detail": "Take the treasure as it is and skip the game.",
+  "dungeon.lure.auto.name": "Challenge by the loot",
+  "dungeon.lure.auto.detail": "Takes the first challenge, then weighs each next one on its card, since the card turned over becomes the next one to guess on. Without rare loot the cleanup keeps it plays for the most on average; with it, it goes on only on a card of 1 to 3 or 7 to 9. Each guess is made on the card: 1 to 4 high, 6 to 9 low."
 }

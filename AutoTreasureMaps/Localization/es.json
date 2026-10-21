@@ -792,7 +792,7 @@
   "dungeon.chat.notOurDungeon": "La ejecución no entró en esta mazmorra del tesoro, así que depende de ti (/atm dungeon la completa). La ejecución sigue cuando vuelvas a salir.",
   "dungeon.chat.lootWaiting": "Aún hay objetos esperando una tirada, así que la ejecución te deja la mazmorra en lugar de perderlos.",
   "dungeon.chat.nearbyWritten": "{0} objeto(s) cercano(s) escritos en la consola (/atm log).",
-  "dungeon.chat.lure": "Ha aparecido la trampa de la codicia. Elige tú; la ejecución sigue en cuanto se cierre su ventana.",
+  "dungeon.chat.lure": "Ha aparecido la trampa de la codicia. Elige tú; la ejecución sigue cuando termine la trampa.",
   "dungeon.chat.bonusRound": "Ha empezado una ronda extra. Recoge tú las bolsas brillantes; la ejecución sigue cuando termine.",
   "dungeon.chat.enteringPortal": "Ha aparecido un portal. Entrando para completar la mazmorra del tesoro.",
   "dungeon.chat.portalNotEntered": "La ejecución no pudo entrar en el portal, así que la mazmorra queda en tus manos.",
@@ -802,6 +802,13 @@
   "dungeon.chat.recording": "Ya se está grabando en {0}.",
   "dungeon.chat.recordStopped": "Grabación guardada en {0}.",
   "dungeon.chat.notRecording": "No se está grabando nada.",
+  "dungeon.chat.lureRare": "El cofre contiene botín raro ({0}), así que tras el primer desafío solo se sigue con una carta de 1 a 3 o de 7 a 9.",
+  "dungeon.chat.lureChallenge": "Trampa de la codicia: desafío {0} aceptado.",
+  "dungeon.chat.lureTake": "Trampa de la codicia: se toma el tesoro a x{0}.",
+  "dungeon.chat.lureBlindGuess": "Trampa de la codicia: nadie adivinó en un minuto y la carta no se pudo leer, así que se eligió {0} al azar para no perder el tesoro. El resto de la ejecución toma los cofres tal cual.",
+  "dungeon.chat.lureCardHint": "Trampa de la codicia: la carta muestra {0}; elige {1}.",
+  "dungeon.lure.high": "mayor",
+  "dungeon.lure.low": "menor",
   "dungeon.outcome.cleared": "Completada",
   "dungeon.outcome.expelled": "Expulsado",
   "dungeon.outcome.died": "Derrotado",
@@ -848,5 +855,7 @@
   "dungeon.lure.ask.name": "Dejarme elegir",
   "dungeon.lure.ask.detail": "La ejecución espera mientras juegas o abres el cofre tú mismo.",
   "dungeon.lure.open.name": "Abrir el cofre",
-  "dungeon.lure.open.detail": "Llevarse el tesoro tal cual y saltarse el juego."
+  "dungeon.lure.open.detail": "Llevarse el tesoro tal cual y saltarse el juego.",
+  "dungeon.lure.auto.name": "Desafiar según el botín",
+  "dungeon.lure.auto.detail": "Acepta el primer desafío y decide cada uno de los siguientes por su carta, ya que la carta descubierta es la siguiente sobre la que se adivina. Sin botín raro que la limpieza conserve juega por el mayor promedio; con él solo sigue con una carta de 1 a 3 o de 7 a 9. Cada elección sigue la carta: 1 a 4 mayor, 6 a 9 menor."
 }
