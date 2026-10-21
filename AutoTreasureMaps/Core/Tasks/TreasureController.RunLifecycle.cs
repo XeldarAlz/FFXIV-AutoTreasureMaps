@@ -104,7 +104,7 @@ internal sealed partial class TreasureController
         ending.AfterActionDispatched = true;
         var configuration = Plugin.Instance.Configuration;
         var action = configuration.AfterRun;
-        var postRunCommands = configuration.PostRunCommands;
+        var postRunCommands = ending.EndedBy is { } end && RunEnds.Succeeded(end) ? configuration.PostRunCommands : string.Empty;
         if (action == AfterRunAction.StayLoggedIn && string.IsNullOrWhiteSpace(postRunCommands))
         {
             Diag("Run completed by its stop condition; the after-run action is StayLoggedIn and no chat commands are set, nothing to do.");
