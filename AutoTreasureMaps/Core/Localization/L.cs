@@ -263,6 +263,13 @@ internal static partial class L
         public static readonly LocString New = new("changelog.new", "New");
         public static readonly LocPlural Changes = new("changelog.changes", "{0} change", "{0} changes");
 
+        public static readonly LocString[] Release1200 =
+        [
+            new("changelog.r1200.1", "Added Chat commands to the settings: list your own commands, one per line (such as /li home or /ays m), and they run when a run finishes on its own, before the after-run action, never after Stop or a failure"),
+            new("changelog.r1200.2", "Fixed a run waiting at a hub aetheryte forever when none of the aethernet stops into a zone are attuned, as with the Idyllshire gates to the Hinterlands: it now stops with a message saying a stop needs attuning"),
+            new("changelog.r1200.3", "The main window now moves only when you drag its top bar, so a drag inside it no longer moves it by accident; turn on Drag from anywhere in the settings for the old behaviour"),
+        ];
+
         public static readonly LocString[] Release1100 =
         [
             new("changelog.r1100.1", "Added treasure dungeons (experimental): with Enter the portal on under Dungeons (off by default), a solo run walks into the portal a map turns up, clears Cenote Ja Ja Gural or the Vault Oneiron, then moves on to the next map; /atm dig does the same. Contributed by blackappleD"),
