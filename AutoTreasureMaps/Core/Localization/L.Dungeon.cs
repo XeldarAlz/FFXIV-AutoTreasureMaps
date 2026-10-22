@@ -82,6 +82,6 @@ internal static partial class L
         public static readonly LocString LureOpenName = new("dungeon.lure.open.name", "Open the coffer");
         public static readonly LocString LureOpenDetail = new("dungeon.lure.open.detail", "Take the treasure as it is and skip the game.");
         public static readonly LocString LureAutoName = new("dungeon.lure.auto.name", "Challenge by the loot");
-        public static readonly LocString LureAutoDetail = new("dungeon.lure.auto.detail", "Takes the first challenge unless the coffer holds rare loot the cleanup keeps, then weighs each next one on its card, since the card turned over becomes the next one to guess on. Without rare loot it plays for the most on average; with it, it goes on only on a card of 1 to 3 or 7 to 9. Each guess is made on the card: 1 to 4 high, 6 to 9 low.");
+        public static readonly LocString LureAutoDetail = new("dungeon.lure.auto.detail", "Takes the first challenge and weighs each next one on its card, since the card turned over becomes the next one to guess on, playing for the most on average. When the coffer holds rare loot the cleanup keeps, it takes the treasure as it is instead of challenging. Each guess is made on the card: 1 to 4 high, 6 to 9 low.");
     }
 }
