@@ -202,6 +202,10 @@ public sealed class Plugin : IDalamudPlugin
         {
             StopFromCommand();
         }
+        else if (trimmed.Equals("stopafter", StringComparison.OrdinalIgnoreCase))
+        {
+            Controller.ToggleStopAfterMap();
+        }
         else if (trimmed.Equals("pause", StringComparison.OrdinalIgnoreCase) || trimmed.Equals("resume", StringComparison.OrdinalIgnoreCase))
         {
             Controller.TogglePause();

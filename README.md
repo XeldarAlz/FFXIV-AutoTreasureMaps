@@ -41,7 +41,7 @@ Works through the timeworn maps in your bags for you. Press **Start** and the pl
 - **Pause & resume**: park a run without losing your place, and auto-pause while you're in a duty.
 - **Party invites**: auto-declines incoming invites during a run after a random delay, with an optional reply message.
 - **GM alert**: stops the bot when a GM is near, with optional toast, beeps, or custom commands.
-- **Stop conditions**: a run ends when no enabled map is left, after a set number of maps or minutes, after failed maps in a row, or after a second knockout.
+- **Stop conditions**: a run ends when no enabled map is left, after a set number of maps or minutes, after failed maps in a row, after a second knockout, or once the map under way is done if you press After map (`/atm stopafter`) during the run.
 - **History**: every run recorded with its maps, gil, tomestones, portals, dungeons and how it ended. The totals show the cost (gil spent on maps) next to the revenue (gil looted, plus the rare loot at today's prices when loot prices are on, with the net below it), and they count the run under way as it goes. Per-map cards show each map's rare loot (with an estimate of its worth from Universalis, off by default), and a map log lists every map with its dungeon floor, knockouts, rare loot and time taken.
 - **Console**: a live log of every step, with filters and a copy button for bug reports.
 
@@ -71,6 +71,7 @@ The plugin needs a few helpers for movement and combat to be installed and loade
 | `/atm about` | Open the About page |
 | `/atm start` | Start a run: decipher and run your maps until a stop condition |
 | `/atm stop` | Stop the current run |
+| `/atm stopafter` | Stop once the map under way is done, its treasure dungeon included; again to take it back |
 | `/atm pause` | Pause or resume the current run |
 | `/atm target` | Log targeted object's BaseId (debug helper) |
 | `/atm spot` | Print the deciphered map you hold and its dig spot |
