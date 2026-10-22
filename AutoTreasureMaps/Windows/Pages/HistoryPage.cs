@@ -15,7 +15,7 @@ namespace AutoTreasureMaps.Windows.Pages;
 internal sealed class HistoryPage
 {
     private const int ChartRuns = 24;
-    private const int TileCount = 4;
+    private const int TileCount = 5;
     private const float PadX = 14f;
     private const float MetricWidth = 64f;
     private const float IconColumn = 18f;
@@ -35,34 +35,45 @@ internal sealed class HistoryPage
     private ListView listView;
     private bool confirmClear;
     private CachedText mapsText;
-    private CachedText gilText;
+    private CachedText costText;
+    private CachedText revenueText;
+    private CachedText netText;
     private CachedText portalsText;
     private CachedText tomestonesText;
     private CachedText runsText;
     private CachedText perMapText;
 
+    // The history's tallies with the run under way added in, and what they were built from.
+    private Dictionary<uint, MapTally> combinedTallies = [];
+    private int talliesRevision;
+    private int builtHistoryRevision = -1;
+    private TreasureSession? builtSession;
+    private int builtTallyRevision = -1;
+
     public void Draw(Plugin plugin)
     {
         var history = plugin.History;
-        var totals = history.Lifetime;
-        var subtitle = history.Records.Count == 0
+        var session = LiveSession(plugin.Controller);
+        var totals = WithSession(history.Lifetime, session);
+        var subtitle = totals.Runs == 0
             ? Loc.T(L.History.Empty)
-            : Loc.Plural(L.History.Summary, history.Records.Count, Formatting.Elapsed(totals.Duration), totals.MapsPerHour.ToString("F1", Loc.Culture));
+            : Loc.Plural(L.History.Summary, totals.Runs, Formatting.Elapsed(totals.Duration), totals.MapsPerHour.ToString("F1", Loc.Culture));
         PageHeader.Draw(Loc.T(L.History.Title), subtitle);
 
-        DrawLifetime(totals, LootPrices.ValueOf(history.LifetimeTallies), history.Revision);
+        var tallies = Tallies(history, session);
+        DrawLifetime(totals, LootPrices.ValueOf(tallies));
         Styling.VSpace(14f);
 
         var mapLog = plugin.MapLog;
-        if (history.Records.Count == 0 && mapLog.Entries.Count == 0)
+        if (totals.Runs == 0 && mapLog.Entries.Count == 0)
         {
             DrawEmptyState();
             return;
         }
 
-        if (history.LifetimeTallies.Count > 0)
+        if (tallies.Count > 0)
         {
-            tallyCards.Draw(history.LifetimeTallies, history.Revision);
+            tallyCards.Draw(tallies, talliesRevision);
             Styling.VSpace(14f);
         }
 
@@ -93,6 +104,53 @@ internal sealed class HistoryPage
         DrawClearControl(history, mapLog);
     }
 
+    // A run is recorded only once it ends, so until then its maps so far are counted in here, and the page moves map by
+    // map. A run that has done nothing yet, or has already been recorded while its after-run action finishes, is left out.
+    private static TreasureSession? LiveSession(TreasureController controller)
+        => controller.SessionSnapshot is { Recorded: false, DidNothing: false } session ? session : null;
+
+    private static RunHistory.LifetimeTotals WithSession(RunHistory.LifetimeTotals totals, TreasureSession? session)
+    {
+        if (session is null)
+        {
+            return totals;
+        }
+
+        totals.Runs++;
+        totals.Maps += session.MapsCompleted;
+        totals.MapsRun += session.MapsRun;
+        totals.GilLooted += session.Gil;
+        totals.GilSpent += session.GilSpentOnMaps;
+        totals.Portals += session.PortalsSeen;
+        totals.Tomestones += session.Tomestones;
+        totals.Seconds += session.Elapsed.TotalSeconds;
+        return totals;
+    }
+
+    // Rebuilt only when the history or the run's tallies change, bumping the revision the cards rebuild on.
+    private Dictionary<uint, MapTally> Tallies(RunHistory history, TreasureSession? session)
+    {
+        var tallyRevision = session?.TallyRevision ?? -1;
+        if (history.Revision == builtHistoryRevision && ReferenceEquals(session, builtSession) && tallyRevision == builtTallyRevision)
+        {
+            return combinedTallies;
+        }
+
+        builtHistoryRevision = history.Revision;
+        builtSession = session;
+        builtTallyRevision = tallyRevision;
+        talliesRevision++;
+        if (session is null || session.Tallies.Count == 0)
+        {
+            combinedTallies = history.LifetimeTallies;
+            return combinedTallies;
+        }
+
+        combinedTallies = MapTally.Copy(history.LifetimeTallies);
+        MapTally.AddAll(combinedTallies, session.Tallies);
+        return combinedTallies;
+    }
+
     private void DrawListSwitch()
     {
         ReadOnlySpan<Segmented.Item> items =
@@ -116,29 +174,36 @@ internal sealed class HistoryPage
         ImGui.Dummy(new Vector2(ImGui.GetContentRegionAvail().X, size.Y + 8f * scale));
     }
 
-    // The captions are rebuilt only when what they show changes: the history's revision, or the gil they total. The
-    // rare loot counts at today's market price, on top of the gil looted less the gil spent on maps.
-    private void DrawLifetime(RunHistory.LifetimeTotals totals, long lootValue, int revision)
+    // The captions are rebuilt only when the number they show changes. The cost is the gil spent on maps; the revenue is
+    // the gil looted, plus the rare loot at today's market price while loot prices are on, with the net below it.
+    private void DrawLifetime(RunHistory.LifetimeTotals totals, long lootValue)
     {
         var scale = ImGuiHelpers.GlobalScale;
         var gap = 8f * scale;
         var tileWidth = (ImGui.GetContentRegionAvail().X - gap * (TileCount - 1)) / TileCount;
-        var totalGil = totals.Gil;
-        var runs = totals.Runs > 0 ? runsText.Get(revision, static _ => Loc.Plural(L.History.TileRunsCount, Plugin.Instance.History.Lifetime.Runs)) : null;
-        var perMap = totals.MapsRun > 0
-            ? perMapText.Get(totalGil / totals.MapsRun, static key => Loc.T(L.History.TilePerMap, key.ToString("N0", Loc.Culture)))
+        var priced = LootPrices.Enabled;
+        var totalRevenue = totals.GilLooted + (priced ? lootValue : 0);
+        var runs = totals.Runs > 0 ? runsText.Get(totals.Runs, static key => Loc.Plural(L.History.TileRunsCount, (int)key)) : null;
+        var perMap = totals.MapsRun > 0 && totals.GilSpent > 0
+            ? perMapText.Get(totals.GilSpent / totals.MapsRun, static key => Loc.T(L.History.TilePerMap, key.ToString("N0", Loc.Culture)))
             : null;
         var maps = mapsText.Get(totals.Maps, static key => key.ToString("N0", Loc.Culture));
-        var gil = gilText.Get(totalGil, static key => key.ToString("N0", Loc.Culture));
+        var cost = costText.Get(totals.GilSpent, static key => key.ToString("N0", Loc.Culture));
+        var revenue = revenueText.Get(totalRevenue, static key => key.ToString("N0", Loc.Culture));
+        var net = netText.Get(totalRevenue - totals.GilSpent, static key => Loc.T(L.History.TileNet, key.ToString("+#,0;-#,0;0", Loc.Culture)));
         var portals = portalsText.Get(totals.Portals, static key => key.ToString("N0", Loc.Culture));
         var tomestones = tomestonesText.Get(totals.Tomestones, static key => key.ToString("N0", Loc.Culture));
 
         StatTile.Draw(Loc.T(L.History.TileMaps), maps, runs, Styling.AccentBlue, tileWidth);
         ImGui.SameLine(0, gap);
-        StatTile.Draw(Loc.T(L.History.TileGil), gil, perMap, Styling.AccentAmber, tileWidth);
-        if (lootValue > 0 && ImGui.IsItemHovered())
+        StatTile.Draw(Loc.T(L.History.TileCost), cost, perMap, Styling.AccentRose, tileWidth);
+        ImGui.SameLine(0, gap);
+        StatTile.Draw(Loc.T(L.History.TileRevenue), revenue, net, Styling.AccentAmber, tileWidth);
+        if (ImGui.IsItemHovered())
         {
-            Tooltip.Show(Loc.T(L.Run.TooltipCount, Loc.T(L.Stats.LootValue), lootValue.ToString("N0", Loc.Culture)));
+            var looted = Loc.T(L.Run.TooltipCount, Loc.T(L.Market.TooltipLooted), totals.GilLooted.ToString("N0", Loc.Culture));
+            var second = priced ? Loc.T(L.Run.TooltipCount, Loc.T(L.Stats.LootValue), lootValue.ToString("N0", Loc.Culture)) : Loc.T(L.Stats.PricesOff);
+            Tooltip.Show(looted + "\n" + second);
         }
 
         ImGui.SameLine(0, gap);

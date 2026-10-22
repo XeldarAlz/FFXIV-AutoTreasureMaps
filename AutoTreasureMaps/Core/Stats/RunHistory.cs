@@ -91,24 +91,14 @@ internal sealed class RunHistory
             var record = Records[index];
             totals.Maps += record.MapsCompleted;
             totals.MapsRun += record.MapsRun;
-            totals.Gil += record.NetGil;
+            totals.GilLooted += record.Gil;
+            totals.GilSpent += record.GilSpentOnMaps;
             totals.Portals += record.PortalsSeen;
             totals.Tomestones += record.Tomestones;
             totals.Seconds += record.DurationSeconds;
-            if (record.Tallies is null)
+            if (record.Tallies is not null)
             {
-                continue;
-            }
-
-            foreach (var (mapItemId, tally) in record.Tallies)
-            {
-                if (!tallies.TryGetValue(mapItemId, out var sum))
-                {
-                    sum = new MapTally();
-                    tallies[mapItemId] = sum;
-                }
-
-                sum.Add(tally);
+                MapTally.AddAll(tallies, record.Tallies);
             }
         }
 
@@ -141,8 +131,8 @@ internal sealed class RunHistory
         public int Maps;
         public int MapsRun;
 
-        // Looted less spent on maps.
-        public long Gil;
+        public long GilLooted;
+        public long GilSpent;
         public int Portals;
         public int Tomestones;
         public double Seconds;
