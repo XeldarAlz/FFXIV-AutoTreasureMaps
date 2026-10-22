@@ -78,6 +78,7 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
                     return;
                 }
 
+                session.NoteMapCarriedThrough();
                 continue;
             }
 
@@ -147,6 +148,7 @@ internal sealed class AutoTreasureRun(TreasureSession session, TreasureProgress 
         }
 
         partyWaitStartedAtMs = 0;
+        session.NoteMapCarriedThrough();
         NoteMapFinished();
         await UpkeepBetweenMaps(plugin);
         return LoopStep.Continue;
