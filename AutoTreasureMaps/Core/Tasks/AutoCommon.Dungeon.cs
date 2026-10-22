@@ -13,6 +13,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
+using ECommons.GameFunctions;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using System.Globalization;
 using System.Numerics;
@@ -37,7 +38,8 @@ public abstract partial class AutoCommon
     private const int LureCloseWaitMs = 3_000;
     // Nobody may be there to guess: the game waits about five minutes for a guess before it takes the treasure away.
     private const int LureQuietLimitMs = 360_000;
-    // The first challenge is taken before any card shows and is won 7 times in 9, so it is always taken. The right card
+    // The first challenge is taken before any card shows and is won 7 times in 9, so it is taken unless the coffer holds
+    // rare loot the cleanup keeps, which it would lose 2 times in 9. The right card
     // a won guess turns over becomes the next left card, so every later challenge is weighed on a known card: a card
     // of c is won max(9 - c, c - 1) times in 8, a tie being dealt again. Without rare loot the treasure is played for
     // the most on average: at 2x anything but a 5, at 3x a card of 1 to 3 or 7 to 9, from 4x a card of 1, 2, 8 or 9
@@ -714,14 +716,19 @@ public abstract partial class AutoCommon
             Diag($"{scope}: {current.Name} ({current.GameObjectId:X}) is a mandragora the settings leave alone; {(enemy is null ? "dropping the target" : $"targeting {enemy.Name} ({enemy.GameObjectId:X}) instead")}.");
             Svc.Targets.Target = enemy;
         }
-        else if (Svc.Targets.Target is null && enemy is not null)
+        // Anything else that is not a live enemy, such as the coffer or gate the run just used, would leave the rotations
+        // with nothing to attack, so it is replaced too.
+        else if (enemy is not null && !LiveEnemy(Svc.Targets.Target))
         {
-            Diag($"{scope}: targeting {enemy.Name} ({enemy.GameObjectId:X}); the mandragoras are left alone.");
+            var previous = Svc.Targets.Target;
+            Diag($"{scope}: targeting {enemy.Name} ({enemy.GameObjectId:X}){(previous is null ? string.Empty : $" instead of {previous.Name} ({previous.GameObjectId:X})")}; the mandragoras are left alone.");
             Svc.Targets.Target = enemy;
         }
 
         return true;
     }
+
+    private static bool LiveEnemy(IGameObject? target) => target is IBattleNpc { IsDead: false } npc && npc.IsHostile();
 
     private void SetPriorityTargeting(string scope, bool manual, bool autoTargetPaused)
     {
@@ -876,7 +883,7 @@ public abstract partial class AutoCommon
     {
         if (next == 1)
         {
-            return true;
+            return !rare;
         }
 
         if (next > LureGameChallenges || card is not { } value)
@@ -911,7 +918,9 @@ public abstract partial class AutoCommon
         if (shown is { } card)
         {
             var high = card < LureMiddleCard || (card == LureMiddleCard && Random.Shared.Next(2) == 0);
-            if (policy == LurePolicy.AskMe)
+            // Only Challenge by the loot guesses; under the other policies the cards are out because the player took a
+            // challenge by hand, so they get the hint and the guess is theirs.
+            if (policy != LurePolicy.Auto)
             {
                 Svc.Chat.Print($"{AtmConstants.LogPrefix} {Loc.T(L.Dungeon.ChatLureCardHint, card, Loc.T(high ? L.Dungeon.LureHigh : L.Dungeon.LureLow))}");
             }
@@ -924,7 +933,7 @@ public abstract partial class AutoCommon
 
         while (DungeonField.LureGuessPending() && !CancelToken.IsCancellationRequested && context.InDungeon)
         {
-            if (shown is null && policy != LurePolicy.AskMe && Environment.TickCount64 - dealtAt >= LureGuessWaitMs && !NpcInteraction.SelectYesnoOpen())
+            if (shown is null && policy == LurePolicy.Auto && Environment.TickCount64 - dealtAt >= LureGuessWaitMs && !NpcInteraction.SelectYesnoOpen())
             {
                 lureUnattended = true;
                 var coin = Random.Shared.Next(2) == 0;
